@@ -1,30 +1,58 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 export default function LoginPage() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const router = useRouter();
+
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        setError("");
+
+        const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            setError(data.error || "Erreur de connexion");
+            return;
+        }
+
+        localStorage.setItem("token", data.token);
+        router.push("/demands");
+    }
+
     return (
         <div className="max-w-md mx-auto p-6">
 
-            {/* entete */}
             <div className="mb-6 text-center">
-                <h1 className="text-2xl font-bold text-gray-800">
-                    Connexion
-                </h1>
+                <h1 className="text-2xl font-bold text-gray-800">Connexion</h1>
                 <p className="text-gray-600 mt-2 text-sm">
                     Accédez à votre espace TechLine Care
                 </p>
             </div>
 
-            {/* le formulaire */}
             <div className="bg-white border rounded-lg p-6 shadow-sm">
-
-                <form className="space-y-4">
+                <form className="space-y-4" onSubmit={handleSubmit}>
 
                     <div>
                         <label className="block text-sm font-medium mb-1">
-                            Identifiant
+                            Email
                         </label>
                         <input
-                            type="text"
-                            placeholder="username"
+                            type="email"
+                            placeholder="email@techline-care.fr"
                             className="w-full border rounded px-3 py-2 text-sm"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                         />
                     </div>
 
@@ -36,8 +64,14 @@ export default function LoginPage() {
                             type="password"
                             placeholder="••••••••"
                             className="w-full border rounded px-3 py-2 text-sm"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
+
+                    {error && (
+                        <p className="text-red-500 text-sm">{error}</p>
+                    )}
 
                     <button
                         type="submit"
@@ -47,12 +81,10 @@ export default function LoginPage() {
                     </button>
 
                 </form>
-
             </div>
 
-            {/* pied de page */}
             <p className="text-xs text-gray-400 mt-4 text-center">
-                Authentification en cours d’implémentation (JWT)
+                Authentification JWT
             </p>
 
         </div>
