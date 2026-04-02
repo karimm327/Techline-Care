@@ -13,80 +13,71 @@ export default function LoginPage() {
         e.preventDefault();
         setError("");
 
-        const res = await fetch("/api/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-        });
+        try {
+            const res = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
 
-        const data = await res.json();
+            const data = await res.json();
 
-        if (!res.ok) {
-            setError(data.error || "Erreur de connexion");
-            return;
+            if (!res.ok) {
+                setError(data.error || "Erreur de connexion");
+                return;
+            }
+
+            // --- ÉTAPE : VOIR LE TOKEN DANS LA CONSOLE ---
+            console.log("=== CONNEXION RÉUSSIE ===");
+            console.log("Token JWT reçu :", data.token);
+
+            // Stockage dans le navigateur (Étape 1.3)
+            localStorage.setItem("token", data.token);
+
+            // Redirection (Étape 2)
+            router.push("/demands");
+        } catch (err) {
+            setError("Impossible de joindre l'API");
         }
-
-        localStorage.setItem("token", data.token);
-        router.push("/demands");
     }
 
     return (
         <div className="max-w-md mx-auto p-6">
-
             <div className="mb-6 text-center">
                 <h1 className="text-2xl font-bold text-gray-800">Connexion</h1>
-                <p className="text-gray-600 mt-2 text-sm">
-                    Accédez à votre espace TechLine Care
-                </p>
+                <p className="text-gray-600 mt-2 text-sm">Accédez à votre espace TechLine Care</p>
             </div>
 
             <div className="bg-white border rounded-lg p-6 shadow-sm">
                 <form className="space-y-4" onSubmit={handleSubmit}>
-
                     <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Email
-                        </label>
+                        <label className="block text-sm font-medium mb-1">Email</label>
                         <input
                             type="email"
                             placeholder="email@techline-care.fr"
                             className="w-full border rounded px-3 py-2 text-sm"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            required
                         />
                     </div>
-
                     <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Mot de passe
-                        </label>
+                        <label className="block text-sm font-medium mb-1">Mot de passe</label>
                         <input
                             type="password"
                             placeholder="••••••••"
                             className="w-full border rounded px-3 py-2 text-sm"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            required
                         />
                     </div>
-
-                    {error && (
-                        <p className="text-red-500 text-sm">{error}</p>
-                    )}
-
-                    <button
-                        type="submit"
-                        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-                    >
+                    {error && <p className="text-red-500 text-sm">{error}</p>}
+                    <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
                         Se connecter
                     </button>
-
                 </form>
             </div>
-
-            <p className="text-xs text-gray-400 mt-4 text-center">
-                Authentification JWT
-            </p>
-
         </div>
     );
 }
