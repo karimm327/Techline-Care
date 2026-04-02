@@ -1,0 +1,95 @@
+import { NextResponse } from "next/server";
+import {findCategoryById} from "@/lib/db/queries/category.queries";
+import {findPriorityById} from "@/lib/db/queries/priority.queries";
+import {findAgentById} from "@/lib/db/queries/user.queries";
+import {createDemand} from "@/lib/db/queries/demand.queries";
+
+export async function POST(req: Request) {
+
+
+    try {
+        const body = await req.json();
+
+        const {
+            title,
+            description,
+            idCategory,
+            idPriority,
+            idAssignedAgent,
+        } = body;
+
+        // VALIDATIONS
+        if (!title || title.length < 3) {
+            return NextResponse.json(
+                { message: "Titre invalide" },
+                { status: 400 }
+            );
+        }
+
+        if (!description || description.length < 10) {
+            return NextResponse.json(
+                { message: "Description invalide" },
+                { status: 400 }
+            );
+        }
+
+        if (!idCategory || !idPriority) {
+            return NextResponse.json(
+                { message: "Catégorie et priorité obligatoires" },
+                { status: 400 }
+            );
+        }
+
+        // Vérifier catégorie
+        const catCheck = await findCategoryById(idCategory);
+
+        if (catCheck.length === 0) {
+            return NextResponse.json(
+                { message: "Catégorie invalide" },
+                { status: 400 }
+            );
+        }
+
+        // Vérifier priorité
+        const prioCheck = await findPriorityById(idPriority)
+
+        if (prioCheck.length === 0) {
+            return NextResponse.json(
+                { message: "Priorité invalide" },
+                { status: 400 }
+            );
+        }
+
+        // Vérifier agent (si fourni)
+        if (idAssignedAgent) {
+            const agentCheck = await findAgentById(idAssignedAgent)
+
+            if (agentCheck.length === 0) {
+                return NextResponse.json(
+                    { message: "Agent invalide" },
+                    { status: 400 }
+                );
+            }
+        }
+
+        // Insertion
+        const result = await createDemand(title, description, idCategory, idPriority, idAssignedAgent);
+
+        return NextResponse.json({
+            id: result.rows[0].id_demand
+        });
+
+    } catch (error:any) {
+        console.log(error);
+        let errorMessage: string = "Erreur serveur (demands)";
+
+        if(error?.name && error.name == "ZodError") {
+            errorMessage = error;
+        }
+
+        return NextResponse.json(
+            { message: errorMessage },
+            { status: 500 }
+        );
+    }
+}
