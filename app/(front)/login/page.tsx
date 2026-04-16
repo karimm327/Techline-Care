@@ -20,23 +20,22 @@ export default function LoginPage() {
                 body: JSON.stringify({ email, password }),
             });
 
-            const data = await res.json();
+            const data = await res.json();vb
 
             if (!res.ok) {
                 setError(data.error || "Erreur de connexion");
                 return;
             }
 
-            // --- ÉTAPE : VOIR LE TOKEN DANS LA CONSOLE ---
             console.log("=== CONNEXION RÉUSSIE ===");
             console.log("Token JWT reçu :", data.token);
 
-            // Stockage dans le navigateur (Étape 1.3)
             localStorage.setItem("token", data.token);
 
             // Redirection (Étape 2)
             router.push("/demands");
         } catch (err) {
+            console.log(err)
             setError("Impossible de joindre l'API");
         }
     }
