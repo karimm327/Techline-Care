@@ -5,12 +5,10 @@ export default async function DemandsPage() {
     try {
         const demands = await findAllDemands();
 
-        // S'il n'y pas encore de demandes
         if (!demands || demands.length === 0) {
             return (
                 <>
                     <h1>Demandes</h1>
-
                     <Link href="/demands/new">
                         <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">+ Nouvelle demande</button>
                     </Link>
@@ -90,6 +88,8 @@ export default async function DemandsPage() {
                 </table>
             </>
         );
+
+
     } catch (error) {
         console.error(error);
 
@@ -100,4 +100,6 @@ export default async function DemandsPage() {
             </>
         );
     }
+
+
 }
