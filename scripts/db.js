@@ -1,4 +1,4 @@
-require("dotenv").config({ path: ".env.local" });
+require("dotenv").config({ path: "..env.local" });
 
 const {readFileSync} = require("fs");
 const {Pool} = require("pg");
