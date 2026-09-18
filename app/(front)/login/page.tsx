@@ -43,7 +43,7 @@ export default function LoginPage() {
     return (
         <div className="max-w-md mx-auto p-6">
             <div className="mb-6 text-center">
-                <h1 className="text-2xl font-bold text-gray-800">Connezedtfgegberg'e"gxion</h1>
+                <h1 className="text-2xl font-bold text-gray-800">Connexion</h1>
                 <p className="text-gray-600 mt-2 text-sm">Accédez à votre espace TechLine Care</p>
             </div>
 
