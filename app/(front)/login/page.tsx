@@ -20,7 +20,7 @@ export default function LoginPage() {
                 body: JSON.stringify({ email, password }),
             });
 
-            const data = await res.json();vb
+            const data = await res.json();
 
             if (!res.ok) {
                 setError(data.error || "Erreur de connexion");
