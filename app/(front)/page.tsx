@@ -31,7 +31,7 @@ export default function HomePage() {
                         </button>
                     </Link>
 
-                    <Link href="/demands/new">
+                    <Link href="/login">
                         <button className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition">
                             Créer une demande
                         </button>
