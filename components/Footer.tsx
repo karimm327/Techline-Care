@@ -15,10 +15,10 @@ export default function Footer() {
 
                     <div className="flex items-center gap-6 text-sm text-gray-500">
                         <a
-                            href="/demands"
+                            href="/"
                             className="hover:text-blue-600 transition"
                         >
-                            Demandes
+                            Contact
                         </a>
 
                         <a
