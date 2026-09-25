@@ -31,6 +31,7 @@ export default function LoginPage() {
             console.log("Token JWT reçu :", data.token);
 
             localStorage.setItem("token", data.token);
+            window.dispatchEvent(new Event("auth-changed")); // ← ajouté
 
             // Redirection (Étape 2)
             router.push("/demands");
