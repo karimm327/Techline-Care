@@ -20,7 +20,7 @@ export default function Navbar() {
             </Link>
 
             <div className="flex items-center gap-6">
-                <Link href="/demands" className="hover:text-gray-300">
+                <Link href="/login" className="hover:text-gray-300">
                     Demandes
                 </Link>
 

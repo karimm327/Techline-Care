@@ -25,7 +25,7 @@ export default function HomePage() {
 
                 <div className="flex gap-4">
 
-                    <Link href="/demands">
+                    <Link href="/login">
                         <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
                             Voir les demandes
                         </button>
