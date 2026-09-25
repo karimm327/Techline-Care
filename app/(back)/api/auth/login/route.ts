@@ -27,5 +27,20 @@ export async function POST(req: NextRequest) {
         { expiresIn: "24h" }
     );
 
+    const response = NextResponse.json(
+        { message: "Connexion réussie", token },
+        { status: 200 }
+    );
+
+    response.cookies.set("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24,
+        path: "/",
+    });
+
+    return response;
+
     return NextResponse.json({ message: "Connexion réussie", token }, { status: 200 });
 }
