@@ -1,11 +1,17 @@
-import { NextResponse } from "next/server";
-import {findDemandById, updateDemand} from "@/lib/db/queries/demand.queries";
+import { NextRequest, NextResponse } from "next/server";
+import { exigerConnexion } from "@/lib/auth";
+import {findDemandById, findLabelsForDemandIds, softDeleteDemand, updateDemand} from "@/lib/db/queries/demand.queries";
+import { logActivity } from "@/lib/db/queries/activity.queries";
 import {findCategoryById} from "@/lib/db/queries/category.queries";
 import {findPriorityById} from "@/lib/db/queries/priority.queries";
 import {findAgentById} from "@/lib/db/queries/user.queries";
 import {findStatusById} from "@/lib/db/queries/status.queries";
 
-export async function PUT(req: Request, {params}: { params: Promise<{ id: string }> }) {
+export async function PUT(req: NextRequest, {params}: { params: Promise<{ id: string }> }) {
+    // Connexion obligatoire + rôle LECTURE interdit
+    const garde = exigerConnexion(req, ["ADMIN", "AGENT"]);
+    if ("refus" in garde) return garde.refus;
+
     const {id} = await params;
 
     try {
@@ -27,6 +33,12 @@ export async function PUT(req: Request, {params}: { params: Promise<{ id: string
             return NextResponse.json(
                 { message: "Demande introuvable" },
                 { status: 404 }
+            );
+        }
+        if (demandCheck.deleted_at) {
+            return NextResponse.json(
+                { message: "Cette demande a été supprimée : elle ne peut plus être modifiée." },
+                { status: 410 }
             );
         }
 
@@ -75,6 +87,12 @@ export async function PUT(req: Request, {params}: { params: Promise<{ id: string
         // UPDATE
         await updateDemand(title, description, idCategory, idPriority, idStatus, idAssignedAgent, id);
 
+        // Journal d'activité : résumé de ce qui a changé
+        const details = await resumerChangements(demandCheck, { title, description, idCategory, idPriority, idStatus, idAssignedAgent });
+        if (details) {
+            await logActivity({ action: "MODIFICATION", idUser: garde.user.id, idDemand: id, details });
+        }
+
         return NextResponse.json({ success: true });
 
     } catch (error: any) {
@@ -92,4 +110,64 @@ export async function PUT(req: Request, {params}: { params: Promise<{ id: string
             { status: 500 }
         );
     }
+}
+
+// Supprimer une demande (suppression douce + motif obligatoire)
+export async function DELETE(req: NextRequest, {params}: { params: Promise<{ id: string }> }) {
+    const garde = exigerConnexion(req, ["ADMIN", "AGENT"]);
+    if ("refus" in garde) return garde.refus;
+
+    const {id} = await params;
+
+    try {
+        const body = await req.json().catch(() => ({}));
+        const raison = typeof body.reason === "string" ? body.reason.trim() : "";
+
+        if (raison.length < 5) {
+            return NextResponse.json({ message: "Indique pourquoi tu supprimes la demande (5 caractères minimum)." }, { status: 400 });
+        }
+        if (raison.length > 500) {
+            return NextResponse.json({ message: "Le motif ne doit pas dépasser 500 caractères." }, { status: 400 });
+        }
+
+        const demande = await findDemandById(id);
+        if (!demande) {
+            return NextResponse.json({ message: "Demande introuvable" }, { status: 404 });
+        }
+        if (demande.deleted_at) {
+            return NextResponse.json({ message: "Cette demande est déjà supprimée." }, { status: 410 });
+        }
+
+        await softDeleteDemand(id, garde.user.id, raison);
+        await logActivity({ action: "SUPPRESSION", idUser: garde.user.id, idDemand: id, details: raison });
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        return NextResponse.json({ message: "Erreur serveur" }, { status: 500 });
+    }
+}
+
+// Ex. : "Statut : NOUVELLE → EN_COURS · Agent : aucun → Lucas Petit"
+async function resumerChangements(avant: any, apres: any): Promise<string> {
+    const parties: string[] = [];
+    if ((apres.title ?? "") !== (avant.title ?? "")) parties.push("Titre modifié");
+    if ((apres.description ?? "") !== (avant.description ?? "")) parties.push("Description modifiée");
+
+    const champs = [
+        { cle: "category", nom: "Catégorie", av: avant.id_category, ap: apres.idCategory },
+        { cle: "priority", nom: "Priorité", av: avant.id_priority, ap: apres.idPriority },
+        { cle: "status", nom: "Statut", av: avant.id_status, ap: apres.idStatus },
+        { cle: "agent", nom: "Agent", av: avant.id_assigned_agent, ap: apres.idAssignedAgent },
+    ].filter((c) => (c.av || null) !== (c.ap || null));
+
+    if (champs.length > 0) {
+        const ids = (cote: "av" | "ap") => Object.fromEntries(champs.map((c) => [c.cle, c[cote] || null]));
+        const [lAvant, lApres] = await Promise.all([findLabelsForDemandIds(ids("av")), findLabelsForDemandIds(ids("ap"))]);
+        for (const c of champs) {
+            const k = c.cle as keyof typeof lAvant;
+            parties.push(`${c.nom} : ${lAvant[k] ?? "aucun"} → ${lApres[k] ?? "aucun"}`);
+        }
+    }
+    return parties.join(" · ");
 }
