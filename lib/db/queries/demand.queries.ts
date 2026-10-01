@@ -35,6 +35,7 @@ export async function findAllDemands(
     JOIN priorities p ON d.id_priority      = p.id_priority
     JOIN categories c ON d.id_category      = c.id_category
     LEFT JOIN users u ON d.id_assigned_agent = u.id_user
+    WHERE d.deleted_at IS NULL
     ORDER BY ${orderColumn} ${orderDirection}
   `);
 
@@ -51,7 +52,8 @@ export async function findDemandById(id: string) {
         id_category,
         id_priority,
         id_status,
-        id_assigned_agent
+        id_assigned_agent,
+        deleted_at
       FROM demands
       WHERE id_demand = $1
     `,
@@ -73,12 +75,16 @@ export async function findDemandDetailById(id: string) {
         s.label AS status,
         p.label AS priority,
         c.label AS category,
-        u.first_name || ' ' || u.last_name AS agent_full_name
+        u.first_name || ' ' || u.last_name AS agent_full_name,
+        d.deleted_at,
+        d.delete_reason,
+        del.first_name || ' ' || del.last_name AS deleted_by_name
       FROM demands d
       LEFT JOIN statuses   s ON d.id_status        = s.id_status
       LEFT JOIN priorities p ON d.id_priority      = p.id_priority
       LEFT JOIN categories c ON d.id_category      = c.id_category
       LEFT JOIN users      u ON d.id_assigned_agent = u.id_user
+      LEFT JOIN users    del ON d.deleted_by        = del.id_user
       WHERE d.id_demand = $1
     `,
     [id]
@@ -143,4 +149,44 @@ export async function updateDemand(
     `,
     [title, description, idCategory, idPriority, idStatus, idAssignedAgent || null, id]
   );
+}
+
+/* Suppression douce : la demande est marquée, jamais effacée */
+export async function softDeleteDemand(id: string, idUser: string, raison: string) {
+  return await db.query(
+    `
+      UPDATE demands
+      SET deleted_at = NOW(), deleted_by = $2, delete_reason = $3
+      WHERE id_demand = $1 AND deleted_at IS NULL
+    `,
+    [id, idUser, raison]
+  );
+}
+
+export async function restoreDemand(id: string) {
+  return await db.query(
+    `
+      UPDATE demands
+      SET deleted_at = NULL, deleted_by = NULL, delete_reason = NULL, updated_at = NOW()
+      WHERE id_demand = $1 AND deleted_at IS NOT NULL
+    `,
+    [id]
+  );
+}
+
+/* Libellés lisibles pour le résumé des modifications du journal */
+export async function findLabelsForDemandIds(ids: {
+  category?: string | null; priority?: string | null; status?: string | null; agent?: string | null;
+}) {
+  const r = await db.query(
+    `
+      SELECT
+        (SELECT label FROM categories WHERE id_category = $1::uuid) AS category,
+        (SELECT label FROM priorities WHERE id_priority = $2::uuid) AS priority,
+        (SELECT label FROM statuses   WHERE id_status   = $3::uuid) AS status,
+        (SELECT first_name || ' ' || last_name FROM users WHERE id_user = $4::uuid) AS agent
+    `,
+    [ids.category || null, ids.priority || null, ids.status || null, ids.agent || null]
+  );
+  return r.rows[0] as { category: string | null; priority: string | null; status: string | null; agent: string | null };
 }
