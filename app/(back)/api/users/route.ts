@@ -1,7 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { exigerConnexion } from "@/lib/auth";
 import {findAllAgents} from "@/lib/db/queries/user.queries";
 
-export async function GET(request:Request) {
+export async function GET(request: NextRequest) {
+    const garde = exigerConnexion(request);
+    if ("refus" in garde) return garde.refus;
 
     const { searchParams } = new URL(request.url);
 
@@ -9,7 +12,6 @@ export async function GET(request:Request) {
 
     try {
         const result : any = role?.toLowerCase() == "agent" ? await findAllAgents() : [];
-        console.log(result);
 
         return NextResponse.json(result);
     } catch (error) {
