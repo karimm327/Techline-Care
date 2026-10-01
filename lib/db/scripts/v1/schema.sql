@@ -85,6 +85,13 @@ CREATE TABLE demands
     id_priority       UUID         NOT NULL,
     id_status         UUID         NOT NULL,
     id_assigned_agent UUID,
+    -- Suppression douce : la demande est marquée, jamais effacée
+    deleted_at        TIMESTAMP,
+    deleted_by        UUID,
+    delete_reason     TEXT,
+    CONSTRAINT fk_demands_deleted_by
+        FOREIGN KEY (deleted_by)
+            REFERENCES users (id_user),
     CONSTRAINT fk_demands_category
         FOREIGN KEY (id_category)
             REFERENCES categories (id_category),
@@ -128,6 +135,7 @@ CREATE TABLE activity_logs
     actor_label     VARCHAR(100) NOT NULL,
     id_user         UUID,
     id_demand       UUID,
+    details         TEXT,
     CONSTRAINT fk_activity_user
         FOREIGN KEY (id_user)
             REFERENCES users (id_user),
