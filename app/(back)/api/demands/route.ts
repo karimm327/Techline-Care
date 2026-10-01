@@ -2,19 +2,15 @@ import {findCategoryById} from "@/lib/db/queries/category.queries";
 import {findPriorityById} from "@/lib/db/queries/priority.queries";
 import {findAgentById} from "@/lib/db/queries/user.queries";
 import {createDemand} from "@/lib/db/queries/demand.queries";
-import { getUserFromRequest } from "@/lib/auth";
+import { exigerConnexion } from "@/lib/auth";
+import { logActivity } from "@/lib/db/queries/activity.queries";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
 
-    const user = getUserFromRequest(req);
-
-    if (!user) {
-        return NextResponse.json(
-            { message: "Non authentifié" },
-            { status: 401 }
-        );
-    }
+    // Connexion obligatoire + rôle LECTURE interdit
+    const garde = exigerConnexion(req, ["ADMIN", "AGENT"]);
+    if ("refus" in garde) return garde.refus;
 
     try {
 
@@ -84,6 +80,9 @@ export async function POST(req: NextRequest) {
 
         // Insertion
         const result = await createDemand(title, description, idCategory, idPriority, idAssignedAgent);
+
+        // Journal d'activité
+        await logActivity({ action: "CREATION", idUser: garde.user.id, idDemand: result.rows[0].id_demand, details: `Demande créée : « ${title} »` });
 
         return NextResponse.json({
             id: result.rows[0].id_demand
