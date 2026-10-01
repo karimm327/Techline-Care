@@ -1,7 +1,8 @@
 "use client";
 
 export default function LogoutButton() {
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
         localStorage.removeItem("token");
         window.location.href = "/login";
     };
