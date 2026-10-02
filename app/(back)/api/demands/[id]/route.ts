@@ -4,13 +4,16 @@ import { logActivity } from "@/lib/db/queries/activity.queries";
 import { findCategoryById } from "@/lib/db/queries/category.queries";
 import {
   findDemandById,
-  findLabelsForDemandIds,
+  findPriorityIdByLabel,
+  findStatusIdByLabel,
   softDeleteDemand,
   updateDemand,
+  updateDemandPartielle,
 } from "@/lib/db/queries/demand.queries";
 import { findPriorityById } from "@/lib/db/queries/priority.queries";
 import { findStatusById } from "@/lib/db/queries/status.queries";
 import { findAgentById } from "@/lib/db/queries/user.queries";
+import { resumerChangements } from "@/lib/demandes/changements";
 
 export async function PUT(
   req: NextRequest,
@@ -191,69 +194,125 @@ export async function DELETE(
   }
 }
 
-// Ex. : "Statut : NOUVELLE → EN_COURS · Agent : aucun → Lucas Petit"
-type DemandeAvant = {
-  title?: string | null;
-  description?: string | null;
-  id_category?: string | null;
-  id_priority?: string | null;
-  id_status?: string | null;
-  id_assigned_agent?: string | null;
-};
-type DemandeApres = {
-  title?: string | null;
-  description?: string | null;
-  idCategory?: string | null;
-  idPriority?: string | null;
-  idStatus?: string | null;
-  idAssignedAgent?: string | null;
-};
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-async function resumerChangements(
-  avant: DemandeAvant,
-  apres: DemandeApres,
-): Promise<string> {
-  const parties: string[] = [];
-  if ((apres.title ?? "") !== (avant.title ?? ""))
-    parties.push("Titre modifié");
-  if ((apres.description ?? "") !== (avant.description ?? ""))
-    parties.push("Description modifiée");
+// Mise à jour partielle : { status?, priority?, agentId? } (codes NOUVELLE, HAUTE…).
+// Utilisée par le menu « Changer le statut », le Kanban et les actions groupées.
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const garde = exigerConnexion(req, ["ADMIN", "AGENT"]);
+  if ("refus" in garde) return garde.refus;
+  const { id } = await params;
+  if (!UUID.test(id)) {
+    return NextResponse.json(
+      { message: "Demande introuvable" },
+      { status: 404 },
+    );
+  }
 
-  const champs = [
-    {
-      cle: "category",
-      nom: "Catégorie",
-      av: avant.id_category,
-      ap: apres.idCategory,
-    },
-    {
-      cle: "priority",
-      nom: "Priorité",
-      av: avant.id_priority,
-      ap: apres.idPriority,
-    },
-    { cle: "status", nom: "Statut", av: avant.id_status, ap: apres.idStatus },
-    {
-      cle: "agent",
-      nom: "Agent",
-      av: avant.id_assigned_agent,
-      ap: apres.idAssignedAgent,
-    },
-  ].filter((c) => (c.av || null) !== (c.ap || null));
+  try {
+    const body = await req.json().catch(() => ({}));
+    const { status, priority, agentId } = body as {
+      status?: unknown;
+      priority?: unknown;
+      agentId?: unknown;
+    };
 
-  if (champs.length > 0) {
-    const ids = (cote: "av" | "ap") =>
-      Object.fromEntries(champs.map((c) => [c.cle, c[cote] || null]));
-    const [lAvant, lApres] = await Promise.all([
-      findLabelsForDemandIds(ids("av")),
-      findLabelsForDemandIds(ids("ap")),
-    ]);
-    for (const c of champs) {
-      const k = c.cle as keyof typeof lAvant;
-      parties.push(
-        `${c.nom} : ${lAvant[k] ?? "aucun"} → ${lApres[k] ?? "aucun"}`,
+    const avant = await findDemandById(id);
+    if (!avant) {
+      return NextResponse.json(
+        { message: "Demande introuvable" },
+        { status: 404 },
       );
     }
+    if (avant.deleted_at) {
+      return NextResponse.json(
+        {
+          message:
+            "Cette demande a été supprimée : elle ne peut plus être modifiée.",
+        },
+        { status: 410 },
+      );
+    }
+
+    const champs: {
+      idStatus?: string;
+      idPriority?: string;
+      idAssignedAgent?: string | null;
+    } = {};
+    if (status !== undefined) {
+      const idStatus =
+        typeof status === "string" ? await findStatusIdByLabel(status) : null;
+      if (!idStatus) {
+        return NextResponse.json(
+          { message: "Statut invalide" },
+          { status: 400 },
+        );
+      }
+      champs.idStatus = idStatus;
+    }
+    if (priority !== undefined) {
+      const idPriority =
+        typeof priority === "string"
+          ? await findPriorityIdByLabel(priority)
+          : null;
+      if (!idPriority) {
+        return NextResponse.json(
+          { message: "Priorité invalide" },
+          { status: 400 },
+        );
+      }
+      champs.idPriority = idPriority;
+    }
+    if (agentId !== undefined) {
+      if (agentId === null || agentId === "") {
+        champs.idAssignedAgent = null;
+      } else if (
+        typeof agentId === "string" &&
+        UUID.test(agentId) &&
+        (await findAgentById(agentId)).length > 0
+      ) {
+        champs.idAssignedAgent = agentId;
+      } else {
+        return NextResponse.json(
+          { message: "Agent invalide" },
+          { status: 400 },
+        );
+      }
+    }
+
+    const ok = await updateDemandPartielle(id, champs);
+    if (!ok) {
+      return NextResponse.json(
+        { message: "Demande introuvable" },
+        { status: 404 },
+      );
+    }
+
+    const details = await resumerChangements(avant, {
+      title: avant.title,
+      description: avant.description,
+      idCategory: avant.id_category,
+      idPriority: champs.idPriority ?? avant.id_priority,
+      idStatus: champs.idStatus ?? avant.id_status,
+      idAssignedAgent:
+        champs.idAssignedAgent !== undefined
+          ? champs.idAssignedAgent
+          : avant.id_assigned_agent,
+    });
+    if (details) {
+      await logActivity({
+        action: "MODIFICATION",
+        idUser: garde.user.id,
+        idDemand: id,
+        details,
+      });
+    }
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ message: "Erreur serveur" }, { status: 500 });
   }
-  return parties.join(" · ");
 }

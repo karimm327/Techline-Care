@@ -4,24 +4,28 @@
 export const STATUTS = {
   NOUVELLE: {
     label: "Nouvelle",
+    halo: "shadow-[0_0_0_6px_rgb(var(--st-nouvelle)/.15)]",
     point: "bg-st-nouvelle",
     badge: "text-st-nouvelle-fg bg-st-nouvelle/15 ring-st-nouvelle/35",
     touche: "1",
   },
   EN_COURS: {
     label: "En cours",
+    halo: "shadow-[0_0_0_6px_rgb(var(--st-encours)/.15)]",
     point: "bg-st-encours",
     badge: "text-st-encours-fg bg-st-encours/15 ring-st-encours/35",
     touche: "2",
   },
   CLOTUREE: {
     label: "Clôturée",
+    halo: "shadow-[0_0_0_6px_rgb(var(--st-cloturee)/.15)]",
     point: "bg-st-cloturee",
     badge: "text-st-cloturee-fg bg-st-cloturee/15 ring-st-cloturee/35",
     touche: "3",
   },
   ANNULEE: {
     label: "Annulée",
+    halo: "shadow-[0_0_0_6px_rgb(var(--st-annulee)/.15)]",
     point: "bg-st-annulee",
     badge: "text-st-annulee-fg bg-st-annulee/15 ring-st-annulee/35",
     touche: "4",
@@ -29,10 +33,31 @@ export const STATUTS = {
 } as const;
 
 export const PRIORITES = {
-  HAUTE: { label: "Haute", niveau: 3, barre: "bg-prio-haute" },
-  NORMALE: { label: "Normale", niveau: 2, barre: "bg-prio-normale" },
-  BASSE: { label: "Basse", niveau: 1, barre: "bg-prio-basse" },
+  HAUTE: {
+    label: "Haute",
+    niveau: 3,
+    barre: "bg-prio-haute",
+    badge: "text-prio-haute-fg bg-prio-haute/15",
+    touche: "H",
+  },
+  NORMALE: {
+    label: "Normale",
+    niveau: 2,
+    barre: "bg-prio-normale",
+    badge: "text-st-encours-fg bg-st-encours/15",
+    touche: "N",
+  },
+  BASSE: {
+    label: "Basse",
+    niveau: 1,
+    barre: "bg-prio-basse",
+    badge: "text-fg-2 bg-fg-2/10",
+    touche: "B",
+  },
 } as const;
+
+// Étapes du suivi (ANNULEE est hors parcours)
+export const ETAPES_STATUT = ["NOUVELLE", "EN_COURS", "CLOTUREE"] as const;
 
 export type CodeStatut = keyof typeof STATUTS;
 export type CodePriorite = keyof typeof PRIORITES;

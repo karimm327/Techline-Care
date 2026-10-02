@@ -75,6 +75,7 @@ export async function findDemandDetailById(id: string) {
         s.label AS status,
         p.label AS priority,
         c.label AS category,
+        d.id_assigned_agent,
         u.first_name || ' ' || u.last_name AS agent_full_name,
         d.deleted_at,
         d.delete_reason,
@@ -414,4 +415,66 @@ export async function findChargeEquipe() {
     ORDER BY ouvertes DESC, nom
   `);
   return r.rows as { id_user: string; nom: string; ouvertes: number }[];
+}
+
+/* ---------- Mise à jour partielle (statut, priorité, agent) ---------- */
+
+export async function findStatusIdByLabel(label: string) {
+  const r = await db.query(`SELECT id_status FROM statuses WHERE label = $1`, [
+    label,
+  ]);
+  return (r.rows[0]?.id_status as string | undefined) ?? null;
+}
+
+export async function findPriorityIdByLabel(label: string) {
+  const r = await db.query(
+    `SELECT id_priority FROM priorities WHERE label = $1 AND is_active = true`,
+    [label],
+  );
+  return (r.rows[0]?.id_priority as string | undefined) ?? null;
+}
+
+// Ne modifie que les champs fournis ; renvoie false si la demande n'existe plus (ou est supprimée)
+export async function updateDemandPartielle(
+  id: string,
+  champs: {
+    idStatus?: string;
+    idPriority?: string;
+    idAssignedAgent?: string | null;
+  },
+) {
+  const sets: string[] = [];
+  const valeurs: unknown[] = [];
+  if (champs.idStatus !== undefined) {
+    valeurs.push(champs.idStatus);
+    sets.push(`id_status = $${valeurs.length}`);
+  }
+  if (champs.idPriority !== undefined) {
+    valeurs.push(champs.idPriority);
+    sets.push(`id_priority = $${valeurs.length}`);
+  }
+  if (champs.idAssignedAgent !== undefined) {
+    valeurs.push(champs.idAssignedAgent);
+    sets.push(`id_assigned_agent = $${valeurs.length}`);
+  }
+  if (sets.length === 0) return true;
+  valeurs.push(id);
+  const r = await db.query(
+    `UPDATE demands SET ${sets.join(", ")}, updated_at = NOW()
+     WHERE id_demand = $${valeurs.length} AND deleted_at IS NULL`,
+    valeurs,
+  );
+  return (r.rowCount ?? 0) > 0;
+}
+
+// Nombre de demandes ouvertes (NOUVELLE, EN_COURS) assignées à un agent
+export async function countDemandesOuvertesAgent(idAgent: string) {
+  const r = await db.query(
+    `SELECT COUNT(*)::int AS total
+     FROM demands d JOIN statuses s ON s.id_status = d.id_status
+     WHERE d.id_assigned_agent = $1 AND d.deleted_at IS NULL
+       AND s.label IN ('NOUVELLE', 'EN_COURS')`,
+    [idAgent],
+  );
+  return r.rows[0].total as number;
 }

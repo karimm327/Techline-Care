@@ -5,6 +5,7 @@ export async function findCommentsByDemandId(id: string) {
     `
       SELECT
         c.id_comment,
+        c.id_author,
         c.content,
         c.created_at,
         u.first_name as author_first_name,
