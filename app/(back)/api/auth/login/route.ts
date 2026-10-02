@@ -3,7 +3,10 @@ import { type NextRequest, NextResponse } from "next/server";
 import { findUserByEmail } from "@/lib/db/queries/auth.queries";
 
 export async function POST(req: NextRequest) {
-  const { email, password } = await req.json();
+  const { email, password, resterConnecte } = await req.json();
+  // « Rester connecté 30 jours » (facultatif) : sinon session de 24 h comme avant
+  const dureeSecondes =
+    resterConnecte === true ? 60 * 60 * 24 * 30 : 60 * 60 * 24;
 
   if (!email || !password) {
     return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
@@ -30,7 +33,7 @@ export async function POST(req: NextRequest) {
   const token = jwt.sign(
     { id: user.id_user, email: user.email, role: user.role },
     process.env.JWT_SECRET as string,
-    { expiresIn: "24h" },
+    { expiresIn: dureeSecondes },
   );
 
   const response = NextResponse.json(
@@ -42,7 +45,7 @@ export async function POST(req: NextRequest) {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 60 * 60 * 24,
+    maxAge: dureeSecondes,
     path: "/",
   });
 

@@ -1,59 +1,57 @@
 import Link from "next/link";
+import PageLegale from "@/components/legal/PageLegale";
 
 export const metadata = { title: "Mentions légales - TechLine Care" };
 
+// Texte juridique inchangé (seule la mise en forme évolue)
 export default function MentionsLegalesPage() {
   return (
-    <div className="bg-slate-50 min-h-full">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
-        <Link href="/demands" className="text-sm text-blue-600 hover:underline">
-          ← Retour
-        </Link>
-        <h1 className="text-2xl font-semibold text-slate-900 mt-3 mb-8">
-          Mentions légales
-        </h1>
-        <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6 space-y-6 text-sm text-slate-600 leading-relaxed">
-          <section>
-            <h2 className="text-base font-semibold text-slate-900 mb-2">
-              Éditeur
-            </h2>
+    <PageLegale
+      courante="mentions-legales"
+      titre="Mentions légales"
+      sections={[
+        {
+          id: "editeur",
+          titre: "Éditeur",
+          contenu: (
             <p>
               TechLine Care — application interne de gestion des demandes de
               support, réalisée dans le cadre d'un projet de formation.
             </p>
-          </section>
-          <section>
-            <h2 className="text-base font-semibold text-slate-900 mb-2">
-              Contact
-            </h2>
-            <p>support@techline-care.fr</p>
-          </section>
-          <section>
-            <h2 className="text-base font-semibold text-slate-900 mb-2">
-              Hébergement
-            </h2>
+          ),
+        },
+        {
+          id: "contact",
+          titre: "Contact",
+          contenu: <p>support@techline-care.fr</p>,
+        },
+        {
+          id: "hebergement",
+          titre: "Hébergement",
+          contenu: (
             <p>
               Base de données PostgreSQL hébergée sur le serveur de
               l'établissement de formation.
             </p>
-          </section>
-          <section>
-            <h2 className="text-base font-semibold text-slate-900 mb-2">
-              Données personnelles
-            </h2>
+          ),
+        },
+        {
+          id: "donnees-personnelles",
+          titre: "Données personnelles",
+          contenu: (
             <p>
               Voir la{" "}
               <Link
                 href="/confidentialite"
-                className="text-blue-600 hover:underline"
+                className="rounded-xs text-accent-fg underline underline-offset-2 hover:text-accent-fg-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft"
               >
                 politique de confidentialité
               </Link>
               .
             </p>
-          </section>
-        </div>
-      </div>
-    </div>
+          ),
+        },
+      ]}
+    />
   );
 }

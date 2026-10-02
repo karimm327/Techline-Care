@@ -120,3 +120,79 @@ export async function countDeletedDemands() {
   );
   return r.rows[0].total as number;
 }
+
+/* ---------- Journal filtrable (page /journal) ---------- */
+
+export type FiltresJournal = {
+  action?: string;
+  // Recherche dans l'acteur ou le titre de la demande
+  q?: string;
+  // Dates incluses, format AAAA-MM-JJ
+  du?: string;
+  au?: string;
+};
+
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+function conditionsJournal(f: FiltresJournal, avecAction: boolean) {
+  const conditions: string[] = [];
+  const valeurs: unknown[] = [];
+  const ajouter = (sql: (n: number) => string, v: unknown) => {
+    valeurs.push(v);
+    conditions.push(sql(valeurs.length));
+  };
+  if (
+    avecAction &&
+    f.action &&
+    (ACTIONS as readonly string[]).includes(f.action)
+  )
+    ajouter((n) => `a.action = $${n}`, f.action);
+  if (f.q?.trim())
+    ajouter(
+      (n) =>
+        `(a.actor_label ILIKE '%' || $${n} || '%' OR d.title ILIKE '%' || $${n} || '%')`,
+      f.q.trim(),
+    );
+  if (f.du && DATE.test(f.du))
+    ajouter((n) => `a.created_at >= $${n}::date`, f.du);
+  if (f.au && DATE.test(f.au))
+    ajouter((n) => `a.created_at < $${n}::date + interval '1 day'`, f.au);
+  return {
+    where: conditions.length ? `WHERE ${conditions.join(" AND ")}` : "",
+    valeurs,
+  };
+}
+
+// Événements les plus récents d'abord, `limite` premiers (« Charger plus » augmente la limite)
+export async function findJournal(f: FiltresJournal, limite: number) {
+  const { where, valeurs } = conditionsJournal(f, true);
+  const [lignes, total] = await Promise.all([
+    db.query(
+      `${SELECT_JOURNAL} ${where} ORDER BY a.created_at DESC LIMIT $${valeurs.length + 1}`,
+      [...valeurs, limite],
+    ),
+    db.query(
+      `SELECT COUNT(*)::int AS total FROM activity_logs a
+       LEFT JOIN demands d ON d.id_demand = a.id_demand ${where}`,
+      valeurs,
+    ),
+  ]);
+  return {
+    lignes: lignes.rows as LigneJournal[],
+    total: total.rows[0].total as number,
+  };
+}
+
+// Compteurs par action, avec les mêmes filtres de recherche et de période (sans le filtre d'action)
+export async function countJournalParAction(f: FiltresJournal) {
+  const { where, valeurs } = conditionsJournal(f, false);
+  const r = await db.query(
+    `SELECT a.action, COUNT(*)::int AS total FROM activity_logs a
+     LEFT JOIN demands d ON d.id_demand = a.id_demand ${where}
+     GROUP BY a.action`,
+    valeurs,
+  );
+  return Object.fromEntries(
+    r.rows.map((x: { action: string; total: number }) => [x.action, x.total]),
+  ) as Record<string, number>;
+}

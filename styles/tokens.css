@@ -56,6 +56,7 @@
   --ink: 26 31 40; /* #1A1F28  texte sur pastille colorée */
   --scrim: 17 21 28; /* #11151C  voile des dialogues */
   --skeleton-hi: 65 75 94; /* #414B5E  reflet du squelette */
+  --grille: 42 50 64; /* #2A3240  grille animée de la connexion */
 
   /* ---- Avatars (couleur stable par personne) ---- */
   --avatar-1: 224 121 107; /* #E0796B */

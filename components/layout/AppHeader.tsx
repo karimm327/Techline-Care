@@ -122,7 +122,7 @@ export default function AppHeader({
             },
             {
               label: "Mes droits",
-              href: "/account#droits",
+              href: "/account?onglet=droits",
               icon: <ShieldCheck strokeWidth={1.9} className="size-4" />,
             },
             { type: "separator" },
