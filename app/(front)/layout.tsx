@@ -2,6 +2,7 @@ import "../../styles/globals.css";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { classesPolices } from "@/app/fonts";
+import OfflineToast from "@/components/etats/OfflineToast";
 import MotionProvider from "@/components/motion/MotionProvider";
 import Toaster from "@/components/ui/Toast";
 
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <MotionProvider>
           {children}
           <Toaster />
+          <OfflineToast />
         </MotionProvider>
       </body>
     </html>

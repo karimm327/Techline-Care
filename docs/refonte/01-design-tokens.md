@@ -110,3 +110,7 @@ et `lib/ui/tailwind.tokens.js` pour qu'aucune couleur ne soit écrite en dur :
 | `--scrim` | #11151C | `bg-scrim/60` | voile des dialogues / tiroirs |
 | `--skeleton-hi` | #414B5E | `via-skeleton-hi` | reflet du squelette |
 | `--avatar-1…8` | palette avatars | `bg-avatar-1…8` | via `avatarColor(id)` |
+| `--grille` | #2A3240 | `rgb(var(--grille))` | grille animée de la page de connexion (M18) |
+
+Ombres ajoutées : `shadow-logo` (`--shadow-logo`, halo de la pastille du logo) et `shadow-glow-nav`
+(`--glow-nav`, barre lumineuse de l'item actif de la sidebar).

@@ -165,6 +165,7 @@ export default async function DemandDetailPage({
         categorie={demand.category}
         creation={creation}
         peutAgir={peutAgir}
+        lectureSeule={!peutModifier && !supprimee}
       />
 
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">

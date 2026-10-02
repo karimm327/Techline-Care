@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Alert from "@/components/ui/Alert";
+import BoutonInterdit from "@/components/ui/BoutonInterdit";
 import Button, { classesBouton } from "@/components/ui/Button";
 import ConfettiBurst from "@/components/ui/ConfettiBurst";
 import Menu from "@/components/ui/Menu";
@@ -31,6 +32,8 @@ type Props = {
   creation: string;
   // Droit de modifier (ADMIN / AGENT, demande non supprimée)
   peutAgir: boolean;
+  // Rôle LECTURE : actions affichées désactivées avec une explication
+  lectureSeule?: boolean;
 };
 
 // Hero de la fiche : référence, titre, badges, actions, changement de statut (M12)
@@ -42,6 +45,7 @@ export default function HeroDemande({
   categorie,
   creation,
   peutAgir,
+  lectureSeule = false,
 }: Props) {
   const router = useRouter();
   const [statut, setStatut] = useState(statutInitial);
@@ -159,6 +163,24 @@ export default function HeroDemande({
           </div>
         </div>
 
+        {lectureSeule && (
+          <div className="flex flex-wrap gap-2">
+            <BoutonInterdit
+              raison="Votre rôle « Lecture seule » ne permet pas de modifier."
+              icon={
+                <Pencil aria-hidden="true" strokeWidth={2} className="size-4" />
+              }
+            >
+              Modifier
+            </BoutonInterdit>
+            <BoutonInterdit
+              variant="primary"
+              raison="Votre rôle « Lecture seule » ne permet pas de changer le statut."
+            >
+              Changer le statut
+            </BoutonInterdit>
+          </div>
+        )}
         {peutAgir && (
           <div className="relative flex flex-wrap gap-2">
             <Link
