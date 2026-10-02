@@ -1,0 +1,96 @@
+/* =====================================================
+   TechLine Care — Design tokens « Ardoise » v2
+   À importer en tête de styles/globals.css :  @import "./tokens.css";
+   (copier ce fichier dans styles/tokens.css)
+   ===================================================== */
+
+:root {
+    color-scheme: dark;
+
+    /* ---- Fonds (du plus profond au plus élevé) ---- */
+    --bg-sunken: 31 37 48;      /* #1F2530  sidebar, footer, rails */
+    --bg: 35 42 54;             /* #232A36  fond de page */
+    --surface: 43 51 65;        /* #2B3341  cartes */
+    --surface-2: 52 61 77;      /* #343D4D  menus, bulles, cartes Kanban */
+    --surface-3: 60 69 88;      /* #3C4558  élément sélectionné, pastille d'onglet */
+    --line: 58 67 84;           /* #3A4354  bordures standard */
+    --line-strong: 78 90 110;   /* #4E5A6E  bordures d'overlay, kbd */
+    --line-soft: 53 62 78;      /* #353E4E  séparateurs de lignes */
+
+    /* ---- Texte ---- */
+    --fg: 236 239 244;          /* #ECEFF4 */
+    --fg-2: 180 189 204;        /* #B4BDCC */
+    --fg-3: 150 161 179;        /* #96A1B3 */
+    --fg-4: 127 138 157;        /* #7F8A9D  ≥ 12px uniquement */
+
+    /* ---- Marque ---- */
+    --accent: 84 98 232;        /* #5462E8  fonds de bouton (texte blanc 4.9:1) */
+    --accent-soft: 124 140 255; /* #7C8CFF  graphes, bordure focus */
+    --accent-fg: 165 175 255;   /* #A5AFFF  liens, icône active */
+    --accent-fg-2: 201 207 255; /* #C9CFFF  texte sur fond accent-tint */
+
+    /* ---- Statuts ---- */
+    --st-nouvelle: 108 182 255; /* #6CB6FF */
+    --st-nouvelle-fg: 142 197 255;
+    --st-encours: 242 181 68;   /* #F2B544 */
+    --st-encours-fg: 245 197 103;
+    --st-cloturee: 69 209 155;  /* #45D19B */
+    --st-cloturee-fg: 98 221 169;
+    --st-annulee: 240 124 140;  /* #F07C8C — sert aussi de « danger » */
+    --st-annulee-fg: 255 157 170;
+
+    /* ---- Priorités ---- */
+    --prio-haute: 255 138 107;  /* #FF8A6B */
+    --prio-haute-fg: 255 156 130;
+    --prio-normale: 242 181 68;
+    --prio-basse: 140 151 169;
+
+    /* ---- Rayons ---- */
+    --radius-xs: 6px;
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 20px;
+    --radius-xl: 24px;
+
+    /* ---- Ombres ---- */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, .35);
+    --shadow-md: 0 20px 44px -20px rgba(0, 0, 0, .7);
+    --shadow-lg: 0 30px 60px -20px rgba(0, 0, 0, .8);
+    --shadow-xl: 0 40px 90px -30px rgba(0, 0, 0, .85);
+    --glow-accent: 0 8px 24px -10px rgba(84, 98, 232, .9);
+    --ring-focus: 0 0 0 4px rgba(84, 98, 232, .25);
+
+    /* ---- Motion ---- */
+    --ease-out: cubic-bezier(.22, 1, .36, 1);       /* entrées */
+    --ease-in-out: cubic-bezier(.65, 0, .35, 1);    /* tracés, remplissages */
+    --ease-spring: cubic-bezier(.34, 1.56, .64, 1); /* pastilles, toasts, pop */
+    --dur-fast: 140ms;
+    --dur-base: 220ms;
+    --dur-slow: 380ms;
+    --dur-enter: 560ms;
+
+    /* ---- Layout ---- */
+    --header-h: 64px;
+    --sidebar-w: 248px;
+    --sidebar-w-collapsed: 72px;
+}
+
+/* Préférence « Animations : désactivées » (classe posée sur <html> par le layout) */
+.no-motion *,
+.no-motion *::before,
+.no-motion *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

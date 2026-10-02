@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Connexion — TechLine Care</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#232A36}
+*{box-sizing:border-box}
+a{color:#A5AFFF;text-decoration:none}a:hover{color:#C9CFFF}
+button{font:inherit;color:inherit;cursor:pointer}
+input,textarea,select{font:inherit}
+@keyframes tlRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes tlFade{from{opacity:0}to{opacity:1}}
+@keyframes tlPing{0%{transform:scale(1);opacity:.75}80%,100%{transform:scale(2.6);opacity:0}}
+@keyframes tlSwing{0%,70%,100%{transform:rotate(0)}74%{transform:rotate(16deg)}79%{transform:rotate(-12deg)}84%{transform:rotate(7deg)}89%{transform:rotate(-3deg)}94%{transform:rotate(0)}}
+@keyframes tlPulse{0%{box-shadow:0 0 0 0 rgba(255,138,107,.55)}100%{box-shadow:0 0 0 9px rgba(255,138,107,0)}}
+@keyframes tlDraw{to{stroke-dashoffset:0}}
+@keyframes tlBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes tlGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes tlPop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes tlMenu{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes tlToast{from{opacity:0;transform:translateY(24px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes tlProgress{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@keyframes tlFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes tlLive{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes tlBounce{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-5px);opacity:1}}
+@keyframes tlBurst{0%{transform:translate(0,0) rotate(0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--r)) scale(.6);opacity:0}}
+@keyframes tlShimmer{from{background-position:-600px 0}to{background-position:600px 0}}
+@keyframes tlFloat{0%,100%{transform:translateY(0) rotate(var(--r,0deg))}50%{transform:translateY(-14px) rotate(var(--r,0deg))}}
+@keyframes tlGrid{from{background-position:0 0}to{background-position:48px 48px}}
+@keyframes tlShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
+@keyframes tlSpin{to{transform:rotate(360deg)}}
+@keyframes tlRing{from{stroke-dashoffset:var(--c)}}
+@keyframes tlScan{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+@keyframes tlGlitch{0%,92%,100%{transform:none}94%{transform:translate(-3px,1px) skewX(-6deg)}96%{transform:translate(3px,-1px) skewX(4deg)}}
+@keyframes tlDrop{0%,100%{border-color:rgba(165,175,255,.35);background:rgba(84,98,232,.05)}50%{border-color:rgba(165,175,255,.85);background:rgba(84,98,232,.13)}}
+.tl-rise{animation:tlRise .56s cubic-bezier(.22,1,.36,1) both}
+.tl-nav{transition:background .18s ease,color .18s ease}
+.tl-nav:hover{background:#2F3847;color:#ECEFF4}
+.tl-row{transition:background .18s ease}
+.tl-row:hover{background:#303949}
+.tl-lift{transition:transform .28s cubic-bezier(.22,1,.36,1),box-shadow .28s ease,border-color .28s ease}
+.tl-lift:hover{transform:translateY(-3px);box-shadow:0 20px 44px -20px rgba(0,0,0,.7);border-color:#56637A}
+.tl-btn{transition:transform .14s ease,filter .2s ease,box-shadow .2s ease}
+.tl-btn:hover{filter:brightness(1.12);box-shadow:0 8px 24px -10px rgba(84,98,232,.9)}
+.tl-btn:active{transform:scale(.96)}
+.tl-ghost{transition:background .18s ease,color .18s ease,border-color .18s ease}
+.tl-ghost:hover{background:#343D4D;color:#ECEFF4}
+.tl-field{transition:border-color .18s ease,box-shadow .18s ease,background .18s ease}
+.tl-field:hover{border-color:#56637A}
+.tl-field:focus{outline:0;border-color:#7C8CFF;box-shadow:0 0 0 4px rgba(84,98,232,.25);background:#262D3A}
+.tl-draw{stroke-dasharray:1200;stroke-dashoffset:1200;animation:tlDraw 1.8s cubic-bezier(.65,0,.35,1) .35s forwards}
+.tl-ping{animation:tlPing 1.8s cubic-bezier(0,0,.2,1) infinite}
+.tl-swing{transform-origin:50% 3px;animation:tlSwing 6s ease-in-out infinite}
+.tl-pulse{animation:tlPulse 1.8s ease-out infinite}
+.tl-live{animation:tlLive 1.6s ease-in-out infinite}
+.tl-bar{transform-origin:left center;animation:tlBar 1s cubic-bezier(.22,1,.36,1) .4s both}
+.tl-grow{transform-origin:bottom center;animation:tlGrow .9s cubic-bezier(.22,1,.36,1) both}
+.tl-shimmer{background:linear-gradient(90deg,#343D4D 0%,#414B5E 45%,#343D4D 90%);background-size:1200px 100%;animation:tlShimmer 1.5s linear infinite}
+.tl-nomotion *{animation:none !important;transition:none !important}
+.tl-nomotion .tl-draw{stroke-dashoffset:0}
+@media (max-width:760px){.tl-hide-sm{display:none !important}}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}}
+</style>
+</helmet>
+<div class="{{rootClass}}" style="min-height:100vh;display:flex;flex-direction:column;background:#232A36;color:#ECEFF4;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;line-height:1.5">
+
+<header style="position:sticky;top:0;z-index:30;min-height:64px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;padding:10px 28px;background:rgba(35,42,54,.86);backdrop-filter:blur(14px);border-bottom:1px solid #3F495B">
+  <a href="Login.dc.html" aria-label="TechLine Care" style="display:flex;align-items:center;gap:10px;color:#ECEFF4"><span style="width:34px;height:34px;border-radius:10px;background:{{accent}};display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"></path><path d="M14 6v2M14 11v2M14 16v1"></path></svg></span><span style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px">TechLine<span style="color:#96A1B3;font-weight:500"> Care</span></span></a>
+  <a href="#" class="tl-ghost" style="display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 12px;border-radius:10px;color:#B4BDCC;font-size:13.5px">Besoin d’aide ?</a>
+</header>
+<div style="flex:1;display:flex;flex-wrap:wrap">
+  <section style="position:relative;flex:1 1 520px;min-height:520px;overflow:hidden;background:#1F2530;border-right:1px solid #3A4354;background-image:linear-gradient(#2A3240 1px,transparent 1px),linear-gradient(90deg,#2A3240 1px,transparent 1px);background-size:48px 48px;animation:tlGrid 6s linear infinite">
+    <div style="position:relative;z-index:2;padding:72px 64px 0;max-width:560px">
+      <p class="tl-rise" style="margin:0 0 14px;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#A5AFFF">Portail des demandes</p>
+      <h1 class="tl-rise" style="animation-delay:80ms;margin:0;font-family:'Space Grotesk',sans-serif;font-size:46px;line-height:1.08;font-weight:600;letter-spacing:-.03em">Le support de l’équipe,<br><span style="color:#A5AFFF">sans friction.</span></h1>
+      <p class="tl-rise" style="animation-delay:160ms;margin:18px 0 0;font-size:16px;color:#B4BDCC;max-width:440px">Créez, suivez et clôturez les demandes en temps réel, avec des délais tenus et un historique complet.</p>
+    </div>
+    
+<div aria-hidden="true" style="position:absolute;left:14%;top:52%;width:250px;padding:14px 16px;border-radius:14px;background:rgba(52,61,77,.92);border:1px solid #4E5A6E;box-shadow:0 30px 60px -25px rgba(0,0,0,.8);--r:-4deg;animation:tlFloat 6s ease-in-out 0s infinite">
+  <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#7F8A9D">#4F1A92C0</span><span style="font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;color:#FF9C82;background:rgba(255,255,255,.06)">Haute</span></div>
+  <p style="margin:8px 0 0;font-weight:600;color:#ECEFF4;font-size:14px">Demande aide logement</p>
+</div>
+    
+<div aria-hidden="true" style="position:absolute;left:46%;top:64%;width:250px;padding:14px 16px;border-radius:14px;background:rgba(52,61,77,.92);border:1px solid #4E5A6E;box-shadow:0 30px 60px -25px rgba(0,0,0,.8);--r:3deg;animation:tlFloat 7.2s ease-in-out 1.2s infinite">
+  <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#7F8A9D">#7B20E1AA</span><span style="font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;color:#F5C567;background:rgba(255,255,255,.06)">En cours</span></div>
+  <p style="margin:8px 0 0;font-weight:600;color:#ECEFF4;font-size:14px">Suivi dossier allocation</p>
+</div>
+    
+<div aria-hidden="true" style="position:absolute;left:22%;top:78%;width:250px;padding:14px 16px;border-radius:14px;background:rgba(52,61,77,.92);border:1px solid #4E5A6E;box-shadow:0 30px 60px -25px rgba(0,0,0,.8);--r:2deg;animation:tlFloat 8.1s ease-in-out 2.1s infinite">
+  <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#7F8A9D">#06BB93AF</span><span style="font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;color:#62DDA9;background:rgba(255,255,255,.06)">Clôturée</span></div>
+  <p style="margin:8px 0 0;font-weight:600;color:#ECEFF4;font-size:14px">Mise à jour situation familiale</p>
+</div>
+  </section>
+
+  <section style="flex:1 1 420px;display:flex;align-items:center;justify-content:center;padding:48px 24px">
+    <form class="tl-rise" style="animation-delay:120ms;width:100%;max-width:400px;display:flex;flex-direction:column;gap:18px" onSubmit="{{submit}}">
+      <div>
+        <h2 style="margin:0;font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:600">Connexion</h2>
+        <p style="margin:6px 0 0;color:#B4BDCC">Utilisez votre adresse professionnelle.</p>
+      </div>
+      <sc-if value="{{error}}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="padding:12px 14px;border-radius:11px;background:rgba(240,124,140,.12);border:1px solid rgba(240,124,140,.4);color:#FF9DAA;font-size:13.5px;animation:tlShake .45s ease both">Identifiants incorrects. Vérifiez votre e-mail et votre mot de passe.</div>
+      </sc-if>
+      <div><label for="l-email" style="display:block;font-size:13px;font-weight:600;margin-bottom:8px">E-mail</label><input id="l-email" type="email" autocomplete="email" placeholder="prenom.nom@techline-care.fr" class="tl-field" style="width:100%;height:48px;padding:0 14px;border-radius:11px;border:1px solid #465166;background:#2B3341;color:#ECEFF4;font-size:15px"></div>
+      <div><div style="display:flex;justify-content:space-between;margin-bottom:8px"><label for="l-pass" style="font-size:13px;font-weight:600">Mot de passe</label><a href="#" style="font-size:13px">Oublié ?</a></div>
+        <div style="position:relative"><input id="l-pass" type="{{pwdType}}" autocomplete="current-password" class="tl-field" style="width:100%;height:48px;padding:0 48px 0 14px;border-radius:11px;border:1px solid #465166;background:#2B3341;color:#ECEFF4;font-size:15px"><button type="button" onClick="{{togglePwd}}" aria-label="Afficher le mot de passe" class="tl-ghost" style="position:absolute;right:4px;top:4px;width:40px;height:40px;border-radius:9px;border:0;background:transparent;color:#96A1B3;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div></div>
+      <label style="display:flex;align-items:center;gap:10px;font-size:13.5px;color:#B4BDCC"><input type="checkbox" style="width:17px;height:17px;accent-color:#5462E8">Rester connecté 30 jours</label>
+      <button type="submit" class="tl-btn" style="height:50px;display:flex;align-items:center;justify-content:center;gap:10px;border:0;border-radius:12px;background:{{accent}};color:#fff;font-size:15px;font-weight:600">
+        <sc-if value="{{loading}}" hint-placeholder-val="{{ false }}"><span style="width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:tlSpin .7s linear infinite"></span></sc-if>{{submitLabel}}
+      </button>
+      <p style="margin:0;text-align:center;font-size:12.5px;color:#7F8A9D">Accès réservé aux équipes TechLine Care.</p>
+    </form>
+  </section>
+</div>
+<footer style="border-top:1px solid #3A4354;background:#1F2530;padding:14px 28px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:12.5px;color:#96A1B3"><span>© 2026 TechLine Care</span><nav aria-label="Liens légaux" style="display:flex;gap:16px"><a href="Legal.dc.html" style="color:#B4BDCC">Confidentialité</a><a href="Legal.dc.html" style="color:#B4BDCC">Mentions légales</a></nav></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#5462E8","options":["#5462E8","#0E8F86","#B4532A","#7A4FD6"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { show: false, loading: false, error: false }; }
+  renderVals() {
+    const accent = this.props.accent ?? "#5462E8";
+    const motion = this.props.motion ?? true;
+    const s = this.state;
+    const base = { accent, rootClass: motion ? "" : "tl-nomotion" };
+
+    return Object.assign(base, {
+      pwdType: s.show ? "text" : "password",
+      togglePwd: () => this.setState({ show: !this.state.show }),
+      loading: s.loading, error: s.error,
+      submitLabel: s.loading ? "Connexion…" : "Se connecter",
+      submit: (e) => { e.preventDefault(); this.setState({ loading: true, error: false }); setTimeout(() => this.setState({ loading: false, error: true }), 1300); }
+    });
+  }
+}
+</script>
+</body>
+</html>

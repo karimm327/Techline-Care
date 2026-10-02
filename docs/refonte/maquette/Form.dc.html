@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Nouvelle demande — TechLine Care</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#232A36}
+*{box-sizing:border-box}
+a{color:#A5AFFF;text-decoration:none}a:hover{color:#C9CFFF}
+button{font:inherit;color:inherit;cursor:pointer}
+input,textarea,select{font:inherit}
+@keyframes tlRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes tlFade{from{opacity:0}to{opacity:1}}
+@keyframes tlPing{0%{transform:scale(1);opacity:.75}80%,100%{transform:scale(2.6);opacity:0}}
+@keyframes tlSwing{0%,70%,100%{transform:rotate(0)}74%{transform:rotate(16deg)}79%{transform:rotate(-12deg)}84%{transform:rotate(7deg)}89%{transform:rotate(-3deg)}94%{transform:rotate(0)}}
+@keyframes tlPulse{0%{box-shadow:0 0 0 0 rgba(255,138,107,.55)}100%{box-shadow:0 0 0 9px rgba(255,138,107,0)}}
+@keyframes tlDraw{to{stroke-dashoffset:0}}
+@keyframes tlBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes tlGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes tlPop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes tlMenu{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes tlToast{from{opacity:0;transform:translateY(24px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes tlProgress{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@keyframes tlFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes tlLive{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes tlBounce{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-5px);opacity:1}}
+@keyframes tlBurst{0%{transform:translate(0,0) rotate(0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--r)) scale(.6);opacity:0}}
+@keyframes tlShimmer{from{background-position:-600px 0}to{background-position:600px 0}}
+@keyframes tlFloat{0%,100%{transform:translateY(0) rotate(var(--r,0deg))}50%{transform:translateY(-14px) rotate(var(--r,0deg))}}
+@keyframes tlGrid{from{background-position:0 0}to{background-position:48px 48px}}
+@keyframes tlShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
+@keyframes tlSpin{to{transform:rotate(360deg)}}
+@keyframes tlRing{from{stroke-dashoffset:var(--c)}}
+@keyframes tlScan{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+@keyframes tlGlitch{0%,92%,100%{transform:none}94%{transform:translate(-3px,1px) skewX(-6deg)}96%{transform:translate(3px,-1px) skewX(4deg)}}
+@keyframes tlDrop{0%,100%{border-color:rgba(165,175,255,.35);background:rgba(84,98,232,.05)}50%{border-color:rgba(165,175,255,.85);background:rgba(84,98,232,.13)}}
+.tl-rise{animation:tlRise .56s cubic-bezier(.22,1,.36,1) both}
+.tl-nav{transition:background .18s ease,color .18s ease}
+.tl-nav:hover{background:#2F3847;color:#ECEFF4}
+.tl-row{transition:background .18s ease}
+.tl-row:hover{background:#303949}
+.tl-lift{transition:transform .28s cubic-bezier(.22,1,.36,1),box-shadow .28s ease,border-color .28s ease}
+.tl-lift:hover{transform:translateY(-3px);box-shadow:0 20px 44px -20px rgba(0,0,0,.7);border-color:#56637A}
+.tl-btn{transition:transform .14s ease,filter .2s ease,box-shadow .2s ease}
+.tl-btn:hover{filter:brightness(1.12);box-shadow:0 8px 24px -10px rgba(84,98,232,.9)}
+.tl-btn:active{transform:scale(.96)}
+.tl-ghost{transition:background .18s ease,color .18s ease,border-color .18s ease}
+.tl-ghost:hover{background:#343D4D;color:#ECEFF4}
+.tl-field{transition:border-color .18s ease,box-shadow .18s ease,background .18s ease}
+.tl-field:hover{border-color:#56637A}
+.tl-field:focus{outline:0;border-color:#7C8CFF;box-shadow:0 0 0 4px rgba(84,98,232,.25);background:#262D3A}
+.tl-draw{stroke-dasharray:1200;stroke-dashoffset:1200;animation:tlDraw 1.8s cubic-bezier(.65,0,.35,1) .35s forwards}
+.tl-ping{animation:tlPing 1.8s cubic-bezier(0,0,.2,1) infinite}
+.tl-swing{transform-origin:50% 3px;animation:tlSwing 6s ease-in-out infinite}
+.tl-pulse{animation:tlPulse 1.8s ease-out infinite}
+.tl-live{animation:tlLive 1.6s ease-in-out infinite}
+.tl-bar{transform-origin:left center;animation:tlBar 1s cubic-bezier(.22,1,.36,1) .4s both}
+.tl-grow{transform-origin:bottom center;animation:tlGrow .9s cubic-bezier(.22,1,.36,1) both}
+.tl-shimmer{background:linear-gradient(90deg,#343D4D 0%,#414B5E 45%,#343D4D 90%);background-size:1200px 100%;animation:tlShimmer 1.5s linear infinite}
+.tl-nomotion *{animation:none !important;transition:none !important}
+.tl-nomotion .tl-draw{stroke-dashoffset:0}
+@media (max-width:760px){.tl-hide-sm{display:none !important}}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}}
+</style>
+</helmet>
+<div class="{{rootClass}}" style="min-height:100vh;display:flex;flex-direction:column;background:#232A36;color:#ECEFF4;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;line-height:1.5">
+
+<header style="position:sticky;top:0;z-index:30;min-height:64px;display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:10px 20px;background:rgba(35,42,54,.86);backdrop-filter:blur(14px);border-bottom:1px solid #3F495B">
+  <a href="Main.dc.html" aria-label="TechLine Care, accueil" style="display:flex;align-items:center;gap:10px;color:#ECEFF4">
+    <span style="width:34px;height:34px;border-radius:10px;background:{{accent}};display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px -6px rgba(84,98,232,.9),inset 0 1px 0 rgba(255,255,255,.25)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"></path><path d="M14 6v2M14 11v2M14 16v1"></path></svg></span>
+    <span style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px;letter-spacing:-.01em">TechLine<span style="color:#96A1B3;font-weight:500"> Care</span></span>
+  </a>
+  <span class="tl-hide-sm" style="width:1px;height:22px;background:#3F495B"></span>
+  <nav class="tl-hide-sm" aria-label="Fil d’Ariane" style="display:flex;align-items:center;gap:8px;font-size:13px;color:#96A1B3"><span>Pilotage</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"></path></svg><span style="color:#ECEFF4;font-weight:500">Nouvelle demande</span></nav>
+  <button type="button" aria-label="Ouvrir la palette de commandes" class="tl-ghost" style="flex:1 1 220px;max-width:460px;margin-left:auto;height:40px;display:flex;align-items:center;gap:10px;padding:0 12px;border-radius:10px;border:1px solid #3F495B;background:#2B3341;color:#96A1B3;text-align:left">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><span style="flex:1;font-size:13.5px">Rechercher une demande, une personne, une action…</span>
+    <kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 6px;border-radius:6px;border:1px solid #4E5A6E;background:#232A36;color:#B4BDCC">Ctrl K</kbd>
+  </button>
+  <div style="display:flex;align-items:center;gap:6px">
+    <a href="Form.dc.html" class="tl-btn" style="height:40px;display:inline-flex;align-items:center;gap:8px;padding:0 14px;border-radius:10px;background:{{accent}};color:#fff;font-weight:600;font-size:13.5px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg><span class="tl-hide-sm">Nouvelle demande</span></a>
+    <button type="button" aria-label="Notifications, 3 non lues" class="tl-ghost" style="position:relative;width:44px;height:44px;border-radius:10px;border:0;background:transparent;color:#B4BDCC;display:flex;align-items:center;justify-content:center"><svg class="tl-swing" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+      <span style="position:absolute;top:8px;right:8px;width:9px;height:9px"><span class="tl-ping" style="position:absolute;inset:0;border-radius:50%;background:#FF8A6B"></span><span style="position:absolute;inset:0;border-radius:50%;background:#FF8A6B;border:2px solid #232A36"></span></span>
+    </button>
+    <a href="Account.dc.html" aria-label="Mon compte" class="tl-ghost" style="display:flex;align-items:center;gap:10px;height:44px;padding:0 8px 0 4px;border-radius:12px;color:#ECEFF4">
+      <span style="position:relative;width:34px;height:34px;border-radius:50%;background:#7E5BEF;color:#fff;font-weight:600;font-size:12.5px;display:flex;align-items:center;justify-content:center">AM<span style="position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;background:#45D19B;border:2px solid #232A36"></span></span>
+      <span class="tl-hide-sm" style="text-align:left;line-height:1.2"><span style="display:block;font-size:13px;font-weight:600">Alice Martin</span><span style="display:block;font-size:11.5px;color:#96A1B3">Administratrice</span></span>
+    </a>
+  </div>
+</header>
+<div style="flex:1;display:flex;flex-wrap:wrap;align-items:stretch">
+
+  <aside aria-label="Navigation principale" style="flex:1 1 248px;max-width:100%;background:#1F2530;border-right:1px solid #3A4354;padding:18px 12px;display:flex;flex-direction:column;gap:18px">
+    <nav style="display:flex;flex-direction:column;gap:18px"><div style="display:flex;flex-direction:column;gap:2px"><p style="margin:0 0 6px;padding:0 12px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#7F8A9D">Pilotage</p><a href="Main.dc.html" class="tl-nav" style="display:flex;align-items:center;gap:11px;height:40px;padding:0 12px;border-radius:9px;color:#B4BDCC"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect></svg>Tableau de bord</a>
+<a href="Form.dc.html" aria-current="page" style="position:relative;display:flex;align-items:center;gap:11px;height:40px;padding:0 12px;border-radius:9px;background:rgba(84,98,232,.16);color:#ECEFF4;font-weight:600"><span style="position:absolute;left:-12px;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:{{accent}};box-shadow:0 0 12px {{accent}}"></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A5AFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg>Nouvelle demande</a>
+<a href="Analytics.dc.html" class="tl-nav" style="display:flex;align-items:center;gap:11px;height:40px;padding:0 12px;border-radius:9px;color:#B4BDCC"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="m7 15 4-4 3 3 5-6"></path></svg>Statistiques</a></div>
+<div style="display:flex;flex-direction:column;gap:2px"><p style="margin:0 0 6px;padding:0 12px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#7F8A9D">Administration</p><a href="Journal.dc.html" class="tl-nav" style="display:flex;align-items:center;gap:11px;height:40px;padding:0 12px;border-radius:9px;color:#B4BDCC"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"></path></svg>Journal d’activité</a></div>
+<div style="display:flex;flex-direction:column;gap:2px"><p style="margin:0 0 6px;padding:0 12px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#7F8A9D">Mon espace</p><a href="Account.dc.html" class="tl-nav" style="display:flex;align-items:center;gap:11px;height:40px;padding:0 12px;border-radius:9px;color:#B4BDCC"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Mon compte</a>
+<a href="Account.dc.html" class="tl-nav" style="display:flex;align-items:center;gap:11px;height:40px;padding:0 12px;border-radius:9px;color:#B4BDCC"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"></path><path d="M9 12l2 2 4-4"></path></svg>Mes droits</a></div></nav>
+    <div style="margin-top:auto;padding:14px;border-radius:12px;background:#2B3341;border:1px solid #3A4354">
+      <div style="display:flex;align-items:center;justify-content:space-between"><p style="margin:0;font-size:12.5px;font-weight:600">Équipe en ligne</p><span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#62DDA9"><span class="tl-live" style="width:7px;height:7px;border-radius:50%;background:#45D19B"></span>4 actifs</span></div>
+    </div>
+  </aside>
+  <main style="flex:999 1 560px;min-width:0;padding:28px 32px 40px;display:flex;flex-direction:column;gap:24px">
+
+<section class="tl-rise" style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px">
+  <div>
+    <p style="margin:0 0 6px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#A5AFFF">{{eyebrow}}</p>
+    <h1 style="margin:0;font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:600;letter-spacing:-.02em">{{heading}}</h1>
+    <p style="margin:6px 0 0;color:#B4BDCC">Décrivez le besoin : l’équipe est notifiée dès l’envoi.</p>
+  </div>
+  <sc-if value="{{isEdit}}" hint-placeholder-val="{{ false }}">
+    <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:rgba(242,181,68,.12);color:#F5C567;font-size:12.5px;font-weight:600"><span class="tl-live" style="width:7px;height:7px;border-radius:50%;background:#F2B544"></span>2 modifications non enregistrées</span>
+  </sc-if>
+</section>
+
+<div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+  <form style="flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:20px" onSubmit="{{noop}}">
+    <section class="tl-rise" style="animation-delay:80ms;border-radius:16px;background:#2B3341;border:1px solid #3A4354;padding:22px 24px;display:flex;flex-direction:column;gap:20px">
+      <div>
+        <label for="f-title" style="display:block;font-size:13px;font-weight:600;color:#D5DAE3;margin-bottom:8px">Titre de la demande</label>
+        <div style="position:relative">
+          <input id="f-title" type="text" value="{{title}}" onChange="{{setTitle}}" class="tl-field" style="width:100%;height:46px;padding:0 14px;border-radius:11px;border:1px solid #465166;background:#232A36;color:#ECEFF4;font-size:14.5px;padding-right:70px" maxlength="200">
+          <span style="position:absolute;right:14px;top:14px;font-size:12px;color:#7F8A9D;font-variant-numeric:tabular-nums">{{titleCount}}/200</span>
+        </div>
+        <sc-if value="{{showSimilar}}" hint-placeholder-val="{{ true }}">
+          <div style="margin-top:10px;padding:12px 14px;border-radius:12px;background:rgba(108,182,255,.08);border:1px solid rgba(108,182,255,.3);animation:tlRise .35s cubic-bezier(.22,1,.36,1) both">
+            <p style="margin:0 0 8px;font-size:12.5px;font-weight:600;color:#8EC5FF">Demandes similaires déjà ouvertes</p>
+            <a href="Detail.dc.html" style="display:flex;gap:10px;align-items:center;font-size:13px;color:#D5DAE3"><span style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#7F8A9D">#4F1A92C0</span>Demande aide logement<span style="margin-left:auto;font-size:12px;color:#8EC5FF">Voir →</span></a>
+          </div>
+        </sc-if>
+      </div>
+
+      <fieldset style="border:0;margin:0;padding:0">
+        <legend style="display:block;font-size:13px;font-weight:600;color:#D5DAE3;margin-bottom:8px">Catégorie</legend>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+          <sc-for list="{{cats}}" as="c" hint-placeholder-count="4">
+            <button type="button" onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="{{c.style}}">
+              <span style="{{c.iconStyle}}">{{c.letter}}</span>
+              <span style="font-weight:600;font-size:13.5px">{{c.label}}</span>
+            </button>
+          </sc-for>
+        </div>
+      </fieldset>
+
+      <fieldset style="border:0;margin:0;padding:0">
+        <legend style="display:block;font-size:13px;font-weight:600;color:#D5DAE3;margin-bottom:8px">Priorité</legend>
+        <div style="position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:4px;border-radius:12px;background:#1F2530;border:1px solid #3A4354">
+          <span style="{{prioInk}}"></span>
+          <sc-for list="{{prios}}" as="p" hint-placeholder-count="3">
+            <button type="button" onClick="{{p.pick}}" aria-pressed="{{p.on}}" style="{{p.style}}"><span style="{{p.dot}}"></span>{{p.label}}</button>
+          </sc-for>
+        </div>
+        <p style="margin:8px 0 0;font-size:12.5px;color:#96A1B3">{{prioHint}}</p>
+      </fieldset>
+
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <label for="f-desc" style="display:block;font-size:13px;font-weight:600;color:#D5DAE3;margin-bottom:8px;margin:0">Description</label>
+          <span style="display:flex;gap:4px;padding:3px;border-radius:9px;background:#1F2530"><button type="button" style="height:28px;padding:0 10px;border-radius:7px;border:0;background:#3C4558;font-size:12px;font-weight:600">Écrire</button><button type="button" class="tl-ghost" style="height:28px;padding:0 10px;border-radius:7px;border:0;background:transparent;color:#96A1B3;font-size:12px">Aperçu</button></span>
+        </div>
+        <textarea id="f-desc" rows="6" class="tl-field" style="width:100%;height:46px;padding:0 14px;border-radius:11px;border:1px solid #465166;background:#232A36;color:#ECEFF4;font-size:14.5px;height:auto;padding:12px 14px;line-height:1.6;resize:vertical">Le demandeur souhaite connaître l’état d’avancement de son dossier d’allocation déposé le 12 septembre.</textarea>
+      </div>
+
+      <div>
+        <span style="display:block;font-size:13px;font-weight:600;color:#D5DAE3;margin-bottom:8px">Pièces jointes</span>
+        <label style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:22px;border-radius:14px;border:1.5px dashed rgba(165,175,255,.5);color:#C9CFFF;font-size:13.5px;cursor:pointer;animation:tlDrop 2.2s ease-in-out infinite">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"></path><path d="M20 16v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"></path></svg>
+          Glissez vos fichiers ou <span style="text-decoration:underline">parcourez</span>
+          <span style="font-size:12px;color:#96A1B3">PDF, PNG, JPG · 10 Mo max</span>
+          <input type="file" style="position:absolute;width:1px;height:1px;opacity:0">
+        </label>
+        <div style="margin-top:10px;display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:11px;background:#272E3B;border:1px solid #3A4354">
+          <span style="width:32px;height:32px;border-radius:8px;background:rgba(255,138,107,.16);color:#FF9C82;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">PDF</span>
+          <div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>justificatif-domicile.pdf</span><span style="color:#96A1B3">72 %</span></div>
+            <div style="height:5px;margin-top:6px;border-radius:999px;background:#1F2530;overflow:hidden"><div style="height:100%;width:72%;border-radius:999px;background:{{accent}};transform-origin:left;animation:tlBar 1.6s cubic-bezier(.22,1,.36,1) .4s both"></div></div></div>
+          <button type="button" aria-label="Retirer le fichier" class="tl-ghost" style="width:32px;height:32px;border-radius:8px;border:0;background:transparent;color:#96A1B3;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="tl-rise" style="animation-delay:140ms;border-radius:16px;background:#2B3341;border:1px solid #3A4354;padding:22px 24px;display:flex;flex-wrap:wrap;gap:20px">
+      <div style="flex:1 1 260px">
+        <label for="f-agent" style="display:block;font-size:13px;font-weight:600;color:#D5DAE3;margin-bottom:8px">Agent assigné</label>
+        <div style="position:relative"><select id="f-agent" class="tl-field" style="width:100%;height:46px;padding:0 14px;border-radius:11px;border:1px solid #465166;background:#232A36;color:#ECEFF4;font-size:14.5px;appearance:none"><option>Lucas Petit · 1 ouverte</option><option>Emma Bernard · 1 ouverte</option><option>Sarah Nguyen · 1 ouverte</option><option>Thomas Roche · 0 ouverte</option><option>Non assignée</option></select>
+          <svg style="position:absolute;right:14px;top:16px;pointer-events:none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#96A1B3" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"></path></svg></div>
+        <p style="margin:8px 0 0;font-size:12.5px;color:#62DDA9">Suggestion : Thomas Roche est le moins chargé.</p>
+      </div>
+      <sc-if value="{{isEdit}}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1 1 260px">
+          <label for="f-status" style="display:block;font-size:13px;font-weight:600;color:#D5DAE3;margin-bottom:8px">Statut</label>
+          <select id="f-status" class="tl-field" style="width:100%;height:46px;padding:0 14px;border-radius:11px;border:1px solid #465166;background:#232A36;color:#ECEFF4;font-size:14.5px"><option>Nouvelle</option><option selected>En cours</option><option>Clôturée</option><option>Annulée</option></select>
+        </div>
+      </sc-if>
+    </section>
+  </form>
+
+  <!-- Aperçu en direct -->
+  <aside style="flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:20px;position:sticky;top:88px">
+    <section class="tl-rise" style="animation-delay:120ms;border-radius:16px;background:#2B3341;border:1px solid #3A4354;padding:22px 24px">
+      <p style="margin:0 0 12px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#7F8A9D">Aperçu en direct</p>
+      <div class="tl-lift" style="padding:14px 16px;border-radius:12px;background:#343D4D;border:1px solid #424C5F">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#7F8A9D">{{previewRef}}</span><span style="{{previewPrio}}">{{prioLabel}}</span></div>
+        <p style="margin:8px 0 10px;font-weight:600;line-height:1.35;word-break:break-word">{{previewTitle}}</p>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11.5px;padding:2px 8px;border-radius:6px;background:#2B3341;color:#B4BDCC">{{catLabel}}</span><span style="width:24px;height:24px;border-radius:50%;background:#3FA7A0;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center">LP</span></div>
+      </div>
+    </section>
+    <section class="tl-rise" style="animation-delay:180ms;border-radius:16px;background:#2B3341;border:1px solid #3A4354;padding:22px 24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><p style="margin:0;font-weight:600">Prête à envoyer</p><span style="font-size:12.5px;color:#96A1B3">{{doneCount}}/4</span></div>
+      <div style="height:6px;border-radius:999px;background:#1F2530;overflow:hidden;margin-bottom:14px"><div style="{{readyBar}}"></div></div>
+      <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{checks}}" as="k" hint-placeholder-count="4">
+          <li style="display:flex;align-items:center;gap:10px;font-size:13.5px;color:#D5DAE3"><span style="{{k.box}}">{{k.mark}}</span>{{k.label}}</li>
+        </sc-for>
+      </ul>
+      <p style="margin:16px 0 0;padding-top:14px;border-top:1px solid #3A4354;font-size:12.5px;color:#96A1B3">SLA estimé : <span style="color:#ECEFF4;font-weight:600">{{slaEstimate}}</span></p>
+    </section>
+  </aside>
+</div>
+
+<!-- Barre d’actions collante -->
+<div style="position:sticky;bottom:16px;z-index:10;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:14px;background:rgba(43,51,65,.92);backdrop-filter:blur(12px);border:1px solid #4E5A6E;box-shadow:0 20px 50px -20px rgba(0,0,0,.8);animation:tlToast .5s cubic-bezier(.34,1.56,.64,1) .4s both">
+  <span style="font-size:12.5px;color:#96A1B3">Brouillon enregistré automatiquement · il y a 8 s</span>
+  <div style="display:flex;gap:8px">
+    <a href="Main.dc.html" class="tl-ghost" style="height:42px;display:inline-flex;align-items:center;padding:0 16px;border-radius:10px;color:#D5DAE3;font-weight:500">Annuler</a>
+    <button type="button" onClick="{{submit}}" class="tl-btn" style="{{submitStyle}}">
+      <sc-if value="{{sending}}" hint-placeholder-val="{{ false }}"><span style="width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:tlSpin .7s linear infinite"></span></sc-if>
+      {{submitLabel}}
+      <kbd style="font-family:'JetBrains Mono',monospace;font-size:10.5px;padding:1px 5px;border-radius:5px;background:rgba(255,255,255,.18)">Ctrl ↵</kbd>
+    </button>
+  </div>
+</div>
+  </main>
+</div>
+
+<footer style="border-top:1px solid #3A4354;background:#1F2530;padding:16px 28px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;font-size:12.5px;color:#96A1B3">
+  <div style="display:flex;align-items:center;gap:12px"><span style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:#D5DAE3">TechLine Care</span><span>© 2026</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:1px 6px;border-radius:5px;border:1px solid #3F495B">v2.0.0</span></div>
+  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;gap:8px;padding:4px 10px;border-radius:999px;background:rgba(69,209,155,.1);color:#62DDA9"><span style="position:relative;width:8px;height:8px"><span class="tl-ping" style="position:absolute;inset:0;border-radius:50%;background:#45D19B"></span><span style="position:absolute;inset:0;border-radius:50%;background:#45D19B"></span></span>Tous les services opérationnels</span><span>Support : lun.–ven., 9 h – 18 h</span></div>
+  <nav aria-label="Liens légaux" style="display:flex;align-items:center;gap:16px"><a href="Legal.dc.html" style="color:#B4BDCC">Confidentialité</a><a href="Legal.dc.html" style="color:#B4BDCC">Mentions légales</a><a href="Legal.dc.html" style="color:#B4BDCC">RGPD</a><span style="display:inline-flex;align-items:center;gap:6px"><kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:1px 6px;border-radius:5px;border:1px solid #4E5A6E;color:#D5DAE3">?</kbd>Raccourcis</span></nav>
+</footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#5462E8","options":["#5462E8","#0E8F86","#B4532A","#7A4FD6"]},"motion":{"editor":"boolean","default":true},"mode":{"editor":"enum","options":["new","edit"],"default":"new"},"$preview":{"width":1440,"height":1360}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { title: "Demande aide logement urgente", cat: "Social", prio: "HAUTE", sending: false }; }
+  renderVals() {
+    const accent = this.props.accent ?? "#5462E8";
+    const motion = this.props.motion ?? true;
+    const s = this.state;
+    const base = { accent, rootClass: motion ? "" : "tl-nomotion" };
+
+    const mode = this.props.mode ?? "new";
+    const isEdit = mode === "edit";
+    const CAT = [["Social", "S", "#E0796B"], ["Administratif", "A", "#7C8CFF"], ["Santé", "+", "#45D19B"], ["Autre", "…", "#B4BDCC"]];
+    const PR = [["BASSE", "Basse", "#8C97A9", "Traitement sous 48 h ouvrées", "48 h"], ["NORMALE", "Normale", "#F2B544", "Traitement sous 8 h ouvrées", "8 h"], ["HAUTE", "Haute", "#FF8A6B", "Prise en charge sous 4 h, notification immédiate de l’équipe", "4 h"]];
+    const cats = CAT.map(([l, letter, c]) => {
+      const on = s.cat === l;
+      return { label: l, letter, on, pick: () => this.setState({ cat: l }),
+        style: "display:flex;align-items:center;gap:10px;height:56px;padding:0 14px;border-radius:12px;text-align:left;transition:all .25s cubic-bezier(.22,1,.36,1);color:#ECEFF4;border:1px solid " + (on ? c : "#3F495B") + ";background:" + (on ? "rgba(84,98,232,.10)" : "#232A36") + ";box-shadow:" + (on ? "0 0 0 3px rgba(84,98,232,.18)" : "none") + ";transform:" + (on ? "translateY(-2px)" : "none"),
+        iconStyle: "width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#1A1F28;background:" + c };
+    });
+    const pi = PR.findIndex((p) => p[0] === s.prio);
+    const prios = PR.map(([code, l, c], i) => {
+      const on = i === pi;
+      return { label: l, on, pick: () => this.setState({ prio: code }),
+        style: "position:relative;height:40px;display:flex;align-items:center;justify-content:center;gap:8px;border:0;background:transparent;border-radius:9px;font-size:13.5px;font-weight:600;color:" + (on ? "#ECEFF4" : "#96A1B3"),
+        dot: "width:8px;height:8px;border-radius:50%;background:" + c + (on && code === "HAUTE" ? ";animation:tlPulse 1.8s ease-out infinite" : "") };
+    });
+    const title = s.title;
+    const checks = [["Titre explicite", title.trim().length >= 8], ["Catégorie choisie", !!s.cat], ["Description détaillée", true], ["Pièce jointe", true]];
+    const doneCount = checks.filter((c) => c[1]).length;
+    const p = PR[pi];
+    return Object.assign(base, {
+      isEdit,
+      eyebrow: isEdit ? "Modification · #7B20E1AA" : "Pilotage · nouvelle demande",
+      heading: isEdit ? "Modifier la demande" : "Nouvelle demande",
+      title, titleCount: title.length,
+      setTitle: (e) => this.setState({ title: e.target.value }),
+      showSimilar: /logement/i.test(title),
+      cats, prios,
+      prioInk: "position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / 3);border-radius:9px;background:#3C4558;box-shadow:0 2px 10px rgba(0,0,0,.35);transition:transform .38s cubic-bezier(.34,1.56,.64,1);transform:translateX(" + (pi * 100) + "%)",
+      prioHint: p[3], prioLabel: p[1], slaEstimate: p[4] + " ouvrées",
+      previewPrio: "font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;color:" + p[2] + ";background:rgba(255,255,255,.06)",
+      previewTitle: title || "Sans titre", previewRef: isEdit ? "#7B20E1AA" : "#NOUVELLE",
+      catLabel: s.cat || "—",
+      checks: checks.map(([l, ok]) => ({ label: l, mark: ok ? "✓" : "",
+        box: "width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;transition:all .3s cubic-bezier(.34,1.56,.64,1);" + (ok ? "background:#45D19B;color:#1A1F28;transform:scale(1)" : "background:transparent;box-shadow:inset 0 0 0 2px #56637A;transform:scale(.9)") })),
+      doneCount,
+      readyBar: "height:100%;border-radius:999px;background:" + (doneCount === 4 ? "#45D19B" : accent) + ";width:" + (doneCount * 25) + "%;transition:width .5s cubic-bezier(.22,1,.36,1),background .3s",
+      sending: s.sending,
+      submit: () => { this.setState({ sending: true }); setTimeout(() => this.setState({ sending: false }), 1600); },
+      submitLabel: s.sending ? "Envoi…" : (isEdit ? "Enregistrer" : "Créer la demande"),
+      submitStyle: "height:42px;display:inline-flex;align-items:center;gap:10px;padding:0 18px;border-radius:10px;border:0;background:" + accent + ";color:#fff;font-weight:600;font-size:14px;opacity:" + (s.sending ? .85 : 1),
+      noop: (e) => e.preventDefault()
+    });
+  }
+}
+</script>
+</body>
+</html>

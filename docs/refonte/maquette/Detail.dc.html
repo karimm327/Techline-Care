@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Fiche demande — TechLine Care</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#232A36}
+*{box-sizing:border-box}
+a{color:#A5AFFF;text-decoration:none}a:hover{color:#C9CFFF}
+button{font:inherit;color:inherit;cursor:pointer}
+input,textarea,select{font:inherit}
+@keyframes tlRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes tlFade{from{opacity:0}to{opacity:1}}
+@keyframes tlPing{0%{transform:scale(1);opacity:.75}80%,100%{transform:scale(2.6);opacity:0}}
+@keyframes tlSwing{0%,70%,100%{transform:rotate(0)}74%{transform:rotate(16deg)}79%{transform:rotate(-12deg)}84%{transform:rotate(7deg)}89%{transform:rotate(-3deg)}94%{transform:rotate(0)}}
+@keyframes tlPulse{0%{box-shadow:0 0 0 0 rgba(255,138,107,.55)}100%{box-shadow:0 0 0 9px rgba(255,138,107,0)}}
+@keyframes tlDraw{to{stroke-dashoffset:0}}
+@keyframes tlBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes tlGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes tlPop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes tlMenu{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes tlToast{from{opacity:0;transform:translateY(24px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes tlProgress{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@keyframes tlFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes tlLive{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes tlBounce{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-5px);opacity:1}}
+@keyframes tlBurst{0%{transform:translate(0,0) rotate(0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--r)) scale(.6);opacity:0}}
+@keyframes tlShimmer{from{background-position:-600px 0}to{background-position:600px 0}}
+@keyframes tlFloat{0%,100%{transform:translateY(0) rotate(var(--r,0deg))}50%{transform:translateY(-14px) rotate(var(--r,0deg))}}
+@keyframes tlGrid{from{background-position:0 0}to{background-position:48px 48px}}
+@keyframes tlShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
+@keyframes tlSpin{to{transform:rotate(360deg)}}
+@keyframes tlRing{from{stroke-dashoffset:var(--c)}}
+@keyframes tlScan{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+@keyframes tlGlitch{0%,92%,100%{transform:none}94%{transform:translate(-3px,1px) skewX(-6deg)}96%{transform:translate(3px,-1px) skewX(4deg)}}
+@keyframes tlDrop{0%,100%{border-color:rgba(165,175,255,.35);background:rgba(84,98,232,.05)}50%{border-color:rgba(165,175,255,.85);background:rgba(84,98,232,.13)}}
+.tl-rise{animation:tlRise .56s cubic-bezier(.22,1,.36,1) both}
+.tl-nav{transition:background .18s ease,color .18s ease}
+.tl-nav:hover{background:#2F3847;color:#ECEFF4}
+.tl-row{transition:background .18s ease}
+.tl-row:hover{background:#303949}
+.tl-lift{transition:transform .28s cubic-bezier(.22,1,.36,1),box-shadow .28s ease,border-color .28s ease}
+.tl-lift:hover{transform:translateY(-3px);box-shadow:0 20px 44px -20px rgba(0,0,0,.7);border-color:#56637A}
+.tl-btn{transition:transform .14s ease,filter .2s ease,box-shadow .2s ease}
+.tl-btn:hover{filter:brightness(1.12);box-shadow:0 8px 24px -10px rgba(84,98,232,.9)}
+.tl-btn:active{transform:scale(.96)}
+.tl-ghost{transition:background .18s ease,color .18s ease,border-color .18s ease}
+.tl-ghost:hover{background:#343D4D;color:#ECEFF4}
+.tl-field{transition:border-color .18s ease,box-shadow .18s ease,background .18s ease}
+.tl-field:hover{border-color:#56637A}
+.tl-field:focus{outline:0;border-color:#7C8CFF;box-shadow:0 0 0 4px rgba(84,98,232,.25);background:#262D3A}
+.tl-draw{stroke-dasharray:1200;stroke-dashoffset:1200;animation:tlDraw 1.8s cubic-bezier(.65,0,.35,1) .35s forwards}
+.tl-ping{animation:tlPing 1.8s cubic-bezier(0,0,.2,1) infinite}
+.tl-swing{transform-origin:50% 3px;animation:tlSwing 6s ease-in-out infinite}
+.tl-pulse{animation:tlPulse 1.8s ease-out infinite}
+.tl-live{animation:tlLive 1.6s ease-in-out infinite}
+.tl-bar{transform-origin:left center;animation:tlBar 1s cubic-bezier(.22,1,.36,1) .4s both}
+.tl-grow{transform-origin:bottom center;animation:tlGrow .9s cubic-bezier(.22,1,.36,1) both}
+.tl-shimmer{background:linear-gradient(90deg,#343D4D 0%,#414B5E 45%,#343D4D 90%);background-size:1200px 100%;animation:tlShimmer 1.5s linear infinite}
+.tl-nomotion *{animation:none !important;transition:none !important}
+.tl-nomotion .tl-draw{stroke-dashoffset:0}
+@media (max-width:760px){.tl-hide-sm{display:none !important}}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}}
+</style>
+</helmet>
+<div class="{{rootClass}}" style="min-height:100vh;display:flex;flex-direction:column;background:#232A36;color:#ECEFF4;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;line-height:1.5">
+
+<header style="position:sticky;top:0;z-index:30;min-height:64px;display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:10px 20px;background:rgba(35,42,54,.86);backdrop-filter:blur(14px);border-bottom:1px solid #3F495B">
+  <a href="Main.dc.html" aria-label="TechLine Care, accueil" style="display:flex;align-items:center;gap:10px;color:#ECEFF4">
+    <span style="width:34px;height:34px;border-radius:10px;background:{{accent}};display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px -6px rgba(84,98,232,.9),inset 0 1px 0 rgba(255,255,255,.25)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"></path><path d="M14 6v2M14 11v2M14 16v1"></path></svg></span>
+    <span style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px;letter-spacing:-.01em">TechLine<span style="color:#96A1B3;font-weight:500"> Care</span></span>
+  </a>
+  <span class="tl-hide-sm" style="width:1px;height:22px;background:#3F495B"></span>
+  <nav class="tl-hide-sm" aria-label="Fil d’Ariane" style="display:flex;align-items:center;gap:8px;font-size:13px;color:#96A1B3"><span>Pilotage</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"></path></svg><span>Demandes</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"></path></svg><span style="color:#ECEFF4;font-weight:500">#7B20E1AA</span></nav>
+  <button type="button" aria-label="Ouvrir la palette de commandes" class="tl-ghost" style="flex:1 1 220px;max-width:460px;margin-left:auto;height:40px;display:flex;align-items:center;gap:10px;padding:0 12px;border-radius:10px;border:1px solid #3F495B;background:#2B3341;color:#96A1B3;text-align:left">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><span style="flex:1;font-size:13.5px">Rechercher une demande, une personne, une action…</span>
+    <kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 6px;border-radius:6px;border:1px solid #4E5A6E;background:#232A36;color:#B4BDCC">Ctrl K</kbd>
+  </button>
+  <div style="display:flex;align-items:center;gap:6px">
+    <a href="Form.dc.html" class="tl-btn" style="height:40px;display:inline-flex;align-items:center;gap:8px;padding:0 14px;border-radius:10px;background:{{accent}};color:#fff;font-weight:600;font-size:13.5px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg><span class="tl-hide-sm">Nouvelle demande</span></a>
+    <button type="button" aria-label="Notifications, 3 non lues" class="tl-ghost" style="position:relative;width:44px;height:44px;border-radius:10px;border:0;background:transparent;color:#B4BDCC;display:flex;align-items:center;justify-content:center"><svg class="tl-swing" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+      <span style="position:absolute;top:8px;right:8px;width:9px;height:9px"><span class="tl-ping" style="position:absolute;inset:0;border-radius:50%;background:#FF8A6B"></span><span style="position:absolute;inset:0;border-radius:50%;background:#FF8A6B;border:2px solid #232A36"></span></span>
+    </button>
+    <a href="Account.dc.html" aria-label="Mon compte" class="tl-ghost" style="display:flex;align-items:center;gap:10px;height:44px;padding:0 8px 0 4px;border-radius:12px;color:#ECEFF4">
+      <span style="position:relative;width:34px;height:34px;border-radius:50%;background:#7E5BEF;color:#fff;font-weight:600;font-size:12.5px;display:flex;align-items:center;justify-content:center">AM<span style="position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;background:#45D19B;border:2px solid #232A36"></span></span>
+      <span class="tl-hide-sm" style="text-align:left;line-height:1.2"><span style="display:block;font-size:13px;font-weight:600">Alice Martin</span><span style="display:block;font-size:11.5px;color:#96A1B3">Administratrice</span></span>
+    </a>
+  </div>
+</header>
+<div style="flex:1;display:flex;flex-wrap:wrap;align-items:stretch">
+
+  <aside aria-label="Navigation principale" style="flex:1 1 248px;max-width:100%;background:#1F2530;border-right:1px solid #3A4354;padding:18px 12px;display:flex;flex-direction:column;gap:18px">
+    <nav style="display:flex;flex-direction:column;gap:18px"><div style="display:flex;flex-direction:column;gap:2px"><p style="margin:0 0 6px;padding:0 12px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#7F8A9D">Pilotage</p><a href="Main.dc.html" aria-current="page" style="position:relative;display:flex;align-items:center;gap:11px;height:40px;padding:0 12px;border-radius:9px;background:rgba(84,98,232,.16);color:#ECEFF4;font-weight:600"><span style="position:absolute;left:-12px;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:{{accent}};box-shadow:0 0 12px {{accent}}"></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A5AFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect></svg>Tableau de bord</a>
+<a href="Form.dc.html" class="tl-nav" style="display:flex;align-items:center;gap:11px;height:40px;padding:0 12px;border-radius:9px;color:#B4BDCC"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg>Nouvelle demande</a>
+<a href="Analytics.dc.html" class="tl-nav" style="display:flex;align-items:center;gap:11px;height:40px;padding:0 12px;border-radius:9px;color:#B4BDCC"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="m7 15 4-4 3 3 5-6"></path></svg>Statistiques</a></div>
+<div style="display:flex;flex-direction:column;gap:2px"><p style="margin:0 0 6px;padding:0 12px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#7F8A9D">Administration</p><a href="Journal.dc.html" class="tl-nav" style="display:flex;align-items:center;gap:11px;height:40px;padding:0 12px;border-radius:9px;color:#B4BDCC"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"></path></svg>Journal d’activité</a></div>
+<div style="display:flex;flex-direction:column;gap:2px"><p style="margin:0 0 6px;padding:0 12px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#7F8A9D">Mon espace</p><a href="Account.dc.html" class="tl-nav" style="display:flex;align-items:center;gap:11px;height:40px;padding:0 12px;border-radius:9px;color:#B4BDCC"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Mon compte</a>
+<a href="Account.dc.html" class="tl-nav" style="display:flex;align-items:center;gap:11px;height:40px;padding:0 12px;border-radius:9px;color:#B4BDCC"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"></path><path d="M9 12l2 2 4-4"></path></svg>Mes droits</a></div></nav>
+    <div style="margin-top:auto;padding:14px;border-radius:12px;background:#2B3341;border:1px solid #3A4354">
+      <div style="display:flex;align-items:center;justify-content:space-between"><p style="margin:0;font-size:12.5px;font-weight:600">Équipe en ligne</p><span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#62DDA9"><span class="tl-live" style="width:7px;height:7px;border-radius:50%;background:#45D19B"></span>4 actifs</span></div>
+    </div>
+  </aside>
+  <main style="flex:999 1 560px;min-width:0;padding:28px 32px 40px;display:flex;flex-direction:column;gap:24px">
+
+<!-- HERO -->
+<section class="tl-rise" style="position:relative;border-radius:20px;background:#2B3341;border:1px solid #3A4354;padding:22px 24px;overflow:visible">
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px">
+    <a href="Main.dc.html" class="tl-ghost" style="display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px 0 8px;border-radius:9px;color:#B4BDCC;font-size:13px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>Demandes</a>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A5AFFF;padding:3px 8px;border-radius:7px;background:rgba(84,98,232,.14)">#7B20E1AA</span>
+    <button type="button" aria-label="Copier le lien" class="tl-ghost" style="height:30px;padding:0 10px;border-radius:8px;border:0;background:transparent;color:#96A1B3;font-size:12.5px">Copier le lien</button>
+    <span style="flex:1"></span>
+    <span style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#96A1B3"><span style="display:flex"><span style="width:24px;height:24px;border-radius:50%;border:2px solid #2B3341;background:#3FA7A0;font-size:9.5px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center">LP</span><span style="width:24px;height:24px;margin-left:-7px;border-radius:50%;border:2px solid #2B3341;background:#E0796B;font-size:9.5px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center">EB</span></span>Lucas consulte aussi cette demande</span>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:18px">
+    <div style="min-width:0;flex:1 1 420px">
+      <h1 style="margin:0;font-family:'Space Grotesk',sans-serif;font-size:30px;line-height:1.2;font-weight:600;letter-spacing:-.02em">Suivi dossier allocation</h1>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px">
+        <span style="{{statusStyle}}"><span style="{{statusDot}}"></span>{{statusLabel}}</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;height:26px;padding:0 10px;border-radius:7px;font-size:12.5px;font-weight:600;color:#FF9C82;background:rgba(255,138,107,.13)"><span class="tl-pulse" style="width:7px;height:7px;border-radius:50%;background:#FF8A6B"></span>Priorité haute</span>
+        <span style="height:26px;display:inline-flex;align-items:center;padding:0 10px;border-radius:7px;font-size:12.5px;background:#343D4D;color:#D5DAE3">Administratif</span>
+        <span style="font-size:12.5px;color:#96A1B3">Créée il y a 3 jours par Alice Martin</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;position:relative">
+      <a href="Form.dc.html" class="tl-ghost" style="height:42px;display:inline-flex;align-items:center;gap:8px;padding:0 14px;border-radius:10px;border:1px solid #3F495B;color:#D5DAE3;font-size:13.5px;font-weight:500">Modifier <kbd style="font-family:'JetBrains Mono',monospace;font-size:10.5px;padding:1px 5px;border-radius:5px;border:1px solid #4E5A6E;color:#B4BDCC">E</kbd></a>
+      <button type="button" onClick="{{toggleMenu}}" aria-haspopup="menu" aria-expanded="{{menuOpen}}" class="tl-btn" style="height:42px;display:inline-flex;align-items:center;gap:8px;padding:0 14px;border-radius:10px;border:0;background:{{accent}};color:#fff;font-size:13.5px;font-weight:600">Changer le statut
+        <svg style="{{chevStyle}}" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"></path></svg>
+      </button>
+      <sc-if value="{{menuOpen}}" hint-placeholder-val="{{ false }}">
+        <div role="menu" style="position:absolute;right:0;top:50px;z-index:20;width:240px;padding:6px;border-radius:12px;background:#343D4D;border:1px solid #4E5A6E;box-shadow:0 30px 60px -20px rgba(0,0,0,.8);transform-origin:top right;animation:tlMenu .2s cubic-bezier(.22,1,.36,1) both">
+          <sc-for list="{{statusOptions}}" as="o" hint-placeholder-count="4">
+            <button type="button" role="menuitem" onClick="{{o.pick}}" class="tl-ghost" style="width:100%;display:flex;align-items:center;gap:10px;height:38px;padding:0 10px;border-radius:8px;border:0;background:transparent;color:#ECEFF4;font-size:13.5px;text-align:left">
+              <span style="{{o.dot}}"></span><span style="flex:1">{{o.label}}</span><kbd style="font-family:'JetBrains Mono',monospace;font-size:10.5px;padding:1px 5px;border-radius:5px;border:1px solid #4E5A6E;color:#B4BDCC">{{o.key}}</kbd>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{burst}}" hint-placeholder-val="{{ false }}">
+        <div aria-hidden="true" style="position:absolute;right:70px;top:20px;width:0;height:0;pointer-events:none">
+          <sc-for list="{{particles}}" as="p" hint-placeholder-count="0"><span style="{{p.style}}"></span></sc-for>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <!-- Stepper + SLA -->
+  <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:center;margin-top:22px;padding-top:20px;border-top:1px solid #3A4354">
+    <ol aria-label="Progression" style="flex:1 1 480px;list-style:none;margin:0;padding:0;position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))">
+      <span style="position:absolute;left:16.6%;right:16.6%;top:15px;height:3px;border-radius:3px;background:#3A4354"></span>
+      <span style="{{trackStyle}}"></span>
+      <sc-for list="{{steps}}" as="st" hint-placeholder-count="3">
+        <li style="position:relative;display:flex;flex-direction:column;align-items:center;gap:8px">
+          <span style="{{st.dotStyle}}">{{st.mark}}</span>
+          <span style="{{st.labelStyle}}">{{st.label}}</span>
+        </li>
+      </sc-for>
+    </ol>
+    <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:14px;background:#272E3B;border:1px solid #3A4354">
+      <svg width="64" height="64" viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="42" fill="none" stroke="#3A4354" stroke-width="9"></circle>
+        <circle cx="50" cy="50" r="42" fill="none" stroke="#F2B544" stroke-width="9" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="111" transform="rotate(-90 50 50)" style="--c:264;animation:tlRing 1.6s cubic-bezier(.22,1,.36,1) .3s both"></circle>
+      </svg>
+      <div>
+        <p style="margin:0;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#96A1B3">SLA résolution</p>
+        <p style="margin:2px 0 0;font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:600;color:#F5C567">1 h 40 <span style="font-size:13px;color:#96A1B3;font-weight:500">restantes</span></p>
+        <p style="margin:0;font-size:12px;color:#7F8A9D">Échéance aujourd’hui, 16:30</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+  <!-- Colonne principale -->
+  <div style="flex:999 1 520px;min-width:0;display:flex;flex-direction:column;gap:20px">
+    <article class="tl-rise" style="animation-delay:120ms;border-radius:16px;background:#2B3341;border:1px solid #3A4354;padding:20px 22px">
+      <h2 style="margin:0;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;margin-bottom:12px">Description</h2>
+      <p style="margin:0;color:#D5DAE3;line-height:1.7">Suivi d’un dossier d’allocation. Le demandeur n’a pas reçu de réponse depuis le dépôt de son dossier et souhaite connaître l’état d’avancement.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px">
+        <span style="display:inline-flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;background:#272E3B;border:1px solid #3A4354;font-size:13px"><span style="width:28px;height:28px;border-radius:7px;background:rgba(255,138,107,.16);color:#FF9C82;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">PDF</span>justificatif-domicile.pdf <span style="color:#7F8A9D">212 Ko</span></span>
+        <span style="display:inline-flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;background:#272E3B;border:1px solid #3A4354;font-size:13px"><span style="width:28px;height:28px;border-radius:7px;background:rgba(108,182,255,.16);color:#8EC5FF;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">IMG</span>capture-dossier.png <span style="color:#7F8A9D">1,4 Mo</span></span>
+      </div>
+    </article>
+
+    <article class="tl-rise" style="animation-delay:180ms;border-radius:16px;background:#2B3341;border:1px solid #3A4354;padding:20px 22px">
+      <div role="tablist" aria-label="Conversation" style="position:relative;display:flex;gap:4px;border-bottom:1px solid #3A4354;margin:-6px -6px 18px">
+        <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="3">
+          <button type="button" role="tab" aria-selected="{{tb.on}}" onClick="{{tb.pick}}" style="{{tb.style}}">{{tb.label}}<span style="{{tb.countStyle}}">{{tb.count}}</span></button>
+        </sc-for>
+        <span style="{{tabInk}}"></span>
+      </div>
+
+      <sc-if value="{{tabComments}}" hint-placeholder-val="{{ true }}">
+        <ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:18px">
+          <li style="display:flex;gap:12px;animation:tlRise .5s cubic-bezier(.22,1,.36,1) .25s both">
+            <span style="width:36px;height:36px;flex:none;border-radius:50%;background:#7E5BEF;color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center">AM</span>
+            <div style="flex:1;min-width:0"><p style="margin:0;font-size:13px"><span style="font-weight:600">Alice Martin</span><span style="color:#7F8A9D"> · 30 sept. à 09:12</span></p>
+              <p style="margin:6px 0 0;display:inline-block;max-width:100%;padding:10px 14px;border-radius:4px 14px 14px 14px;background:#343D4D;color:#D5DAE3">Dossier transmis au service allocations. <span style="color:#C9CFFF;background:rgba(84,98,232,.2);padding:0 4px;border-radius:4px;font-weight:500">@Lucas Petit</span> peux-tu relancer cette semaine ?</p>
+              <div style="display:flex;gap:6px;margin-top:6px"><button type="button" style="height:26px;padding:0 8px;border-radius:999px;border:1px solid rgba(165,175,255,.4);background:rgba(84,98,232,.14);color:#C9CFFF;font-size:12px">+1 · 2</button><button type="button" aria-label="Ajouter une réaction" class="tl-ghost" style="height:26px;padding:0 8px;border-radius:999px;border:1px solid #3F495B;background:transparent;color:#96A1B3;font-size:12px">+</button></div>
+            </div>
+          </li>
+          <li style="display:flex;gap:12px;animation:tlRise .5s cubic-bezier(.22,1,.36,1) .32s both">
+            <span style="width:36px;height:36px;flex:none;border-radius:50%;background:#3FA7A0;color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center">LP</span>
+            <div style="flex:1;min-width:0"><p style="margin:0;font-size:13px"><span style="font-weight:600">Lucas Petit</span><span style="color:#7F8A9D"> · aujourd’hui à 10:48</span></p>
+              <p style="margin:6px 0 0;display:inline-block;max-width:100%;padding:10px 14px;border-radius:4px 14px 14px 14px;background:#343D4D;color:#D5DAE3">Relance faite par téléphone, réponse attendue avant vendredi.</p>
+            </div>
+          </li>
+          <li style="display:flex;align-items:center;gap:10px;color:#96A1B3;font-size:12.5px">
+            <span style="display:inline-flex;gap:3px;padding:8px 12px;border-radius:999px;background:#343D4D"><span style="width:6px;height:6px;border-radius:50%;background:#B4BDCC;animation:tlBounce 1.2s ease-in-out infinite"></span><span style="width:6px;height:6px;border-radius:50%;background:#B4BDCC;animation:tlBounce 1.2s ease-in-out .15s infinite"></span><span style="width:6px;height:6px;border-radius:50%;background:#B4BDCC;animation:tlBounce 1.2s ease-in-out .3s infinite"></span></span>
+            Emma Bernard est en train d’écrire…
+          </li>
+        </ol>
+        <!-- Composer -->
+        <div style="margin-top:20px;border-radius:14px;border:1px solid #4E5A6E;background:#262D3A;overflow:hidden">
+          <label style="display:block">
+            <span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Votre commentaire</span>
+            <textarea rows="3" placeholder="Écrire un commentaire… Utilisez @ pour mentionner, / pour une réponse rapide" class="tl-field" style="display:block;width:100%;resize:vertical;border:0;background:transparent;color:#ECEFF4;padding:14px 16px;font-size:14px"></textarea>
+          </label>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;border-top:1px solid #3A4354">
+            <button type="button" aria-label="Gras" class="tl-ghost" style="width:32px;height:32px;border-radius:7px;border:0;background:transparent;color:#B4BDCC;font-weight:700">B</button>
+            <button type="button" aria-label="Italique" class="tl-ghost" style="width:32px;height:32px;border-radius:7px;border:0;background:transparent;color:#B4BDCC;font-style:italic">I</button>
+            <button type="button" aria-label="Mentionner" class="tl-ghost" style="width:32px;height:32px;border-radius:7px;border:0;background:transparent;color:#B4BDCC">@</button>
+            <button type="button" aria-label="Joindre un fichier" class="tl-ghost" style="width:32px;height:32px;border-radius:7px;border:0;background:transparent;color:#B4BDCC;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"></path></svg></button>
+            <span style="width:1px;height:18px;background:#3F495B;margin:0 4px"></span>
+            <button type="button" class="tl-ghost" style="height:28px;padding:0 10px;border-radius:999px;border:1px solid #3F495B;background:transparent;color:#B4BDCC;font-size:12px">Relance envoyée</button>
+            <button type="button" class="tl-ghost" style="height:28px;padding:0 10px;border-radius:999px;border:1px solid #3F495B;background:transparent;color:#B4BDCC;font-size:12px">Pièce manquante</button>
+            <span style="flex:1"></span>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#96A1B3"><input type="checkbox" style="accent-color:#5462E8">Note interne</label>
+            <button type="button" class="tl-btn" style="height:36px;display:inline-flex;align-items:center;gap:8px;padding:0 14px;border-radius:9px;border:0;background:{{accent}};color:#fff;font-size:13px;font-weight:600">Envoyer <kbd style="font-family:'JetBrains Mono',monospace;font-size:10.5px;padding:1px 5px;border-radius:5px;border:1px solid #4E5A6E;color:#B4BDCC;border-color:rgba(255,255,255,.3);color:#fff">Ctrl ↵</kbd></button>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{tabNotes}}" hint-placeholder-val="{{ false }}">
+        <div style="padding:16px;border-radius:12px;background:rgba(242,181,68,.08);border:1px dashed rgba(242,181,68,.4);color:#F5C567;font-size:13.5px;animation:tlRise .35s cubic-bezier(.22,1,.36,1) both">Les notes internes ne sont visibles que des agents et administrateurs. Aucune note pour l’instant.</div>
+      </sc-if>
+      <sc-if value="{{tabFiles}}" hint-placeholder-val="{{ false }}">
+        <div style="height:120px;border-radius:12px;border:1.5px dashed rgba(165,175,255,.5);display:flex;align-items:center;justify-content:center;color:#C9CFFF;font-size:13.5px;animation:tlDrop 1.6s ease-in-out infinite">Glissez des fichiers ici ou cliquez pour parcourir</div>
+      </sc-if>
+    </article>
+  </div>
+
+  <!-- Colonne latérale -->
+  <aside style="flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:20px">
+    <section class="tl-rise" style="animation-delay:160ms;border-radius:16px;background:#2B3341;border:1px solid #3A4354;padding:20px 22px">
+      <h2 style="margin:0;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;margin-bottom:8px">Détails</h2>
+      <dl style="margin:0">
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #353E4E"><dt style="color:#96A1B3">Catégorie</dt><dd style="margin:0;font-weight:500">Administratif</dd></div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #353E4E"><dt style="color:#96A1B3">Créée le</dt><dd style="margin:0;font-weight:500">29 septembre 2026</dd></div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #353E4E"><dt style="color:#96A1B3">Modifiée</dt><dd style="margin:0;font-weight:500">il y a 12 min</dd></div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0"><dt style="color:#96A1B3">1re réponse</dt><dd style="margin:0;font-weight:500;color:#62DDA9">en 48 min</dd></div>
+      </dl>
+    </section>
+    <section class="tl-rise" style="animation-delay:220ms;border-radius:16px;background:#2B3341;border:1px solid #3A4354;padding:20px 22px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h2 style="margin:0;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600">Agent assigné</h2><button type="button" class="tl-ghost" style="height:30px;padding:0 10px;border-radius:8px;border:0;background:transparent;color:#A5AFFF;font-size:12.5px;font-weight:600">Réassigner</button></div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:#272E3B">
+        <span style="position:relative;width:42px;height:42px;border-radius:50%;background:#3FA7A0;color:#fff;font-weight:600;display:flex;align-items:center;justify-content:center">LP<span style="position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#45D19B;border:2px solid #272E3B"></span></span>
+        <div><p style="margin:0;font-weight:600">Lucas Petit</p><p style="margin:0;font-size:12.5px;color:#96A1B3">Agent · 1 demande ouverte</p></div>
+      </div>
+      <p style="margin:14px 0 8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#7F8A9D">Abonnés</p>
+      <div style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:28px;border-radius:50%;background:#7E5BEF;color:#fff;font-size:10.5px;font-weight:600;display:flex;align-items:center;justify-content:center">AM</span><span style="width:28px;height:28px;border-radius:50%;background:#E0796B;color:#fff;font-size:10.5px;font-weight:600;display:flex;align-items:center;justify-content:center">EB</span><button type="button" class="tl-ghost" style="height:28px;padding:0 10px;border-radius:999px;border:1px dashed #56637A;background:transparent;color:#96A1B3;font-size:12px">Suivre</button></div>
+    </section>
+    <section class="tl-rise" style="animation-delay:260ms;border-radius:16px;background:#2B3341;border:1px solid #3A4354;padding:20px 22px">
+      <h2 style="margin:0;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;margin-bottom:12px">Demandes liées</h2>
+      <a href="#" class="tl-ghost" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;color:#D5DAE3"><span style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#7F8A9D">#2C55D0F1</span><span style="flex:1;font-size:13px">Renouvellement aide sociale</span><span style="width:8px;height:8px;border-radius:50%;background:#F2B544"></span></a>
+    </section>
+    <section class="tl-rise" style="animation-delay:300ms;border-radius:16px;background:#2B3341;border:1px solid #3A4354;padding:20px 22px">
+      <h2 style="margin:0;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;margin-bottom:14px">Historique</h2>
+      <ol style="list-style:none;margin:0 0 0 6px;padding:0;border-left:2px solid #3A4354;display:flex;flex-direction:column;gap:16px">
+        <li style="position:relative;padding-left:18px;animation:tlRise .45s cubic-bezier(.22,1,.36,1) .4s both"><span style="position:absolute;left:-7px;top:4px;width:12px;height:12px;border-radius:50%;background:#F2B544;box-shadow:0 0 0 4px #2B3341"></span><p style="margin:0;font-size:13px"><b>Statut</b> <span style="color:#7F8A9D;text-decoration:line-through">Nouvelle</span> → <span style="color:#F5C567">En cours</span></p><p style="margin:2px 0 0;font-size:12px;color:#7F8A9D">Lucas Petit · il y a 12 min</p></li>
+        <li style="position:relative;padding-left:18px;animation:tlRise .45s cubic-bezier(.22,1,.36,1) .47s both"><span style="position:absolute;left:-7px;top:4px;width:12px;height:12px;border-radius:50%;background:#7C8CFF;box-shadow:0 0 0 4px #2B3341"></span><p style="margin:0;font-size:13px"><b>Assignée</b> à Lucas Petit</p><p style="margin:2px 0 0;font-size:12px;color:#7F8A9D">Alice Martin · 30 sept.</p></li>
+        <li style="position:relative;padding-left:18px;animation:tlRise .45s cubic-bezier(.22,1,.36,1) .54s both"><span style="position:absolute;left:-7px;top:4px;width:12px;height:12px;border-radius:50%;background:#6CB6FF;box-shadow:0 0 0 4px #2B3341"></span><p style="margin:0;font-size:13px"><b>Création</b></p><p style="margin:2px 0 0;font-size:12px;color:#7F8A9D">Alice Martin · 29 sept.</p></li>
+      </ol>
+    </section>
+  </aside>
+</div>
+  </main>
+</div>
+
+<footer style="border-top:1px solid #3A4354;background:#1F2530;padding:16px 28px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;font-size:12.5px;color:#96A1B3">
+  <div style="display:flex;align-items:center;gap:12px"><span style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:#D5DAE3">TechLine Care</span><span>© 2026</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:1px 6px;border-radius:5px;border:1px solid #3F495B">v2.0.0</span></div>
+  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;gap:8px;padding:4px 10px;border-radius:999px;background:rgba(69,209,155,.1);color:#62DDA9"><span style="position:relative;width:8px;height:8px"><span class="tl-ping" style="position:absolute;inset:0;border-radius:50%;background:#45D19B"></span><span style="position:absolute;inset:0;border-radius:50%;background:#45D19B"></span></span>Tous les services opérationnels</span><span>Support : lun.–ven., 9 h – 18 h</span></div>
+  <nav aria-label="Liens légaux" style="display:flex;align-items:center;gap:16px"><a href="Legal.dc.html" style="color:#B4BDCC">Confidentialité</a><a href="Legal.dc.html" style="color:#B4BDCC">Mentions légales</a><a href="Legal.dc.html" style="color:#B4BDCC">RGPD</a><span style="display:inline-flex;align-items:center;gap:6px"><kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:1px 6px;border-radius:5px;border:1px solid #4E5A6E;color:#D5DAE3">?</kbd>Raccourcis</span></nav>
+</footer>
+
+<sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
+  <div role="status" style="position:fixed;right:20px;bottom:20px;z-index:50;width:340px;max-width:calc(100vw - 32px);border-radius:14px;background:#343D4D;border:1px solid #4E5A6E;box-shadow:0 24px 60px -24px rgba(0,0,0,.85);overflow:hidden;animation:tlToast .45s cubic-bezier(.34,1.56,.64,1) both">
+    <div style="display:flex;gap:12px;padding:14px 16px"><span style="width:30px;height:30px;flex:none;border-radius:50%;background:rgba(69,209,155,.18);color:#62DDA9;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span><div><p style="margin:0;font-weight:600;font-size:13.5px">Statut mis à jour</p><p style="margin:2px 0 0;font-size:12.5px;color:#B4BDCC">La demande est maintenant « {{statusLabel}} ».</p></div></div>
+    <div style="height:3px;background:#45D19B;transform-origin:left center;animation:tlProgress 5s linear both"></div>
+  </div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#5462E8","options":["#5462E8","#0E8F86","#B4532A","#7A4FD6"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":1700}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { status: "EN_COURS", menu: false, burst: false, toast: false, tab: "comments" }; }
+  renderVals() {
+    const accent = this.props.accent ?? "#5462E8";
+    const motion = this.props.motion ?? true;
+    const s = this.state;
+    const base = { accent, rootClass: motion ? "" : "tl-nomotion" };
+
+    const ST = {
+      NOUVELLE: { label: "Nouvelle", fg: "#8EC5FF", bg: "rgba(108,182,255,.13)", bd: "rgba(108,182,255,.34)", dot: "#6CB6FF", step: 0, key: "1" },
+      EN_COURS: { label: "En cours", fg: "#F5C567", bg: "rgba(242,181,68,.13)", bd: "rgba(242,181,68,.34)", dot: "#F2B544", step: 1, key: "2" },
+      CLOTUREE: { label: "Clôturée", fg: "#62DDA9", bg: "rgba(69,209,155,.13)", bd: "rgba(69,209,155,.34)", dot: "#45D19B", step: 2, key: "3" },
+      ANNULEE: { label: "Annulée", fg: "#FF9DAA", bg: "rgba(240,124,140,.13)", bd: "rgba(240,124,140,.34)", dot: "#F07C8C", step: -1, key: "4" }
+    };
+    const cur = ST[s.status];
+    const statusOptions = Object.keys(ST).map((code) => ({
+      label: ST[code].label, key: ST[code].key,
+      dot: "width:9px;height:9px;border-radius:50%;background:" + ST[code].dot,
+      pick: () => {
+        this.setState({ status: code, menu: false, burst: false, toast: false });
+        setTimeout(() => this.setState({ burst: code === "CLOTUREE", toast: true }), 30);
+      }
+    }));
+    const colors = ["#45D19B", "#7C8CFF", "#F2B544", "#6CB6FF", "#FF8A6B", "#C9CFFF"];
+    const particles = [];
+    for (let i = 0; i < 22; i++) {
+      const a = (i / 22) * Math.PI * 2;
+      const d = 70 + (i % 4) * 22;
+      particles.push({ style: "position:absolute;left:0;top:0;width:" + (i % 3 ? 7 : 10) + "px;height:" + (i % 2 ? 7 : 4) + "px;border-radius:" + (i % 3 ? "2px" : "50%") + ";background:" + colors[i % colors.length] + ";--dx:" + Math.round(Math.cos(a) * d) + "px;--dy:" + Math.round(Math.sin(a) * d - 30) + "px;--r:" + (i * 47) + "deg;animation:tlBurst .9s cubic-bezier(.15,.7,.3,1) both" });
+    }
+    const stepCodes = ["NOUVELLE", "EN_COURS", "CLOTUREE"];
+    const steps = stepCodes.map((c, i) => {
+      const done = cur.step >= 0 && i <= cur.step;
+      const current = i === cur.step;
+      const col = ST[c].dot;
+      return {
+        label: ST[c].label,
+        mark: done && !current ? "✓" : String(i + 1),
+        dotStyle: "position:relative;z-index:1;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;transition:all .45s cubic-bezier(.34,1.56,.64,1);" + (done ? "background:" + col + ";color:#1A1F28;" : "background:#2B3341;color:#7F8A9D;box-shadow:inset 0 0 0 2px #465166;") + (current ? "box-shadow:0 0 0 6px " + ST[c].bg + ";transform:scale(1.08);" : ""),
+        labelStyle: "font-size:13px;font-weight:" + (current ? 600 : 500) + ";color:" + (done ? "#ECEFF4" : "#7F8A9D")
+      };
+    });
+    const pct = cur.step <= 0 ? 0 : cur.step === 1 ? 50 : 100;
+    const tabDefs = [["comments", "Commentaires", "2"], ["notes", "Notes internes", "0"], ["files", "Pièces jointes", "2"]];
+    const tabIndex = tabDefs.findIndex((t) => t[0] === s.tab);
+    const tabs = tabDefs.map((t) => {
+      const on = t[0] === s.tab;
+      return { label: t[1], count: t[2], on, pick: () => this.setState({ tab: t[0] }),
+        style: "position:relative;height:42px;width:150px;display:flex;align-items:center;justify-content:center;gap:8px;border:0;background:transparent;font-size:13.5px;font-weight:600;color:" + (on ? "#ECEFF4" : "#96A1B3"),
+        countStyle: "font-size:11px;padding:0 7px;border-radius:999px;background:" + (on ? "rgba(84,98,232,.3)" : "#343D4D") };
+    });
+    return Object.assign(base, {
+      statusLabel: cur.label,
+      statusStyle: "display:inline-flex;align-items:center;gap:7px;height:26px;padding:0 10px;border-radius:7px;font-size:12.5px;font-weight:600;transition:all .35s ease;color:" + cur.fg + ";background:" + cur.bg + ";box-shadow:inset 0 0 0 1px " + cur.bd,
+      statusDot: "width:7px;height:7px;border-radius:50%;background:" + cur.dot,
+      menuOpen: s.menu, toggleMenu: () => this.setState({ menu: !this.state.menu }),
+      chevStyle: "transition:transform .25s ease;transform:rotate(" + (s.menu ? 180 : 0) + "deg)",
+      statusOptions, particles, burst: s.burst, toast: s.toast,
+      steps,
+      trackStyle: "position:absolute;left:16.6%;top:15px;height:3px;border-radius:3px;background:" + cur.dot + ";width:calc(" + (pct * 0.668) + "%);transition:width .7s cubic-bezier(.65,0,.35,1),background .4s ease",
+      tabs, tabComments: s.tab === "comments", tabNotes: s.tab === "notes", tabFiles: s.tab === "files",
+      tabInk: "position:absolute;left:0;bottom:-1px;width:150px;height:2px;border-radius:2px;background:" + accent + ";transition:transform .35s cubic-bezier(.34,1.56,.64,1);transform:translateX(" + (tabIndex * 154) + "px)"
+    });
+  }
+}
+</script>
+</body>
+</html>
