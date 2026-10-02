@@ -1,9 +1,10 @@
-import {db} from "@/lib/db";
+import { db } from "@/lib/db";
 
 export async function findCommentsByDemandId(id: string) {
-    const result = await db.query(
-        `
-      SELECT 
+  const result = await db.query(
+    `
+      SELECT
+        c.id_comment,
         c.content,
         c.created_at,
         u.first_name as author_first_name,
@@ -13,23 +14,23 @@ export async function findCommentsByDemandId(id: string) {
       WHERE c.id_demand = $1
       ORDER BY c.created_at ASC
     `,
-        [id]
-    );
+    [id],
+  );
 
-    return result.rows;
+  return result.rows;
 }
 
 export async function createComment(
-    demandId: string,
-    userId: string,
-    content: string
+  demandId: string,
+  userId: string,
+  content: string,
 ) {
-    await db.query(
-        `
+  await db.query(
+    `
       INSERT INTO comments
       (id_demand, id_author, content)
       VALUES ($1,$2,$3)
     `,
-        [demandId, userId, content]
-    );
+    [demandId, userId, content],
+  );
 }

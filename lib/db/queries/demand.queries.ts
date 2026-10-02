@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 
 export async function findAllDemands(
   sortBy: string = "created_at",
-  sortOrder: string = "DESC"
+  sortOrder: string = "DESC",
 ) {
   const allowedSortFields: Record<string, string> = {
     created_at: "d.created_at",
@@ -57,7 +57,7 @@ export async function findDemandById(id: string) {
       FROM demands
       WHERE id_demand = $1
     `,
-    [id]
+    [id],
   );
 
   return result.rows[0] ?? null;
@@ -87,18 +87,18 @@ export async function findDemandDetailById(id: string) {
       LEFT JOIN users    del ON d.deleted_by        = del.id_user
       WHERE d.id_demand = $1
     `,
-    [id]
+    [id],
   );
 
   return result.rows[0] ?? null;
 }
 
 export async function createDemand(
-  title: any,
-  description: any,
-  idCategory: any,
-  idPriority: any,
-  idAssignedAgent: any
+  title: string,
+  description: string,
+  idCategory: string,
+  idPriority: string,
+  idAssignedAgent: string | null | undefined,
 ) {
   return await db.query(
     `
@@ -122,18 +122,18 @@ export async function createDemand(
       )
       RETURNING id_demand
     `,
-    [title, description, idCategory, idPriority, idAssignedAgent || null]
+    [title, description, idCategory, idPriority, idAssignedAgent || null],
   );
 }
 
 export async function updateDemand(
-  title: any,
-  description: any,
-  idCategory: any,
-  idPriority: any,
-  idStatus: any,
-  idAssignedAgent: any,
-  id: string
+  title: string,
+  description: string,
+  idCategory: string,
+  idPriority: string,
+  idStatus: string,
+  idAssignedAgent: string | null | undefined,
+  id: string,
 ) {
   return await db.query(
     `
@@ -147,19 +147,31 @@ export async function updateDemand(
           updated_at        = NOW()
       WHERE id_demand = $7
     `,
-    [title, description, idCategory, idPriority, idStatus, idAssignedAgent || null, id]
+    [
+      title,
+      description,
+      idCategory,
+      idPriority,
+      idStatus,
+      idAssignedAgent || null,
+      id,
+    ],
   );
 }
 
 /* Suppression douce : la demande est marquée, jamais effacée */
-export async function softDeleteDemand(id: string, idUser: string, raison: string) {
+export async function softDeleteDemand(
+  id: string,
+  idUser: string,
+  raison: string,
+) {
   return await db.query(
     `
       UPDATE demands
       SET deleted_at = NOW(), deleted_by = $2, delete_reason = $3
       WHERE id_demand = $1 AND deleted_at IS NULL
     `,
-    [id, idUser, raison]
+    [id, idUser, raison],
   );
 }
 
@@ -170,13 +182,16 @@ export async function restoreDemand(id: string) {
       SET deleted_at = NULL, deleted_by = NULL, delete_reason = NULL, updated_at = NOW()
       WHERE id_demand = $1 AND deleted_at IS NOT NULL
     `,
-    [id]
+    [id],
   );
 }
 
 /* Libellés lisibles pour le résumé des modifications du journal */
 export async function findLabelsForDemandIds(ids: {
-  category?: string | null; priority?: string | null; status?: string | null; agent?: string | null;
+  category?: string | null;
+  priority?: string | null;
+  status?: string | null;
+  agent?: string | null;
 }) {
   const r = await db.query(
     `
@@ -186,7 +201,17 @@ export async function findLabelsForDemandIds(ids: {
         (SELECT label FROM statuses   WHERE id_status   = $3::uuid) AS status,
         (SELECT first_name || ' ' || last_name FROM users WHERE id_user = $4::uuid) AS agent
     `,
-    [ids.category || null, ids.priority || null, ids.status || null, ids.agent || null]
+    [
+      ids.category || null,
+      ids.priority || null,
+      ids.status || null,
+      ids.agent || null,
+    ],
   );
-  return r.rows[0] as { category: string | null; priority: string | null; status: string | null; agent: string | null };
+  return r.rows[0] as {
+    category: string | null;
+    priority: string | null;
+    status: string | null;
+    agent: string | null;
+  };
 }
