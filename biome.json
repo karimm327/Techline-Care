@@ -33,5 +33,20 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["styles/tokens.css"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
+          },
+          "style": {
+            "noDescendingSpecificity": "off"
+          }
+        }
+      }
+    }
+  ]
 }

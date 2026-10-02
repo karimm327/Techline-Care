@@ -90,3 +90,23 @@ export const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500"],
 - Ombres : `shadow-sm` (pastille), `shadow-md` (hover carte), `shadow-lg` (menu), `shadow-xl` (palette, dialogue), `shadow-glow` (hover bouton primaire), `shadow-focus` (focus champ).
 - Grille de 4 px. Padding page 32 px (16 px < 640 px). Gap cartes 16–20 px. Padding carte 20–24 px.
 - Hauteurs de contrôle : 32 (compact), 36–40 (standard), 44–50 (CTA, champs).
+
+## Compléments (ajoutés à l'étape 1)
+
+Valeurs présentes dans la maquette mais absentes du kit initial, ajoutées dans `styles/tokens.css`
+et `lib/ui/tailwind.tokens.js` pour qu'aucune couleur ne soit écrite en dur :
+
+| Token | Hex | Classe | Usage |
+|---|---|---|---|
+| `--fg-1` | #D5DAE3 | `text-fg-1` | libellés de champ |
+| `--surface-hover` | #2F3847 | `bg-surface-hover` | survol item de navigation |
+| `--surface-row` | #303949 | `bg-surface-row` | survol ligne de tableau |
+| `--surface-inset` | #272E3B | `bg-surface-inset` | encart dans une carte |
+| `--field-focus` | #262D3A | `bg-field-focus` | fond de champ au focus |
+| `--line-hover` | #56637A | `border-line-hover` | bordure au survol (M05) |
+| `--line-field` | #465166 | `border-line-field` / `bg-line-field` | bordure de champ, barre de priorité vide |
+| `--line-card` | #424C5F | `border-line-card` | carte Kanban |
+| `--ink` | #1A1F28 | `text-ink` | texte sur pastille colorée |
+| `--scrim` | #11151C | `bg-scrim/60` | voile des dialogues / tiroirs |
+| `--skeleton-hi` | #414B5E | `via-skeleton-hi` | reflet du squelette |
+| `--avatar-1…8` | palette avatars | `bg-avatar-1…8` | via `avatarColor(id)` |

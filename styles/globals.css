@@ -1,19 +1,5 @@
+@import "./tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-body {
-  font-family: system-ui, sans-serif;
-}
-@keyframes slide-in {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-.animate-slide-in {
-  animation: slide-in 0.25s ease-out;
-}
