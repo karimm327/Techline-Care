@@ -14,6 +14,7 @@ import { findPriorityById } from "@/lib/db/queries/priority.queries";
 import { findStatusById } from "@/lib/db/queries/status.queries";
 import { findAgentById } from "@/lib/db/queries/user.queries";
 import { resumerChangements } from "@/lib/demandes/changements";
+import { erreursDemande } from "@/lib/schemas/demand.schema";
 
 export async function PUT(
   req: NextRequest,
@@ -36,6 +37,13 @@ export async function PUT(
       idStatus,
       idAssignedAgent,
     } = body;
+
+    // Règles partagées avec le formulaire
+    const erreurs = erreursDemande({ title, description });
+    const premiere = erreurs.title ?? erreurs.description;
+    if (premiere) {
+      return NextResponse.json({ message: premiere }, { status: 400 });
+    }
 
     // Vérifier existence demande
     const demandCheck = await findDemandById(id);

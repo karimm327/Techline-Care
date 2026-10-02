@@ -1,14 +1,41 @@
 "use client";
 
+import { Check } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import TexteAvecLiens from "@/components/demand/TexteAvecLiens";
+import PageHeader from "@/components/layout/PageHeader";
+import Alert from "@/components/ui/Alert";
+import Avatar from "@/components/ui/Avatar";
+import Button, { classesBouton } from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import ChoiceCard from "@/components/ui/ChoiceCard";
+import Input from "@/components/ui/Input";
+import Kbd from "@/components/ui/Kbd";
+import SegmentedControl from "@/components/ui/SegmentedControl";
+import Select from "@/components/ui/Select";
+import Textarea from "@/components/ui/Textarea";
+import { notifier } from "@/components/ui/Toast";
+import { erreursDemande } from "@/lib/schemas/demand.schema";
+import { cn } from "@/lib/ui/cn";
+import { reference } from "@/lib/ui/format";
+import {
+  estCodePriorite,
+  estCodeStatut,
+  PRIORITES,
+  STATUTS,
+  styleCategorie,
+} from "@/lib/ui/status";
 
-type Category = { id_category: string; label: string };
-type Priority = { id_priority: string; label: string };
-type Agent = { id_user: string; first_name: string; last_name: string };
-type Status = { id_status: string; label: string };
+export type OptionsFormulaire = {
+  categories: { id: string; label: string }[];
+  priorites: { id: string; label: string }[];
+  statuts: { id: string; label: string }[];
+  agents: { id: string; nom: string; ouvertes: number }[];
+};
 
-type Demand = {
+export type ValeursDemande = {
   title: string;
   description: string;
   id_category: string;
@@ -18,702 +45,589 @@ type Demand = {
 };
 
 type Props = {
-  submitUrl: string;
-  method: "POST" | "PUT";
-  redirectTo: string;
-  initialData?: Demand;
+  mode: "new" | "edit";
+  demandeId?: string;
+  initial?: ValeursDemande;
+  options: OptionsFormulaire;
 };
 
-/* ---------- Couleurs ---------- */
-
-const COULEURS_CATEGORIE = [
-  "from-violet-500 to-fuchsia-500",
-  "from-sky-500 to-cyan-500",
-  "from-emerald-500 to-teal-500",
-  "from-amber-500 to-orange-500",
-  "from-rose-500 to-pink-500",
-  "from-indigo-500 to-blue-500",
-];
-
-const PRIORITES: Record<
-  string,
-  { label: string; actif: string; point: string; ordre: number }
-> = {
-  BASSE: {
-    label: "Basse",
-    actif: "bg-slate-600 text-white ring-slate-600",
-    point: "bg-slate-400",
-    ordre: 1,
-  },
-  NORMALE: {
-    label: "Normale",
-    actif: "bg-amber-500 text-white ring-amber-500",
-    point: "bg-amber-500",
-    ordre: 2,
-  },
-  HAUTE: {
-    label: "Haute",
-    actif: "bg-red-600 text-white ring-red-600",
-    point: "bg-red-500",
-    ordre: 3,
-  },
-};
-
-const STATUTS: Record<
-  string,
-  { label: string; actif: string; point: string; ordre: number }
-> = {
-  NOUVELLE: {
-    label: "Nouvelle",
-    actif: "bg-slate-700 text-white ring-slate-700",
-    point: "bg-slate-400",
-    ordre: 1,
-  },
-  EN_COURS: {
-    label: "En cours",
-    actif: "bg-blue-600 text-white ring-blue-600",
-    point: "bg-blue-500",
-    ordre: 2,
-  },
-  CLOTUREE: {
-    label: "Clôturée",
-    actif: "bg-emerald-600 text-white ring-emerald-600",
-    point: "bg-emerald-500",
-    ordre: 3,
-  },
-  ANNULEE: {
-    label: "Annulée",
-    actif: "bg-red-600 text-white ring-red-600",
-    point: "bg-red-500",
-    ordre: 4,
-  },
-};
-
-const COULEURS_AVATAR = [
-  "bg-violet-500",
-  "bg-sky-500",
-  "bg-emerald-500",
-  "bg-amber-500",
-  "bg-rose-500",
-  "bg-indigo-500",
-];
-
-const initiales = (a: Agent) =>
-  `${a.first_name?.[0] ?? ""}${a.last_name?.[0] ?? ""}`.toUpperCase();
-
-/* ---------- Petits composants ---------- */
-
-function Bloc({
-  numero,
-  titre,
-  sousTitre,
-  couleur,
-  ouvert,
-  complet,
-  resume,
-  onToggle,
-  children,
-}: {
-  numero: number;
+type Champs = {
   titre: string;
-  sousTitre: string;
-  couleur: string;
-  ouvert: boolean;
-  complet: boolean;
-  resume?: string;
-  onToggle: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <section
-      className={`rounded-2xl border bg-white shadow-sm transition ${ouvert ? "border-slate-300 shadow-md" : "border-slate-200 hover:shadow-md"}`}
-    >
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={ouvert}
-        className="w-full flex items-center gap-3 p-5 sm:px-6 text-left"
-      >
-        <span
-          className={`w-9 h-9 shrink-0 rounded-xl text-white text-sm font-bold flex items-center justify-center shadow-sm transition ${complet && !ouvert ? "bg-emerald-500" : `bg-gradient-to-br ${couleur}`}`}
-        >
-          {complet && !ouvert ? (
-            <svg
-              aria-hidden="true"
-              className="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3"
-            >
-              <path d="M5 12.5l4.5 4.5L19 7" />
-            </svg>
-          ) : (
-            numero
-          )}
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-base font-semibold text-slate-900">
-            {titre}
-          </span>
-          <span
-            className={`block text-xs truncate ${!ouvert && resume ? "text-emerald-700 font-medium" : "text-slate-500"}`}
-          >
-            {!ouvert && resume ? resume : sousTitre}
-          </span>
-        </span>
-        {/* Signe + / − animé */}
-        <span
-          className={`relative w-9 h-9 shrink-0 rounded-full transition ${ouvert ? "bg-slate-900" : "bg-slate-100"}`}
-          aria-hidden="true"
-        >
-          <span
-            className={`absolute left-1/2 top-1/2 w-3.5 h-0.5 -translate-x-1/2 -translate-y-1/2 rounded ${ouvert ? "bg-white" : "bg-slate-700"}`}
-          />
-          <span
-            className={`absolute left-1/2 top-1/2 w-3.5 h-0.5 -translate-x-1/2 -translate-y-1/2 rounded transition-transform duration-300 ${ouvert ? "bg-white rotate-0" : "bg-slate-700 rotate-90"}`}
-          />
-        </span>
-      </button>
+  description: string;
+  categorie: string;
+  priorite: string;
+  statut: string;
+  agent: string;
+};
 
-      {/* Contenu repliable (animation de hauteur) */}
-      <div
-        className={`grid transition-[grid-template-rows] duration-300 ease-out ${ouvert ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
-      >
-        <div className="overflow-hidden" inert={!ouvert}>
-          <div className="px-5 sm:px-6 pb-6 pt-1">{children}</div>
-        </div>
-      </div>
-    </section>
-  );
+const CLE_BROUILLON = "tl.brouillon";
+const ORDRE_PRIORITES = ["BASSE", "NORMALE", "HAUTE"];
+
+function ilYaSecondes(depuis: number, maintenant: number) {
+  const s = Math.max(0, Math.round((maintenant - depuis) / 1000));
+  if (s < 5) return "à l’instant";
+  if (s < 60) return `il y a ${s} s`;
+  return `il y a ${Math.round(s / 60)} min`;
 }
 
-function BoutonSuivant({ onClick }: { onClick: () => void }) {
-  return (
-    <div className="mt-5 flex justify-end">
-      <button
-        type="button"
-        onClick={onClick}
-        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-slate-900 ring-1 ring-slate-300 hover:bg-slate-900 hover:text-white hover:ring-slate-900 transition"
-      >
-        Continuer
-        <svg
-          aria-hidden="true"
-          className="w-4 h-4"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M5 12h14M12 5l7 7-7 7" />
-        </svg>
-      </button>
-    </div>
-  );
-}
-
-function Pastilles<T extends string>({
-  options,
-  valeur,
-  onChange,
-  styles,
-}: {
-  options: { id: T; label: string }[];
-  valeur: T | "";
-  onChange: (v: T) => void;
-  styles: Record<string, { label: string; actif: string; point: string }>;
-}) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {options.map((o) => {
-        const s = styles[o.label] ?? {
-          label: o.label,
-          actif: "bg-slate-700 text-white ring-slate-700",
-          point: "bg-slate-400",
-        };
-        const choisi = valeur === o.id;
-        return (
-          <button
-            key={o.id}
-            type="button"
-            onClick={() => onChange(o.id)}
-            aria-pressed={choisi}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ring-1 transition-all duration-200 active:scale-95 ${
-              choisi
-                ? `${s.actif} shadow-md`
-                : "bg-white text-slate-700 ring-slate-200 hover:ring-slate-400 hover:-translate-y-0.5"
-            }`}
-          >
-            <span
-              className={`w-2 h-2 rounded-full ${choisi ? "bg-white" : s.point}`}
-            />
-            {s.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-/* ---------- Formulaire ---------- */
-
+// Formulaire de création / modification d'une demande (même composant pour new et edit)
 export default function DemandForm({
-  submitUrl,
-  method,
-  redirectTo,
-  initialData,
+  mode,
+  demandeId,
+  initial,
+  options,
 }: Props) {
   const router = useRouter();
-
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [priorities, setPriorities] = useState<Priority[]>([]);
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [statuses, setStatuses] = useState<Status[]>([]);
-  const [chargement, setChargement] = useState(true);
-
-  const [title, setTitle] = useState(initialData?.title || "");
-  const [description, setDescription] = useState(
-    initialData?.description || "",
+  const edition = mode === "edit";
+  const priorites = useMemo(
+    () =>
+      [...options.priorites].sort(
+        (a, b) =>
+          ORDRE_PRIORITES.indexOf(a.label) - ORDRE_PRIORITES.indexOf(b.label),
+      ),
+    [options.priorites],
   );
-  const [categoryId, setCategoryId] = useState(initialData?.id_category || "");
-  const [priorityId, setPriorityId] = useState(initialData?.id_priority || "");
-  const [agentId, setAgentId] = useState(initialData?.id_assigned_agent || "");
-  const [statusId, setStatusId] = useState(initialData?.id_status || "");
+  const prioriteParDefaut =
+    priorites.find((p) => p.label === "NORMALE")?.id ?? priorites[0]?.id ?? "";
 
-  const [error, setError] = useState("");
-  const [envoi, setEnvoi] = useState(false);
+  const depart: Champs = useMemo(
+    () => ({
+      titre: initial?.title ?? "",
+      description: initial?.description ?? "",
+      categorie: initial?.id_category ?? "",
+      priorite: initial?.id_priority ?? prioriteParDefaut,
+      statut: initial?.id_status ?? "",
+      agent: initial?.id_assigned_agent ?? "",
+    }),
+    [initial, prioriteParDefaut],
+  );
+
+  const [champs, setChamps] = useState<Champs>(depart);
+  const [ongletDescription, setOngletDescription] = useState<
+    "ecrire" | "apercu"
+  >("ecrire");
   const [tente, setTente] = useState(false);
+  const [erreurServeur, setErreurServeur] = useState("");
+  const [envoi, setEnvoi] = useState(false);
+  const [brouillonA, setBrouillonA] = useState<number | null>(null);
+  const [brouillonRestaure, setBrouillonRestaure] = useState(false);
+  const [maintenant, setMaintenant] = useState(() => Date.now());
+  const formulaire = useRef<HTMLFormElement>(null);
 
-  // Blocs ouverts (le 1er est ouvert au départ)
-  const [ouverts, setOuverts] = useState<number[]>([1]);
-  const basculer = (n: number) =>
-    setOuverts((o) => (o.includes(n) ? o.filter((x) => x !== n) : [...o, n]));
-  const passerA = (actuel: number, suivant: number) =>
-    setOuverts((o) => [...o.filter((x) => x !== actuel), suivant]);
+  const modifier = (cle: keyof Champs, valeur: string) =>
+    setChamps((c) => ({ ...c, [cle]: valeur }));
+
+  // Brouillon (création uniquement) : restauration au montage, sauvegarde 800 ms après la frappe
+  useEffect(() => {
+    if (edition) return;
+    try {
+      const brut = localStorage.getItem(CLE_BROUILLON);
+      if (!brut) return;
+      const b = JSON.parse(brut) as Partial<Champs> & { savedAt?: number };
+      if (b.titre || b.description) {
+        setChamps((c) => ({
+          ...c,
+          titre: b.titre ?? c.titre,
+          description: b.description ?? c.description,
+          categorie: b.categorie ?? c.categorie,
+          priorite: b.priorite || c.priorite,
+          agent: b.agent ?? c.agent,
+        }));
+        setBrouillonA(b.savedAt ?? Date.now());
+        setBrouillonRestaure(true);
+      }
+    } catch {
+      // brouillon illisible ou stockage indisponible : on l'ignore
+    }
+  }, [edition]);
 
   useEffect(() => {
-    async function loadData() {
+    if (edition) return;
+    if (!champs.titre && !champs.description) return;
+    const minuteur = window.setTimeout(() => {
       try {
-        const [catRes, prioRes, agentRes, statusRes] = await Promise.all([
-          fetch("/api/categories"),
-          fetch("/api/priorities"),
-          fetch("/api/users?role=agent"),
-          fetch("/api/statuses"),
-        ]);
-        const [catData, prioData, agentData, statusData] = await Promise.all([
-          catRes.json(),
-          prioRes.json(),
-          agentRes.json(),
-          statusRes.json(),
-        ]);
-        setCategories(Array.isArray(catData) ? catData : []);
-        setPriorities(Array.isArray(prioData) ? prioData : []);
-        setAgents(Array.isArray(agentData) ? agentData : []);
-        setStatuses(Array.isArray(statusData) ? statusData : []);
+        const savedAt = Date.now();
+        localStorage.setItem(
+          CLE_BROUILLON,
+          JSON.stringify({ ...champs, savedAt }),
+        );
+        setBrouillonA(savedAt);
       } catch {
-        setError("Erreur lors du chargement des données.");
-      } finally {
-        setChargement(false);
+        // stockage indisponible : pas de brouillon
       }
-    }
-    loadData();
+    }, 800);
+    return () => window.clearTimeout(minuteur);
+  }, [champs, edition]);
+
+  useEffect(() => {
+    const minuteur = window.setInterval(() => setMaintenant(Date.now()), 5000);
+    return () => window.clearInterval(minuteur);
   }, []);
 
-  useEffect(() => {
-    if (initialData) {
-      setTitle(initialData.title);
-      setDescription(initialData.description);
-      setCategoryId(initialData.id_category);
-      setPriorityId(initialData.id_priority);
-      setAgentId(initialData.id_assigned_agent || "");
-      setStatusId(initialData.id_status || "");
-    }
-  }, [initialData]);
-
-  // Vérifications en direct
+  // Validation (zod pour titre / description, choix obligatoires pour le reste)
+  const erreursZod = erreursDemande({
+    title: champs.titre,
+    description: champs.description,
+  });
   const erreurs = {
-    title: title.trim().length < 3 ? "Au moins 3 caractères." : "",
-    description:
-      description.trim().length < 10 ? "Au moins 10 caractères." : "",
-    category: !categoryId ? "Choisis une catégorie." : "",
-    priority: !priorityId ? "Choisis une priorité." : "",
-    status: method === "PUT" && !statusId ? "Choisis un statut." : "",
+    titre: erreursZod.title,
+    description: erreursZod.description,
+    categorie: champs.categorie ? undefined : "Choisissez une catégorie.",
+    priorite: champs.priorite ? undefined : "Choisissez une priorité.",
+    statut: edition && !champs.statut ? "Choisissez un statut." : undefined,
   };
   const valide = Object.values(erreurs).every((e) => !e);
+  const afficher = (e?: string) => (tente ? e : undefined);
 
-  const prioritesTriees = [...priorities].sort(
-    (a, b) =>
-      (PRIORITES[a.label]?.ordre ?? 9) - (PRIORITES[b.label]?.ordre ?? 9),
-  );
-  const statutsTries = [...statuses].sort(
-    (a, b) => (STATUTS[a.label]?.ordre ?? 9) - (STATUTS[b.label]?.ordre ?? 9),
-  );
-  const agentChoisi = agents.find((a) => a.id_user === agentId);
+  const modifications = edition
+    ? (Object.keys(champs) as (keyof Champs)[]).filter(
+        (k) => champs[k].trim() !== depart[k].trim(),
+      ).length
+    : 0;
 
-  // Résumés affichés quand un bloc est fermé
-  const libellePriorite = priorities.find(
-    (p) => p.id_priority === priorityId,
-  )?.label;
-  const libelleStatut = statuses.find((x) => x.id_status === statusId)?.label;
-  const resume1 = title.trim() ? title.trim() : "";
-  const resume2 = [
-    categories.find((c) => c.id_category === categoryId)?.label,
-    libellePriorite
-      ? `Priorité ${PRIORITES[libellePriorite]?.label ?? libellePriorite}`
-      : "",
-    method === "PUT" && libelleStatut
-      ? (STATUTS[libelleStatut]?.label ?? libelleStatut)
-      : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  const resume3 = agentChoisi
-    ? `${agentChoisi.first_name} ${agentChoisi.last_name}`
-    : "Non assigné";
-  const complet1 = !erreurs.title && !erreurs.description;
-  const complet2 = !erreurs.category && !erreurs.priority && !erreurs.status;
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
+  const envoyer = useCallback(async () => {
     setTente(true);
-    if (!valide) {
-      // Ouvre les blocs qui contiennent une erreur
-      setOuverts((o) => [
-        ...new Set([...o, ...(complet1 ? [] : [1]), ...(complet2 ? [] : [2])]),
-      ]);
+    setErreurServeur("");
+    if (!valide || envoi) {
+      formulaire.current
+        ?.querySelector<HTMLElement>("[aria-invalid=true]")
+        ?.focus();
       return;
     }
-
     setEnvoi(true);
     try {
-      const res = await fetch(submitUrl, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
+      const res = await fetch(
+        edition ? `/api/demands/${demandeId}` : "/api/demands",
+        {
+          method: edition ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: champs.titre.trim(),
+            description: champs.description.trim(),
+            idCategory: champs.categorie,
+            idPriority: champs.priorite,
+            idAssignedAgent: champs.agent || null,
+            ...(edition && { idStatus: champs.statut }),
+          }),
         },
-        body: JSON.stringify({
-          title,
-          description,
-          idCategory: categoryId,
-          idPriority: priorityId,
-          idAssignedAgent: agentId || null,
-          ...(method === "PUT" && { idStatus: statusId }),
-        }),
-      });
-
+      );
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        if (data.message?.name && data.message.name === "ZodError") {
-          const message = JSON.parse(data.message.message)
-            .map((z: { message: string }) => z.message)
-            .join("\n");
-          throw new Error(message);
-        }
         throw new Error(
           typeof data.message === "string"
             ? data.message
-            : method === "POST"
-              ? "Erreur lors de la création"
-              : "Erreur lors de la mise à jour",
+            : edition
+              ? "Erreur lors de la mise à jour."
+              : "Erreur lors de la création.",
         );
       }
-
-      router.push(redirectTo);
+      const id = edition ? demandeId : data.id;
+      if (!edition) {
+        try {
+          localStorage.removeItem(CLE_BROUILLON);
+        } catch {
+          // rien à nettoyer
+        }
+      }
+      notifier({
+        titre: edition ? "Modifications enregistrées" : "Demande créée",
+        description: champs.titre.trim(),
+        ton: "succes",
+      });
+      router.push(id ? `/demands/${id}` : "/demands");
       router.refresh();
     } catch (err) {
-      setError((err as Error).message);
+      setErreurServeur((err as Error).message);
       setEnvoi(false);
     }
-  }
+  }, [valide, envoi, edition, demandeId, champs, router]);
 
-  const champ =
-    "w-full rounded-xl border bg-slate-50/60 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:bg-white focus:ring-4";
-  const champOk = "border-slate-200 focus:border-blue-500 focus:ring-blue-100";
-  const champKo = "border-red-300 focus:border-red-500 focus:ring-red-100";
-  const aide = (msg: string) =>
-    tente && msg ? <p className="mt-1.5 text-xs text-red-600">{msg}</p> : null;
+  // Ctrl / ⌘ + Entrée envoie depuis n'importe quel champ du formulaire
+  useEffect(() => {
+    const surTouche = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        envoyer();
+      }
+    };
+    const f = formulaire.current;
+    f?.addEventListener("keydown", surTouche);
+    return () => f?.removeEventListener("keydown", surTouche);
+  }, [envoyer]);
 
-  if (chargement) {
-    return (
-      <div className="space-y-5 animate-pulse">
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="rounded-2xl border border-slate-200 bg-white p-6"
-          >
-            <div className="h-5 w-40 bg-slate-200 rounded mb-5" />
-            <div className="h-11 bg-slate-100 rounded-xl mb-3" />
-            <div className="h-11 bg-slate-100 rounded-xl" />
-          </div>
-        ))}
-      </div>
-    );
-  }
+  const categorie = options.categories.find((c) => c.id === champs.categorie);
+  const priorite = priorites.find((p) => p.id === champs.priorite);
+  const agent = options.agents.find((a) => a.id === champs.agent);
+  const moinsCharge = [...options.agents].sort(
+    (a, b) => a.ouvertes - b.ouvertes,
+  )[0];
+  const checklist = [
+    { label: "Titre explicite", ok: champs.titre.trim().length >= 8 },
+    { label: "Catégorie choisie", ok: !!champs.categorie },
+    {
+      label: "Description détaillée",
+      ok: champs.description.trim().length >= 40,
+    },
+  ];
+  const faits = checklist.filter((c) => c.ok).length;
+
+  const optionsPriorite = priorites.map((p) => {
+    const code = estCodePriorite(p.label) ? p.label : null;
+    return {
+      value: p.id,
+      label: code ? PRIORITES[code].label : p.label,
+      icon: (
+        <span
+          aria-hidden="true"
+          className={cn(
+            "size-2 rounded-full",
+            code ? PRIORITES[code].barre : "bg-fg-3",
+            code === "HAUTE" && champs.priorite === p.id && "animate-pulse",
+          )}
+        />
+      ),
+    };
+  });
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-      {error && (
-        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 whitespace-pre-line">
-          <svg
-            aria-hidden="true"
-            className="w-5 h-5 shrink-0 mt-0.5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 8v4M12 16h.01" />
-          </svg>
-          {error}
-        </div>
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+      <PageHeader
+        eyebrow={
+          edition && demandeId
+            ? `Modification · ${reference(demandeId)}`
+            : "Pilotage · nouvelle demande"
+        }
+        title={edition ? "Modifier la demande" : "Nouvelle demande"}
+        subtitle={
+          edition
+            ? "Les changements sont enregistrés dans l’historique de la demande."
+            : "Décrivez le besoin : il sera créé avec le statut « Nouvelle »."
+        }
+        actions={
+          edition && modifications > 0 ? (
+            <span className="inline-flex items-center gap-2 rounded-full bg-st-encours/15 px-3 py-1.5 text-[12.5px] font-semibold text-st-encours-fg">
+              <span
+                aria-hidden="true"
+                className="size-[7px] animate-live rounded-full bg-st-encours"
+              />
+              {modifications} modification{modifications > 1 ? "s" : ""} non
+              enregistrée{modifications > 1 ? "s" : ""}
+            </span>
+          ) : undefined
+        }
+      />
+
+      {brouillonRestaure && (
+        <Alert
+          tone="info"
+          action={
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                setChamps(depart);
+                setBrouillonRestaure(false);
+                setBrouillonA(null);
+                try {
+                  localStorage.removeItem(CLE_BROUILLON);
+                } catch {
+                  // rien à effacer
+                }
+              }}
+            >
+              Repartir de zéro
+            </Button>
+          }
+        >
+          Votre brouillon précédent a été restauré.
+        </Alert>
       )}
 
-      {/* 1. Description */}
-      <Bloc
-        numero={1}
-        titre="La demande"
-        sousTitre="Décris clairement le besoin"
-        couleur="from-blue-500 to-indigo-500"
-        ouvert={ouverts.includes(1)}
-        complet={complet1}
-        resume={resume1}
-        onToggle={() => basculer(1)}
+      <form
+        ref={formulaire}
+        noValidate
+        onSubmit={(e) => {
+          e.preventDefault();
+          envoyer();
+        }}
+        className="flex flex-col gap-5"
       >
-        <div className="space-y-4">
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label
-                htmlFor="titre"
-                className="text-sm font-medium text-slate-700"
-              >
-                Titre
-              </label>
-              <span
-                className={`text-xs tabular-nums ${title.length > 200 ? "text-red-600" : "text-slate-400"}`}
-              >
-                {title.length}/200
-              </span>
-            </div>
-            <input
-              id="titre"
-              type="text"
-              value={title}
-              maxLength={200}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex. : Problème d'accès au dossier social"
-              className={`${champ} ${tente && erreurs.title ? champKo : champOk}`}
-            />
-            {aide(erreurs.title)}
-          </div>
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label
-                htmlFor="description"
-                className="text-sm font-medium text-slate-700"
-              >
-                Description
-              </label>
-              <span className="text-xs text-slate-400 tabular-nums">
-                {description.length} caractères
-              </span>
-            </div>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={5}
-              placeholder="Contexte, étapes, ce qui est attendu…"
-              className={`${champ} resize-y ${tente && erreurs.description ? champKo : champOk}`}
-            />
-            {aide(erreurs.description)}
-          </div>
-        </div>
-        <BoutonSuivant onClick={() => passerA(1, 2)} />
-      </Bloc>
+        {erreurServeur && (
+          <Alert tone="danger" title="La demande n’a pas pu être enregistrée">
+            {erreurServeur}
+          </Alert>
+        )}
 
-      {/* 2. Classement */}
-      <Bloc
-        numero={2}
-        titre="Classement"
-        sousTitre="Catégorie et niveau d'urgence"
-        couleur="from-violet-500 to-fuchsia-500"
-        ouvert={ouverts.includes(2)}
-        complet={complet2}
-        resume={resume2}
-        onToggle={() => basculer(2)}
-      >
-        <div className="space-y-5">
-          <div>
-            <p className="text-sm font-medium text-slate-700 mb-2">Catégorie</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {categories.map((c, i) => {
-                const choisi = categoryId === c.id_category;
-                return (
-                  <button
-                    key={c.id_category}
-                    type="button"
-                    onClick={() => setCategoryId(c.id_category)}
-                    aria-pressed={choisi}
-                    className={`relative overflow-hidden rounded-xl px-3 py-3 text-sm font-medium text-left transition-all duration-200 active:scale-95 ${
-                      choisi
-                        ? `bg-gradient-to-br ${COULEURS_CATEGORIE[i % COULEURS_CATEGORIE.length]} text-white shadow-lg`
-                        : "bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:ring-slate-400 hover:-translate-y-0.5"
-                    }`}
+        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
+          <div className="flex min-w-0 flex-col gap-5">
+            <Card className="flex animate-rise flex-col gap-5 [animation-delay:80ms]">
+              <Input
+                id="f-titre"
+                label="Titre de la demande"
+                value={champs.titre}
+                onChange={(e) => modifier("titre", e.target.value)}
+                maxLength={200}
+                counter
+                placeholder="Ex. Suivi dossier allocation"
+                error={afficher(erreurs.titre)}
+              />
+
+              <fieldset>
+                <legend className="mb-2 text-[13px] font-semibold text-fg-1">
+                  Catégorie
+                </legend>
+                <div
+                  role="radiogroup"
+                  aria-label="Catégorie"
+                  aria-invalid={afficher(erreurs.categorie) ? true : undefined}
+                  aria-describedby={
+                    afficher(erreurs.categorie)
+                      ? "f-categorie-erreur"
+                      : undefined
+                  }
+                  className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-2.5"
+                >
+                  {options.categories.map((c, i) => {
+                    const s = styleCategorie(c.label, i);
+                    return (
+                      <ChoiceCard
+                        key={c.id}
+                        icon={s.lettre}
+                        pastilleClass={s.pastille}
+                        bordureClass={s.bordure}
+                        label={c.label}
+                        selected={champs.categorie === c.id}
+                        onSelect={() => modifier("categorie", c.id)}
+                      />
+                    );
+                  })}
+                </div>
+                {afficher(erreurs.categorie) && (
+                  <p
+                    id="f-categorie-erreur"
+                    className="mt-2 animate-shake text-[12.5px] font-medium text-danger-fg"
+                  >
+                    {erreurs.categorie}
+                  </p>
+                )}
+              </fieldset>
+
+              <fieldset>
+                <legend className="mb-2 text-[13px] font-semibold text-fg-1">
+                  Priorité
+                </legend>
+                <SegmentedControl
+                  label="Priorité"
+                  layoutId="seg-priorite"
+                  value={champs.priorite}
+                  onChange={(v) => modifier("priorite", v)}
+                  options={optionsPriorite}
+                  className="grid w-full grid-cols-3 rounded-xl [&>button]:h-10"
+                />
+              </fieldset>
+
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <span
+                    id="f-description-titre"
+                    className="text-[13px] font-semibold text-fg-1"
+                  >
+                    Description
+                  </span>
+                  <SegmentedControl
+                    label="Mode d’édition de la description"
+                    layoutId="seg-description"
+                    size="sm"
+                    value={ongletDescription}
+                    onChange={setOngletDescription}
+                    options={[
+                      { value: "ecrire", label: "Écrire" },
+                      { value: "apercu", label: "Aperçu" },
+                    ]}
+                    className="rounded-[9px] p-[3px] [&>button]:h-7"
+                  />
+                </div>
+                {ongletDescription === "ecrire" ? (
+                  <Textarea
+                    id="f-description"
+                    aria-labelledby="f-description-titre"
+                    value={champs.description}
+                    onChange={(e) => modifier("description", e.target.value)}
+                    rows={7}
+                    placeholder="Contexte, démarches déjà faites, ce qui est attendu…"
+                    error={afficher(erreurs.description)}
+                  />
+                ) : (
+                  <div className="min-h-[170px] whitespace-pre-line break-words rounded-[11px] border border-line-field bg-bg px-3.5 py-3 leading-[1.7] text-fg-1">
+                    {champs.description.trim() ? (
+                      <TexteAvecLiens texte={champs.description} />
+                    ) : (
+                      <span className="text-fg-4">Rien à prévisualiser.</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            <Card className="flex animate-rise flex-wrap gap-5 [animation-delay:140ms]">
+              <Select
+                id="f-agent"
+                label="Agent assigné"
+                value={champs.agent}
+                onChange={(e) => modifier("agent", e.target.value)}
+                wrapperClassName="flex-[1_1_260px]"
+                hint={
+                  moinsCharge && !champs.agent ? (
+                    <span className="text-success-fg">
+                      Suggestion : {moinsCharge.nom} est le moins chargé.
+                    </span>
+                  ) : undefined
+                }
+              >
+                <option value="">Non assignée</option>
+                {options.agents.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.nom} · {a.ouvertes} ouverte{a.ouvertes > 1 ? "s" : ""}
+                  </option>
+                ))}
+              </Select>
+              {edition && (
+                <Select
+                  id="f-statut"
+                  label="Statut"
+                  value={champs.statut}
+                  onChange={(e) => modifier("statut", e.target.value)}
+                  wrapperClassName="flex-[1_1_260px]"
+                  error={afficher(erreurs.statut)}
+                >
+                  {options.statuts.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {estCodeStatut(s.label)
+                        ? STATUTS[s.label].label
+                        : s.label}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </Card>
+          </div>
+
+          {/* Colonne collante : aperçu en direct + checklist */}
+          <aside className="flex min-w-0 flex-col gap-5 lg:sticky lg:top-[88px]">
+            <Card className="animate-rise [animation-delay:120ms]">
+              <p className="mb-3 text-eyebrow uppercase text-fg-4">
+                Aperçu en direct
+              </p>
+              <div className="rounded-xl border border-line-card bg-surface-2 px-4 py-3.5 transition-[transform,box-shadow] duration-[280ms] ease-out [@media(hover:hover)]:hover:-translate-y-[3px] [@media(hover:hover)]:hover:shadow-md">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-[11px] text-fg-4">
+                    {edition && demandeId ? reference(demandeId) : "#NOUVELLE"}
+                  </span>
+                  {priorite && estCodePriorite(priorite.label) && (
+                    <span
+                      className={cn(
+                        "rounded-full px-2 py-0.5 text-[11.5px] font-semibold",
+                        PRIORITES[priorite.label].badge,
+                      )}
+                    >
+                      {PRIORITES[priorite.label].label}
+                    </span>
+                  )}
+                </div>
+                <p className="mb-2.5 mt-2 break-words font-semibold leading-snug">
+                  {champs.titre.trim() || "Sans titre"}
+                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="rounded-[6px] bg-surface px-2 py-0.5 text-[11.5px] text-fg-2">
+                    {categorie?.label ?? "—"}
+                  </span>
+                  {agent && <Avatar id={agent.id} name={agent.nom} size={24} />}
+                </div>
+              </div>
+            </Card>
+
+            <Card className="animate-rise [animation-delay:180ms]">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="font-semibold">Prête à envoyer</p>
+                <span className="text-[12.5px] tabular-nums text-fg-3">
+                  {faits}/{checklist.length}
+                </span>
+              </div>
+              <div
+                aria-hidden="true"
+                className="mb-3.5 h-1.5 overflow-hidden rounded-full bg-bg-sunken"
+              >
+                <div
+                  className={cn(
+                    "h-full origin-left rounded-full transition-[transform,background-color] duration-500 ease-out",
+                    faits === checklist.length ? "bg-success" : "bg-accent",
+                  )}
+                  style={{ transform: `scaleX(${faits / checklist.length})` }}
+                />
+              </div>
+              <ul className="flex flex-col gap-2.5">
+                {checklist.map((c) => (
+                  <li
+                    key={c.label}
+                    className="flex items-center gap-2.5 text-[13.5px] text-fg-1"
                   >
                     <span
-                      className={`block w-2 h-2 rounded-full mb-2 ${choisi ? "bg-white" : `bg-gradient-to-br ${COULEURS_CATEGORIE[i % COULEURS_CATEGORIE.length]}`}`}
-                    />
-                    {c.label}
-                  </button>
-                );
-              })}
-            </div>
-            {aide(erreurs.category)}
-          </div>
-
-          <div>
-            <p className="text-sm font-medium text-slate-700 mb-2">Priorité</p>
-            <Pastilles
-              options={prioritesTriees.map((p) => ({
-                id: p.id_priority,
-                label: p.label,
-              }))}
-              valeur={priorityId}
-              onChange={setPriorityId}
-              styles={PRIORITES}
-            />
-            {aide(erreurs.priority)}
-          </div>
-
-          {method === "PUT" && (
-            <div>
-              <p className="text-sm font-medium text-slate-700 mb-2">Statut</p>
-              <Pastilles
-                options={statutsTries.map((s) => ({
-                  id: s.id_status,
-                  label: s.label,
-                }))}
-                valeur={statusId}
-                onChange={setStatusId}
-                styles={STATUTS}
-              />
-              {aide(erreurs.status)}
-            </div>
-          )}
-        </div>
-        <BoutonSuivant onClick={() => passerA(2, 3)} />
-      </Bloc>
-
-      {/* 3. Agent */}
-      <Bloc
-        numero={3}
-        titre="Prise en charge"
-        sousTitre="Agent assigné (optionnel)"
-        couleur="from-emerald-500 to-teal-500"
-        ouvert={ouverts.includes(3)}
-        complet={true}
-        resume={resume3}
-        onToggle={() => basculer(3)}
-      >
-        {agents.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            Aucun agent disponible : aucun utilisateur n'a le rôle{" "}
-            <strong>AGENT</strong> dans la base.
-          </div>
-        ) : (
-          <div className="grid sm:grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setAgentId("")}
-              aria-pressed={!agentId}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-left transition-all active:scale-[.98] ${
-                !agentId
-                  ? "bg-slate-800 text-white shadow-md"
-                  : "bg-slate-50 text-slate-600 ring-1 ring-slate-200 hover:ring-slate-400"
-              }`}
-            >
-              <span
-                className={`w-9 h-9 rounded-full flex items-center justify-center border-2 border-dashed ${!agentId ? "border-white/60" : "border-slate-300"}`}
-              >
-                –
-              </span>
-              Non assigné
-            </button>
-            {agents.map((a, i) => {
-              const choisi = agentId === a.id_user;
-              return (
-                <button
-                  key={a.id_user}
-                  type="button"
-                  onClick={() => setAgentId(a.id_user)}
-                  aria-pressed={choisi}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-left transition-all active:scale-[.98] ${
-                    choisi
-                      ? "bg-emerald-600 text-white shadow-md"
-                      : "bg-slate-50 text-slate-800 ring-1 ring-slate-200 hover:ring-emerald-400 hover:-translate-y-0.5"
-                  }`}
-                >
-                  <span
-                    className={`w-9 h-9 rounded-full text-white text-xs font-bold flex items-center justify-center ${choisi ? "bg-white/25" : COULEURS_AVATAR[i % COULEURS_AVATAR.length]}`}
-                  >
-                    {initiales(a)}
-                  </span>
-                  <span className="font-medium">
-                    {a.first_name} {a.last_name}
-                  </span>
-                  {choisi && (
-                    <svg
                       aria-hidden="true"
-                      className="w-4 h-4 ml-auto"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
+                      className={cn(
+                        "flex size-5 items-center justify-center rounded-[6px] transition-transform duration-300 ease-spring",
+                        c.ok
+                          ? "scale-100 bg-success text-ink"
+                          : "scale-90 ring-2 ring-inset ring-line-hover",
+                      )}
                     >
-                      <path d="M5 12.5l4.5 4.5L19 7" />
-                    </svg>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        )}
-        {agentChoisi && (
-          <p className="mt-3 text-xs text-emerald-700">
-            ✓ La demande sera suivie par {agentChoisi.first_name}{" "}
-            {agentChoisi.last_name}.
-          </p>
-        )}
-      </Bloc>
+                      {c.ok && <Check strokeWidth={3} className="size-3.5" />}
+                    </span>
+                    {c.label}
+                    <span className="sr-only">
+                      {c.ok ? " : fait" : " : à compléter"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          </aside>
+        </div>
 
-      {/* Actions */}
-      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-1">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="px-5 py-3 rounded-xl text-sm font-medium text-slate-700 bg-white ring-1 ring-slate-200 hover:bg-slate-50 transition"
-        >
-          Annuler
-        </button>
-        <button
-          type="submit"
-          disabled={envoi}
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/40 hover:-translate-y-0.5 active:translate-y-0 transition disabled:opacity-60 disabled:cursor-wait"
-        >
-          {envoi && (
-            <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-          )}
-          {envoi
-            ? "Enregistrement…"
-            : method === "POST"
-              ? "Créer la demande"
-              : "Mettre à jour la demande"}
-        </button>
-      </div>
-    </form>
+        {/* Barre d'actions collante */}
+        <div className="sticky bottom-4 z-sticky flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-line-strong bg-surface/90 px-4 py-3 shadow-lg backdrop-blur-md">
+          <span className="text-[12.5px] text-fg-3" aria-live="polite">
+            {edition
+              ? modifications > 0
+                ? "Modifications en attente d’enregistrement"
+                : "Aucune modification"
+              : brouillonA
+                ? `Brouillon enregistré automatiquement · ${ilYaSecondes(brouillonA, maintenant)}`
+                : "Le brouillon est enregistré automatiquement sur cet appareil"}
+          </span>
+          <div className="flex gap-2">
+            <Link
+              href={edition && demandeId ? `/demands/${demandeId}` : "/demands"}
+              className={classesBouton({
+                variant: "ghost",
+                className: "text-fg-1",
+              })}
+            >
+              Annuler
+            </Link>
+            <Button
+              type="submit"
+              loading={envoi}
+              loadingLabel="Envoi…"
+              className="px-[18px]"
+            >
+              {edition ? "Enregistrer" : "Créer la demande"}
+              <Kbd className="ml-1 hidden border-fg/30 bg-fg/10 text-current sm:inline-flex">
+                Ctrl ↵
+              </Kbd>
+            </Button>
+          </div>
+        </div>
+      </form>
+    </div>
   );
 }

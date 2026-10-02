@@ -114,3 +114,34 @@ export function initiales(nom: string): string {
       .toUpperCase() || "?"
   );
 }
+
+// Apparence des catégories (pastille + bordure de sélection) ; repli cyclique pour une catégorie inconnue
+const CATEGORIES_CONNUES: Record<
+  string,
+  { lettre: string; pastille: string; bordure: string }
+> = {
+  Social: { lettre: "S", pastille: "bg-avatar-1", bordure: "border-avatar-1" },
+  Administratif: {
+    lettre: "A",
+    pastille: "bg-accent-soft",
+    bordure: "border-accent-soft",
+  },
+  Santé: { lettre: "+", pastille: "bg-success", bordure: "border-success" },
+  Autre: { lettre: "…", pastille: "bg-fg-2", bordure: "border-fg-2" },
+};
+
+const CATEGORIES_REPLI = [
+  { pastille: "bg-avatar-2", bordure: "border-avatar-2" },
+  { pastille: "bg-avatar-3", bordure: "border-avatar-3" },
+  { pastille: "bg-avatar-6", bordure: "border-avatar-6" },
+  { pastille: "bg-avatar-7", bordure: "border-avatar-7" },
+] as const;
+
+export function styleCategorie(label: string, index = 0) {
+  return (
+    CATEGORIES_CONNUES[label] ?? {
+      lettre: label.charAt(0).toUpperCase() || "?",
+      ...CATEGORIES_REPLI[index % CATEGORIES_REPLI.length],
+    }
+  );
+}

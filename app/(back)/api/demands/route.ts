@@ -5,6 +5,7 @@ import { findCategoryById } from "@/lib/db/queries/category.queries";
 import { createDemand } from "@/lib/db/queries/demand.queries";
 import { findPriorityById } from "@/lib/db/queries/priority.queries";
 import { findAgentById } from "@/lib/db/queries/user.queries";
+import { erreursDemande } from "@/lib/schemas/demand.schema";
 
 export async function POST(req: NextRequest) {
   // Connexion obligatoire + rôle LECTURE interdit
@@ -17,16 +18,11 @@ export async function POST(req: NextRequest) {
     const { title, description, idCategory, idPriority, idAssignedAgent } =
       body;
 
-    // VALIDATIONS
-    if (!title || title.length < 3) {
-      return NextResponse.json({ message: "Titre invalide" }, { status: 400 });
-    }
-
-    if (!description || description.length < 10) {
-      return NextResponse.json(
-        { message: "Description invalide" },
-        { status: 400 },
-      );
+    // VALIDATIONS (règles partagées avec le formulaire)
+    const erreurs = erreursDemande({ title, description });
+    const premiere = erreurs.title ?? erreurs.description;
+    if (premiere) {
+      return NextResponse.json({ message: premiere }, { status: 400 });
     }
 
     if (!idCategory || !idPriority) {
@@ -70,8 +66,8 @@ export async function POST(req: NextRequest) {
 
     // Insertion
     const result = await createDemand(
-      title,
-      description,
+      title.trim(),
+      description.trim(),
       idCategory,
       idPriority,
       idAssignedAgent,
