@@ -98,7 +98,7 @@ const Button = forwardRef<HTMLButtonElement, Props>(function Button(
       {loading ? <Spinner /> : icon}
       {loading && loadingLabel ? loadingLabel : children}
       {kbd && !loading && (
-        <Kbd className="ml-1 hidden border-white/30 bg-white/10 text-current md:inline-flex">
+        <Kbd className="ml-1 hidden border-fg/30 bg-fg/10 text-current md:inline-flex">
           {kbd}
         </Kbd>
       )}

@@ -1,3 +1,5 @@
+import { reference } from "@/lib/ui/format";
+
 // Données de navigation partagées par la sidebar, le tiroir mobile et le fil d'Ariane.
 // Les entrées des fonctionnalités pas encore livrées (Kanban, Statistiques, Mes demandes,
 // vues enregistrées, équipe) sont ajoutées à leur étape de la refonte.
@@ -38,9 +40,6 @@ export function estActif(href: string, chemin: string): boolean {
   }
   return chemin === href || chemin.startsWith(`${href}/`);
 }
-
-// « 7b20e1aa-… » → « #7B20E1AA » (même format que le reste de l'application)
-export const reference = (id: string) => `#${id.slice(0, 8).toUpperCase()}`;
 
 export type Miette = { label: string; href?: string };
 

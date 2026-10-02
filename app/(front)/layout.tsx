@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { classesPolices } from "@/app/fonts";
 import MotionProvider from "@/components/motion/MotionProvider";
+import Toaster from "@/components/ui/Toast";
 
 export const metadata: Metadata = {
   title: "TechLine Care",
@@ -15,7 +16,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr" className={classesPolices}>
       <body className="min-h-screen bg-bg font-sans text-sm leading-normal text-fg antialiased selection:bg-accent/40">
-        <MotionProvider>{children}</MotionProvider>
+        <MotionProvider>
+          {children}
+          <Toaster />
+        </MotionProvider>
       </body>
     </html>
   );

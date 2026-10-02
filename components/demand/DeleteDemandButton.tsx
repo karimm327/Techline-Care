@@ -66,7 +66,7 @@ export default function DeleteDemandButton({
         const data = await res.json().catch(() => ({}));
         throw new Error(data.message ?? "La suppression a échoué.");
       }
-      router.push("/demands?supprimee=1");
+      router.push(`/demands?supprimee=${id}`);
       router.refresh();
     } catch (e) {
       setErreur((e as Error).message);

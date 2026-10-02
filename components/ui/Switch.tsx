@@ -50,7 +50,7 @@ export default function Switch({
         />
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute left-[3px] top-[3px] size-5 rounded-full bg-white shadow-sm transition-transform duration-300 ease-spring peer-checked:translate-x-[18px]"
+          className="pointer-events-none absolute left-[3px] top-[3px] size-5 rounded-full bg-fg shadow-sm transition-transform duration-300 ease-spring peer-checked:translate-x-[18px]"
         />
       </span>
     </label>
