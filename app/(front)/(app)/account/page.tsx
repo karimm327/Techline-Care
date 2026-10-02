@@ -246,17 +246,10 @@ export default function AccountPage() {
 
   useEffect(() => {
     async function charger() {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        window.location.href = "/login";
-        return;
-      }
       try {
-        const res = await fetch("/api/users/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // Le cookie de session httpOnly suffit : pas de token côté navigateur
+        const res = await fetch("/api/users/me");
         if (res.status === 401) {
-          localStorage.removeItem("token");
           window.location.href = "/login";
           return;
         }
@@ -277,8 +270,6 @@ export default function AccountPage() {
 
   const deconnexion = async () => {
     await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
-    localStorage.removeItem("token");
-    window.dispatchEvent(new Event("auth-changed"));
     window.location.href = "/login";
   };
 
@@ -761,7 +752,6 @@ function Securite({ onDeconnexion }: { onDeconnexion: () => void }) {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({ actuel, nouveau }),
       });

@@ -31,8 +31,6 @@ export default function ConnexionForm() {
         return;
       }
 
-      localStorage.setItem("token", data.token);
-      window.dispatchEvent(new Event("auth-changed"));
       router.push("/demands");
       router.refresh();
     } catch (err) {

@@ -12,6 +12,7 @@ import {
   User,
 } from "lucide-react";
 import { type ReactNode, useState } from "react";
+import PageHeader from "@/components/layout/PageHeader";
 import Reveal from "@/components/motion/Reveal";
 import Stagger from "@/components/motion/Stagger";
 import Alert from "@/components/ui/Alert";
@@ -90,16 +91,12 @@ export default function DemoUI() {
 
   return (
     <div className="mx-auto flex w-full max-w-[1320px] flex-col gap-7 px-4 pb-16 pt-12 sm:px-8">
-      <header>
-        <p className="text-eyebrow uppercase text-accent-fg">
-          Développement · refonte Ardoise
-        </p>
-        <h1 className="mt-1 font-display text-h1">Composants UI</h1>
-        <p className="mt-1 text-fg-2">
-          Démo de components/ui/* (visible seulement avec npm run dev).
-          Référence : docs/refonte/maquette/Systeme.dc.html.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Développement · refonte Ardoise"
+        title="Composants UI"
+        subtitle="Démo de components/ui/* (visible seulement avec npm run dev). Référence : docs/refonte/maquette/Systeme.dc.html."
+        actions={<Button variant="secondary">Action</Button>}
+      />
 
       <Stagger className="flex flex-col gap-7">
         <Bloc titre="Typographie">

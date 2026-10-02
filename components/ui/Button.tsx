@@ -37,7 +37,7 @@ export function classesBouton({
   className?: string;
 } = {}) {
   return cn(
-    "inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap rounded-sm font-semibold",
+    "cible-tactile inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap rounded-sm font-semibold",
     "transition-[transform,filter,box-shadow,background-color,color] duration-200 ease-out active:scale-[.96]",
     "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-soft",
     "disabled:cursor-not-allowed disabled:opacity-55 disabled:active:scale-100",

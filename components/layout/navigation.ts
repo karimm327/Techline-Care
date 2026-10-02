@@ -1,0 +1,85 @@
+// Données de navigation partagées par la sidebar, le tiroir mobile et le fil d'Ariane.
+// Les entrées des fonctionnalités pas encore livrées (Kanban, Statistiques, Mes demandes,
+// vues enregistrées, équipe) sont ajoutées à leur étape de la refonte.
+
+export type IconeNav = "tableau" | "journal";
+
+export type LienNav = {
+  label: string;
+  href: string;
+  icone: IconeNav;
+};
+
+export type SectionNav = {
+  titre: string;
+  liens: LienNav[];
+  // Section visible seulement pour les administrateurs
+  adminSeulement?: boolean;
+};
+
+export const SECTIONS_NAV: SectionNav[] = [
+  {
+    titre: "Pilotage",
+    liens: [{ label: "Tableau de bord", href: "/demands", icone: "tableau" }],
+  },
+  {
+    titre: "Administration",
+    adminSeulement: true,
+    liens: [
+      { label: "Journal d’activité", href: "/journal", icone: "journal" },
+    ],
+  },
+];
+
+// Lien actif : /demands couvre aussi les fiches et l'édition, mais pas la création
+export function estActif(href: string, chemin: string): boolean {
+  if (href === "/demands") {
+    return chemin === "/demands" || /^\/demands\/(?!new(\/|$))/.test(chemin);
+  }
+  return chemin === href || chemin.startsWith(`${href}/`);
+}
+
+// « 7b20e1aa-… » → « #7B20E1AA » (même format que le reste de l'application)
+export const reference = (id: string) => `#${id.slice(0, 8).toUpperCase()}`;
+
+export type Miette = { label: string; href?: string };
+
+// Fil d'Ariane construit depuis le chemin courant
+export function miettesPour(chemin: string): Miette[] {
+  const tableau: Miette = { label: "Tableau de bord", href: "/demands" };
+  const segments = chemin.split("/").filter(Boolean);
+
+  if (segments[0] === "demands") {
+    if (segments.length === 1)
+      return [{ label: "Pilotage" }, { label: "Tableau de bord" }];
+    if (segments[1] === "new")
+      return [{ label: "Pilotage" }, tableau, { label: "Nouvelle demande" }];
+    const ref = reference(decodeURIComponent(segments[1]));
+    if (segments[2] === "edit")
+      return [
+        { label: "Pilotage" },
+        tableau,
+        { label: ref, href: `/demands/${segments[1]}` },
+        { label: "Modifier" },
+      ];
+    return [{ label: "Pilotage" }, tableau, { label: `Demande ${ref}` }];
+  }
+  if (segments[0] === "journal")
+    return [{ label: "Administration" }, { label: "Journal d’activité" }];
+  if (segments[0] === "account") {
+    if (segments[1] === "rights")
+      return [
+        { label: "Mon espace" },
+        { label: "Mon compte", href: "/account" },
+        { label: "Mes droits" },
+      ];
+    return [{ label: "Mon espace" }, { label: "Mon compte" }];
+  }
+  return [];
+}
+
+export const LIBELLES_ROLE: Record<string, string> = {
+  ADMIN: "Administrateur",
+  AGENT: "Agent",
+  LECTURE: "Lecture seule",
+};

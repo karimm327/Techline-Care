@@ -163,7 +163,7 @@ export default function Menu({
             rang += 1;
             const monRang = rang;
             const classes = cn(
-              "flex h-[38px] w-full items-center gap-2.5 rounded-[9px] px-3 text-left text-[13.5px] outline-none transition-colors duration-150",
+              "cible-tactile flex h-[38px] w-full items-center gap-2.5 rounded-[9px] px-3 text-left text-[13.5px] outline-none transition-colors duration-150",
               "focus-visible:bg-surface-3 hover:bg-surface-3",
               it.tone === "danger"
                 ? "text-danger-fg"

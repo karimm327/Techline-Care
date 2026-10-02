@@ -36,8 +36,6 @@ export default function LoginForm() {
         return;
       }
 
-      localStorage.setItem("token", data.token);
-
       router.push("/demands");
     } catch {
       setError("Impossible de contacter le serveur.");

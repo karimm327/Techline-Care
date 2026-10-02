@@ -3,3 +3,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  /* Cibles tactiles ≥ 44 px sur écran tactile, sans changer le rendu souris de la maquette */
+  @media (pointer: coarse) {
+    .cible-tactile {
+      min-height: 44px;
+    }
+  }
+}

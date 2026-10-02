@@ -9,7 +9,7 @@ const fusion = extendTailwindMerge({
       "font-size": [
         { text: ["display-xl", "h1", "h2", "h3", "kpi", "eyebrow"] },
       ],
-      shadow: [{ shadow: ["glow", "focus"] }],
+      shadow: [{ shadow: ["glow", "focus", "logo", "glow-nav"] }],
       ease: [{ ease: ["spring"] }],
       duration: [{ duration: ["fast", "base", "slow", "enter"] }],
       z: [{ z: ["header", "sticky", "toast", "overlay", "palette"] }],

@@ -71,7 +71,7 @@ export default function SegmentedControl<T extends string>({
               refs.current[cible]?.focus();
             }}
             className={cn(
-              "relative inline-flex items-center justify-center gap-2 rounded-lg px-3 font-medium transition-colors duration-200",
+              "cible-tactile relative inline-flex items-center justify-center gap-2 rounded-lg px-3 font-medium transition-colors duration-200",
               "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent-soft",
               size === "sm" ? "h-8 text-[12.5px]" : "h-9 text-[13px]",
               actif ? "text-fg" : "text-fg-3 hover:text-fg-1",
