@@ -166,6 +166,11 @@ export default async function DemandDetailPage({
         creation={creation}
         peutAgir={peutAgir}
         lectureSeule={!peutModifier && !supprimee}
+        moiId={
+          moi.role === "AGENT" && demand.id_assigned_agent !== moi.id
+            ? moi.id
+            : undefined
+        }
       />
 
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">

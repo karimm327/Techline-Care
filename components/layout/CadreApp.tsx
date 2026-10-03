@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { type ReactNode, useEffect, useState } from "react";
 import { Logo } from "@/components/brand/LogoMark";
+import CentreCommandes from "@/components/command/CentreCommandes";
 import Drawer from "@/components/ui/Drawer";
 import IconButton from "@/components/ui/IconButton";
 import { cn } from "@/lib/ui/cn";
@@ -93,6 +94,9 @@ export default function CadreApp({ utilisateur, footer, children }: Props) {
       </div>
 
       {footer}
+
+      {/* Palette Ctrl K, raccourcis globaux et feuille d'aide « ? » */}
+      <CentreCommandes utilisateur={utilisateur} />
 
       {/* Mobile (< 1024 px) : la sidebar devient un tiroir gauche */}
       <Drawer

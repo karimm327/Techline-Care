@@ -49,6 +49,8 @@ type Props = {
   demandeId?: string;
   initial?: ValeursDemande;
   options: OptionsFormulaire;
+  // Titre pré-rempli depuis la palette Ctrl K (création uniquement)
+  titreSuggere?: string;
 };
 
 type Champs = {
@@ -76,6 +78,7 @@ export default function DemandForm({
   demandeId,
   initial,
   options,
+  titreSuggere,
 }: Props) {
   const router = useRouter();
   const edition = mode === "edit";
@@ -92,14 +95,14 @@ export default function DemandForm({
 
   const depart: Champs = useMemo(
     () => ({
-      titre: initial?.title ?? "",
+      titre: initial?.title ?? titreSuggere ?? "",
       description: initial?.description ?? "",
       categorie: initial?.id_category ?? "",
       priorite: initial?.id_priority ?? prioriteParDefaut,
       statut: initial?.id_status ?? "",
       agent: initial?.id_assigned_agent ?? "",
     }),
-    [initial, prioriteParDefaut],
+    [initial, prioriteParDefaut, titreSuggere],
   );
 
   const [champs, setChamps] = useState<Champs>(depart);
@@ -119,7 +122,8 @@ export default function DemandForm({
 
   // Brouillon (création uniquement) : restauration au montage, sauvegarde 800 ms après la frappe
   useEffect(() => {
-    if (edition) return;
+    // Un titre suggéré par la palette prime sur un ancien brouillon
+    if (edition || titreSuggere) return;
     try {
       const brut = localStorage.getItem(CLE_BROUILLON);
       if (!brut) return;
@@ -139,7 +143,7 @@ export default function DemandForm({
     } catch {
       // brouillon illisible ou stockage indisponible : on l'ignore
     }
-  }, [edition]);
+  }, [edition, titreSuggere]);
 
   useEffect(() => {
     if (edition) return;

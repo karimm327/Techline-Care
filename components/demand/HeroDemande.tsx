@@ -1,9 +1,16 @@
 "use client";
 
-import { ArrowLeft, ChevronDown, Link2, Pencil } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronDown,
+  Link2,
+  MessageSquare,
+  Pencil,
+  UserCheck,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Alert from "@/components/ui/Alert";
 import BoutonInterdit from "@/components/ui/BoutonInterdit";
 import Button, { classesBouton } from "@/components/ui/Button";
@@ -12,7 +19,12 @@ import Menu from "@/components/ui/Menu";
 import StatusBadge from "@/components/ui/StatusBadge";
 import StatusStepper from "@/components/ui/StatusStepper";
 import { notifier } from "@/components/ui/Toast";
+import { useShortcuts } from "@/lib/hooks/useShortcuts";
 import { cn } from "@/lib/ui/cn";
+import {
+  type CommandeContextuelle,
+  useDeclarerCommandes,
+} from "@/lib/ui/commandes";
 import { reference } from "@/lib/ui/format";
 import {
   type CodeStatut,
@@ -21,6 +33,8 @@ import {
   PRIORITES,
   STATUTS,
 } from "@/lib/ui/status";
+
+const CODES_STATUT = Object.keys(STATUTS) as CodeStatut[];
 
 type Props = {
   id: string;
@@ -34,6 +48,8 @@ type Props = {
   peutAgir: boolean;
   // Rôle LECTURE : actions affichées désactivées avec une explication
   lectureSeule?: boolean;
+  // Agent connecté pouvant se l'assigner (raccourci A) ; absent sinon
+  moiId?: string;
 };
 
 // Hero de la fiche : référence, titre, badges, actions, changement de statut (M12)
@@ -46,6 +62,7 @@ export default function HeroDemande({
   creation,
   peutAgir,
   lectureSeule = false,
+  moiId,
 }: Props) {
   const router = useRouter();
   const [statut, setStatut] = useState(statutInitial);
@@ -90,6 +107,100 @@ export default function HeroDemande({
       setEnvoi(false);
     }
   }
+
+  async function mAssigner() {
+    if (!moiId) return;
+    try {
+      const res = await fetch(`/api/demands/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ agentId: moiId }),
+      });
+      if (!res.ok) throw new Error();
+      notifier({
+        titre: "Demande assignée",
+        description: "Vous suivez maintenant cette demande.",
+        ton: "succes",
+      });
+      router.refresh();
+    } catch {
+      notifier({ titre: "Assignation impossible", ton: "erreur" });
+    }
+  }
+
+  const ecrireCommentaire = () => {
+    const champ = document.getElementById("commentaire");
+    champ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    champ?.focus({ preventScroll: true });
+  };
+
+  // Raccourcis de la fiche (F2) : E modifier, 1–4 statut, A m'assigner, C commenter
+  useShortcuts(
+    {
+      e: () => router.push(`/demands/${id}/edit`),
+      c: ecrireCommentaire,
+      ...Object.fromEntries(
+        CODES_STATUT.map((code) => [
+          STATUTS[code].touche,
+          () => changerStatut(code),
+        ]),
+      ),
+      ...(moiId ? { a: mAssigner } : {}),
+    },
+    peutAgir,
+  );
+
+  // Commandes proposées dans la palette Ctrl K tant que la fiche est affichée
+  // biome-ignore lint/correctness/useExhaustiveDependencies: les actions lisent l'état courant au moment du choix
+  const commandes = useMemo<CommandeContextuelle[]>(
+    () =>
+      peutAgir
+        ? [
+            ...CODES_STATUT.filter((code) => code !== statut).map((code) => ({
+              id: `statut-${code}`,
+              label: `Passer en « ${STATUTS[code].label} »`,
+              touche: STATUTS[code].touche,
+              motsCles: ["statut", "changer"],
+              icone: (
+                <span
+                  className={cn(
+                    "block size-2.5 rounded-full",
+                    STATUTS[code].point,
+                  )}
+                />
+              ),
+              action: () => changerStatut(code),
+            })),
+            {
+              id: "modifier",
+              label: "Modifier la demande",
+              touche: "E",
+              icone: <Pencil strokeWidth={1.9} className="size-4" />,
+              action: () => router.push(`/demands/${id}/edit`),
+            },
+            ...(moiId
+              ? [
+                  {
+                    id: "m-assigner",
+                    label: "M’assigner la demande",
+                    touche: "A",
+                    icone: <UserCheck strokeWidth={1.9} className="size-4" />,
+                    action: mAssigner,
+                  },
+                ]
+              : []),
+            {
+              id: "commenter",
+              label: "Écrire un commentaire",
+              touche: "C",
+              icone: <MessageSquare strokeWidth={1.9} className="size-4" />,
+              action: ecrireCommentaire,
+            },
+          ]
+        : [],
+    [peutAgir, statut, moiId, id],
+  );
+  useDeclarerCommandes(commandes);
 
   async function copierLien() {
     try {

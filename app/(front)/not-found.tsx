@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/LogoMark";
 import { classesBouton } from "@/components/ui/Button";
+import Kbd from "@/components/ui/Kbd";
 
 // 404 — « 404 » avec glitch (M20). Utilisée par notFound() et par les URL inconnues.
 export default function PageIntrouvable() {
@@ -21,11 +22,21 @@ export default function PageIntrouvable() {
           Cette demande n’existe pas ou a été supprimée
         </h1>
         <p className="mb-[18px] mt-1.5 max-w-[340px] text-fg-3">
-          Vérifiez le lien, ou retrouvez-la depuis le tableau de bord.
+          Vérifiez le lien, ou retrouvez-la depuis la recherche.
         </p>
-        <Link href="/demands" className={classesBouton()}>
-          Tableau de bord
-        </Link>
+        <div className="flex flex-wrap justify-center gap-2">
+          <Link href="/demands" className={classesBouton()}>
+            Tableau de bord
+          </Link>
+          {/* Ouvre la palette une fois sur le tableau de bord (la 404 n'a pas le cadre applicatif) */}
+          <Link
+            href="/demands?palette=1"
+            className={classesBouton({ variant: "secondary" })}
+          >
+            Rechercher
+            <Kbd className="ml-1.5 text-fg-3">Ctrl K</Kbd>
+          </Link>
+        </div>
       </main>
     </div>
   );

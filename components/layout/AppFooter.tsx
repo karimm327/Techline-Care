@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BoutonRaccourcis from "@/components/command/BoutonRaccourcis";
 import Kbd from "@/components/ui/Kbd";
 import packageJson from "@/package.json";
 import StatusPill from "./StatusPill";
@@ -36,6 +37,7 @@ export default function AppFooter() {
             {l.label}
           </Link>
         ))}
+        <BoutonRaccourcis />
       </nav>
     </footer>
   );

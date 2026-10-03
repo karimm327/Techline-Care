@@ -10,15 +10,17 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Logo } from "@/components/brand/LogoMark";
 import Avatar from "@/components/ui/Avatar";
 import { classesBouton } from "@/components/ui/Button";
-import Dialog from "@/components/ui/Dialog";
 import IconButton from "@/components/ui/IconButton";
+import Kbd from "@/components/ui/Kbd";
 import Menu from "@/components/ui/Menu";
 import { useScrolled } from "@/lib/hooks/useScrolled";
+import { libelleMod } from "@/lib/hooks/useShortcuts";
 import { cn } from "@/lib/ui/cn";
+import { ouvrirPalette } from "@/lib/ui/commandes";
 import Breadcrumbs from "./Breadcrumbs";
 import type { UtilisateurShell } from "./types";
 
@@ -40,7 +42,9 @@ export default function AppHeader({
   menuMobileOuvert,
 }: Props) {
   const compacte = useScrolled(8);
-  const [rechercheOuverte, setRechercheOuverte] = useState(false);
+  // « ⌘ K » sur Mac, « Ctrl K » ailleurs (lu après hydratation)
+  const [mod, setMod] = useState("Ctrl");
+  useEffect(() => setMod(libelleMod()), []);
 
   return (
     <header
@@ -69,8 +73,9 @@ export default function AppHeader({
 
       <button
         type="button"
-        onClick={() => setRechercheOuverte(true)}
-        aria-label="Rechercher"
+        onClick={ouvrirPalette}
+        aria-label="Rechercher ou lancer une commande"
+        aria-keyshortcuts="Control+K Meta+K"
         className={cn(
           "cible-tactile ml-auto flex h-10 min-w-0 max-w-[460px] flex-1 basis-[220px] items-center gap-2.5 rounded-sm border border-line-strong/70 bg-surface px-3 text-left text-fg-3",
           "transition-colors duration-[180ms] hover:bg-surface-2 hover:text-fg",
@@ -85,6 +90,7 @@ export default function AppHeader({
         <span className="flex-1 truncate text-[13.5px]">
           Rechercher une demande, une personne, une action…
         </span>
+        <Kbd className="hidden sm:inline-flex">{mod} K</Kbd>
       </button>
 
       <div className="flex items-center gap-1.5">
@@ -96,6 +102,9 @@ export default function AppHeader({
           >
             <Plus aria-hidden="true" strokeWidth={2.2} className="size-4" />
             <span className="hidden md:inline">Nouvelle demande</span>
+            <kbd className="hidden rounded-[5px] bg-white/20 px-[5px] py-px font-mono text-[10.5px] md:inline">
+              N
+            </kbd>
           </Link>
         )}
 
@@ -170,15 +179,6 @@ export default function AppHeader({
           )}
         />
       </div>
-
-      {/* La palette de commandes (Ctrl K) arrive à l'étape 9 */}
-      <Dialog
-        open={rechercheOuverte}
-        onClose={() => setRechercheOuverte(false)}
-        title="Rechercher"
-        description="La recherche rapide sera disponible prochainement."
-        size="sm"
-      />
     </header>
   );
 }
