@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import RestoreButton from "@/components/activity/RestoreButton";
 import CommentForm from "@/components/demand/CommentForm";
+import FilConversation from "@/components/demand/FilConversation";
 import HeroDemande from "@/components/demand/HeroDemande";
 import HistoriqueDemande from "@/components/demand/HistoriqueDemande";
 import OngletsConversation from "@/components/demand/OngletsConversation";
@@ -13,31 +14,19 @@ import Card from "@/components/ui/Card";
 import { estAdmin, estLectureSeule } from "@/lib/auth";
 import { requireUser } from "@/lib/auth/session";
 import { findActivityByDemand } from "@/lib/db/queries/activity.queries";
-import { findCommentsByDemandId } from "@/lib/db/queries/comment.queries";
+import {
+  findCommentsByDemandId,
+  findMentionnables,
+  findQuickReplies,
+} from "@/lib/db/queries/comment.queries";
 import {
   countDemandesOuvertesAgent,
   findDemandDetailById,
 } from "@/lib/db/queries/demand.queries";
 import { formaterDuree } from "@/lib/sla";
-import { dateCourte, dateHeure, heure, ilYA, pluriel } from "@/lib/ui/format";
-
-type Commentaire = {
-  id_comment: string;
-  id_author: string;
-  content: string;
-  created_at: string;
-  author_first_name?: string;
-  author_last_name?: string;
-};
+import { dateCourte, dateHeure, ilYA, pluriel } from "@/lib/ui/format";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-// « aujourd'hui à 10:48 », « 30 sept. 2026 à 09:12 »
-function quand(d: string) {
-  const date = new Date(d);
-  const aujourdhui = new Date().toDateString() === date.toDateString();
-  return `${aujourdhui ? "aujourd’hui" : dateCourte(date)} à ${heure(date)}`;
-}
 
 function TitreCarte({ children }: { children: React.ReactNode }) {
   return <h2 className="mb-3 font-display text-h3">{children}</h2>;
@@ -62,61 +51,29 @@ export default async function DemandDetailPage({
   if (supprimee && !admin) notFound();
   const peutAgir = peutModifier && !supprimee;
 
-  const [comments, historique, ouvertesAgent] = await Promise.all([
-    findCommentsByDemandId(id) as Promise<Commentaire[]>,
-    findActivityByDemand(id),
-    demand.id_assigned_agent
-      ? countDemandesOuvertesAgent(demand.id_assigned_agent)
-      : Promise.resolve(0),
-  ]);
+  const [comments, historique, ouvertesAgent, mentionnables, reponsesRapides] =
+    await Promise.all([
+      findCommentsByDemandId(id, {
+        inclureInternes: peutModifier,
+        idUtilisateur: moi.id,
+      }),
+      findActivityByDemand(id),
+      demand.id_assigned_agent
+        ? countDemandesOuvertesAgent(demand.id_assigned_agent)
+        : Promise.resolve(0),
+      // Composer (ADMIN / AGENT) : personnes mentionnables et réponses rapides
+      peutModifier ? findMentionnables() : Promise.resolve([]),
+      peutModifier ? findQuickReplies().catch(() => []) : Promise.resolve([]),
+    ]);
+  const publics = comments.filter((c) => !c.is_internal);
+  const internes = comments.filter((c) => c.is_internal);
+  const noms = mentionnables.map((p) => p.nom);
 
   // Créateur : colonne created_by (migration v2), sinon l'entrée CREATION du journal
   const createur =
     demand.created_by_name ??
     historique.find((h) => h.action === "CREATION")?.actor_label;
   const creation = `Créée ${ilYA(demand.created_at)}${createur ? ` par ${createur}` : ""}`;
-
-  const listeCommentaires =
-    comments.length === 0 ? (
-      <p className="rounded-xl bg-surface-inset px-4 py-6 text-center text-fg-3">
-        Aucun commentaire pour l’instant.
-      </p>
-    ) : (
-      <ol className="flex flex-col gap-[18px]">
-        {comments.map((c, i) => {
-          const auteur =
-            `${c.author_first_name ?? ""} ${c.author_last_name ?? ""}`.trim() ||
-            "Utilisateur";
-          return (
-            <li
-              key={c.id_comment}
-              className="flex animate-rise gap-3"
-              style={{ animationDelay: `${250 + Math.min(i, 8) * 70}ms` }}
-            >
-              <Avatar id={c.id_author} name={auteur} size={36} decorative />
-              <div className="min-w-0 flex-1">
-                <p className="text-[13px]">
-                  <span className="font-semibold">{auteur}</span>
-                  <span className="text-fg-4">
-                    {" "}
-                    ·{" "}
-                    <time
-                      dateTime={c.created_at}
-                      title={dateHeure(c.created_at)}
-                    >
-                      {quand(c.created_at)}
-                    </time>
-                  </span>
-                </p>
-                <p className="mt-1.5 inline-block max-w-full whitespace-pre-line break-words rounded-[4px_14px_14px_14px] bg-surface-2 px-3.5 py-2.5 text-fg-1">
-                  <TexteAvecLiens texte={c.content} />
-                </p>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
-    );
 
   const zoneSaisie = supprimee ? (
     <div className="mt-5">
@@ -125,7 +82,11 @@ export default async function DemandDetailPage({
       </Alert>
     </div>
   ) : peutModifier ? (
-    <CommentForm demandId={id} />
+    <CommentForm
+      demandId={id}
+      mentionnables={mentionnables}
+      reponsesRapides={reponsesRapides}
+    />
   ) : (
     <div className="mt-5">
       <Alert tone="info">
@@ -205,14 +166,46 @@ export default async function DemandDetailPage({
                 {
                   value: "commentaires",
                   label: "Commentaires",
-                  count: comments.length,
+                  count: publics.length,
                   contenu: (
                     <>
-                      {listeCommentaires}
+                      <FilConversation
+                        commentaires={publics}
+                        noms={noms}
+                        peutReagir={peutAgir}
+                        vide="Aucun commentaire pour l’instant."
+                      />
                       {zoneSaisie}
                     </>
                   ),
                 },
+                // Notes internes : agents et administrateurs seulement
+                ...(peutModifier
+                  ? [
+                      {
+                        value: "notes",
+                        label: "Notes internes",
+                        count: internes.length,
+                        contenu: (
+                          <>
+                            <FilConversation
+                              commentaires={internes}
+                              noms={noms}
+                              peutReagir={peutAgir}
+                              vide="Les notes internes ne sont visibles que des agents et administrateurs. Aucune note pour l’instant."
+                            />
+                            {!supprimee && (
+                              <CommentForm
+                                demandId={id}
+                                interne
+                                mentionnables={mentionnables}
+                              />
+                            )}
+                          </>
+                        ),
+                      },
+                    ]
+                  : []),
               ]}
             />
           </Card>

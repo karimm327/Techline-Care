@@ -1,11 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { exigerConnexion } from "@/lib/auth";
+import { estLectureSeule, exigerConnexion } from "@/lib/auth";
 import { logActivity } from "@/lib/db/queries/activity.queries";
 import {
   createComment,
+  enregistrerMentions,
   findCommentsByDemandId,
+  findMentionnables,
 } from "@/lib/db/queries/comment.queries";
 import { findDemandById } from "@/lib/db/queries/demand.queries";
+import { extraireMentions } from "@/lib/demandes/mentions";
+import { notifierCommentaire } from "@/lib/notifications";
 
 // Ajouter un commentaire (utilisateur connecté obligatoire)
 export async function POST(
@@ -22,6 +26,8 @@ export async function POST(
   try {
     const body = await req.json();
     const content = typeof body.content === "string" ? body.content.trim() : "";
+    // Note interne : visible des agents et administrateurs seulement
+    const interne = body.interne === true;
 
     if (content.length < 2) {
       return NextResponse.json(
@@ -50,12 +56,27 @@ export async function POST(
       );
     }
 
-    await createComment(id, user.id, content);
+    const idComment = await createComment(id, user.id, content, interne);
+    const mentions = extraireMentions(
+      content,
+      await findMentionnables(),
+    ).filter((m) => m !== user.id);
+    await enregistrerMentions(idComment, mentions);
     await logActivity({
       action: "COMMENTAIRE",
       idUser: user.id,
       idDemand: id,
-      details: content.length > 120 ? `${content.slice(0, 117)}…` : content,
+      details: interne
+        ? "Note interne ajoutée"
+        : content.length > 120
+          ? `${content.slice(0, 117)}…`
+          : content,
+    });
+    await notifierCommentaire({
+      idDemand: id,
+      idAuteur: user.id,
+      mentions,
+      interne,
     });
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
@@ -77,7 +98,10 @@ export async function GET(
   const { id } = await params;
 
   try {
-    const result = await findCommentsByDemandId(id);
+    const result = await findCommentsByDemandId(id, {
+      inclureInternes: !estLectureSeule(garde.user.role),
+      idUtilisateur: garde.user.id,
+    });
     return NextResponse.json(result);
   } catch {
     return NextResponse.json(

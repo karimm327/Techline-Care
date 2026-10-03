@@ -4,6 +4,7 @@ import { logActivity } from "@/lib/db/queries/activity.queries";
 import { findCategoryById } from "@/lib/db/queries/category.queries";
 import {
   findDemandById,
+  findLabelsForDemandIds,
   findPriorityIdByLabel,
   findStatusIdByLabel,
   softDeleteDemand,
@@ -14,6 +15,7 @@ import { findPriorityById } from "@/lib/db/queries/priority.queries";
 import { findStatusById } from "@/lib/db/queries/status.queries";
 import { findAgentById } from "@/lib/db/queries/user.queries";
 import { resumerChangements } from "@/lib/demandes/changements";
+import { notifierChangements } from "@/lib/notifications";
 import { erreursDemande } from "@/lib/schemas/demand.schema";
 
 export async function PUT(
@@ -131,6 +133,16 @@ export async function PUT(
         details,
       });
     }
+    await notifierChangements({
+      idDemand: id,
+      idActeur: garde.user.id,
+      agentAvant: demandCheck.id_assigned_agent,
+      agentApres: idAssignedAgent || null,
+      nouveauStatut:
+        idStatus !== demandCheck.id_status
+          ? (await findLabelsForDemandIds({ status: idStatus })).status
+          : null,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -318,6 +330,19 @@ export async function PATCH(
         details,
       });
     }
+    await notifierChangements({
+      idDemand: id,
+      idActeur: garde.user.id,
+      agentAvant: avant.id_assigned_agent,
+      agentApres:
+        champs.idAssignedAgent !== undefined
+          ? champs.idAssignedAgent
+          : avant.id_assigned_agent,
+      nouveauStatut:
+        champs.idStatus && champs.idStatus !== avant.id_status
+          ? (status as string)
+          : null,
+    });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);

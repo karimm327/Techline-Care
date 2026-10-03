@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/brand/LogoMark";
+import CentreNotifications from "@/components/notifications/CentreNotifications";
 import Avatar from "@/components/ui/Avatar";
 import { classesBouton } from "@/components/ui/Button";
 import IconButton from "@/components/ui/IconButton";
@@ -107,6 +108,8 @@ export default function AppHeader({
             </kbd>
           </Link>
         )}
+
+        <CentreNotifications />
 
         <Menu
           label="Mon compte"

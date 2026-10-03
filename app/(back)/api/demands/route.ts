@@ -5,6 +5,7 @@ import { findCategoryById } from "@/lib/db/queries/category.queries";
 import { createDemand } from "@/lib/db/queries/demand.queries";
 import { findPriorityById } from "@/lib/db/queries/priority.queries";
 import { findAgentById } from "@/lib/db/queries/user.queries";
+import { notifierChangements } from "@/lib/notifications";
 import { erreursDemande } from "@/lib/schemas/demand.schema";
 
 export async function POST(req: NextRequest) {
@@ -80,6 +81,11 @@ export async function POST(req: NextRequest) {
       idUser: garde.user.id,
       idDemand: result.rows[0].id_demand,
       details: `Demande créée : « ${title} »`,
+    });
+    await notifierChangements({
+      idDemand: result.rows[0].id_demand,
+      idActeur: garde.user.id,
+      agentApres: idAssignedAgent || null,
     });
 
     return NextResponse.json({
