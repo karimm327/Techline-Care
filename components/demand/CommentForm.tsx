@@ -9,6 +9,7 @@ import Kbd from "@/components/ui/Kbd";
 import { notifier } from "@/components/ui/Toast";
 import type { Personne } from "@/lib/demandes/mentions";
 import { cn } from "@/lib/ui/cn";
+import { signalerFrappe } from "./Presence";
 
 const MAX = 2000;
 
@@ -207,6 +208,8 @@ export default function CommentForm({
             }
             onChange={(e) => {
               setContenu(e.target.value.slice(0, MAX));
+              // Les autres voient « … est en train d'écrire » (notes internes exclues)
+              if (!interne && e.target.value.trim()) signalerFrappe(demandId);
               majCurseur(e.target);
               setSuggestionsFermees(false);
               setIndexSuggestion(0);

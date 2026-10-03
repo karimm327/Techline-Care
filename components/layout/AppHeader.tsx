@@ -103,7 +103,7 @@ export default function AppHeader({
           >
             <Plus aria-hidden="true" strokeWidth={2.2} className="size-4" />
             <span className="hidden md:inline">Nouvelle demande</span>
-            <kbd className="hidden rounded-[5px] bg-white/20 px-[5px] py-px font-mono text-[10.5px] md:inline">
+            <kbd className="hidden rounded-[5px] bg-fg/20 px-[5px] py-px font-mono text-[10.5px] md:inline">
               N
             </kbd>
           </Link>

@@ -42,11 +42,11 @@ export async function revokeSession(idUser: string, id: string) {
   return (r.rowCount ?? 0) > 0;
 }
 
-// Dernière activité, au plus une écriture toutes les 5 minutes par session
+// Dernière activité (« Équipe en ligne »), au plus une écriture par minute et par session
 const derniersPassages = new Map<string, number>();
 export async function toucherSession(id: string) {
   const maintenant = Date.now();
-  if (maintenant - (derniersPassages.get(id) ?? 0) < 5 * 60_000) return;
+  if (maintenant - (derniersPassages.get(id) ?? 0) < 60_000) return;
   derniersPassages.set(id, maintenant);
   await db
     .query(

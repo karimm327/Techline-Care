@@ -441,7 +441,11 @@ export default function DemandForm({
                 placeholder="Ex. Suivi dossier allocation"
                 error={afficher(erreurs.titre)}
               />
-              <DemandesSimilaires titre={champs.titre} exclure={demandeId} />
+              <DemandesSimilaires
+                titre={champs.titre}
+                exclure={demandeId}
+                lierDepuis={edition ? demandeId : undefined}
+              />
 
               <fieldset>
                 <legend className="mb-2 text-[13px] font-semibold text-fg-1">

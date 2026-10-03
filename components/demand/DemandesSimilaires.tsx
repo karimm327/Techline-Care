@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import StatusBadge from "@/components/ui/StatusBadge";
+import { notifier } from "@/components/ui/Toast";
 
 type Similaire = { id: string; ref: string; title: string; status: string };
 
@@ -10,11 +11,39 @@ type Similaire = { id: string; ref: string; title: string; status: string };
 export default function DemandesSimilaires({
   titre,
   exclure,
+  lierDepuis,
 }: {
   titre: string;
   exclure?: string;
+  // Édition : demande à marquer comme doublon (bouton « Lier comme doublon »)
+  lierDepuis?: string;
 }) {
   const [liste, setListe] = useState<Similaire[]>([]);
+  const [liees, setLiees] = useState<string[]>([]);
+
+  async function lier(d: Similaire) {
+    try {
+      const res = await fetch(`/api/demands/${lierDepuis}/links`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cible: d.id, kind: "DOUBLON" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message ?? "Lien impossible.");
+      setLiees((l) => [...l, d.id]);
+      notifier({
+        titre: "Marquée comme doublon",
+        description: `${d.ref} · ${d.title}`,
+        ton: "succes",
+      });
+    } catch (e) {
+      notifier({
+        titre: "Lien impossible",
+        description: (e as Error).message,
+        ton: "erreur",
+      });
+    }
+  }
 
   useEffect(() => {
     const q = titre.trim();
@@ -53,11 +82,11 @@ export default function DemandesSimilaires({
       </p>
       <ul className="flex flex-col gap-1.5">
         {liste.map((d) => (
-          <li key={d.id}>
+          <li key={d.id} className="flex items-center gap-3">
             <Link
               href={`/demands/${d.id}`}
               target="_blank"
-              className="flex items-center gap-2.5 rounded-xs text-[13px] text-fg-1 hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft"
+              className="flex min-w-0 flex-1 items-center gap-2.5 rounded-xs text-[13px] text-fg-1 hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft"
             >
               <span className="font-mono text-[11.5px] text-fg-4">{d.ref}</span>
               <span className="min-w-0 flex-1 truncate">{d.title}</span>
@@ -67,6 +96,20 @@ export default function DemandesSimilaires({
               />
               <span className="sr-only">(s’ouvre dans un nouvel onglet)</span>
             </Link>
+            {lierDepuis &&
+              (liees.includes(d.id) ? (
+                <span className="text-[12px] font-semibold text-success-fg">
+                  Liée
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => lier(d)}
+                  className="shrink-0 rounded-xs text-[12px] font-semibold text-accent-fg hover:text-accent-fg-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft"
+                >
+                  Lier comme doublon
+                </button>
+              ))}
           </li>
         ))}
       </ul>

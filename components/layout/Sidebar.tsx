@@ -15,6 +15,7 @@ import type { ReactNode } from "react";
 import type { Vue } from "@/lib/db/queries/view.queries";
 import { SPRING } from "@/lib/motion";
 import { cn } from "@/lib/ui/cn";
+import EquipeEnLigne from "./EquipeEnLigne";
 import { estActif, type IconeNav, SECTIONS_NAV } from "./navigation";
 import SectionVues from "./SectionVues";
 
@@ -144,37 +145,41 @@ export default function Sidebar({
         ))}
       </nav>
 
-      {basculerRepli && (
-        <button
-          type="button"
-          onClick={basculerRepli}
-          aria-label={replie ? "Déplier le menu" : "Replier le menu"}
-          aria-expanded={!replie}
-          title={replie ? "Déplier le menu" : "Replier le menu"}
-          className={cn(
-            "cible-tactile mt-auto flex h-10 items-center gap-[11px] rounded-[9px] px-3 text-[13px] text-fg-3 transition-colors duration-[180ms] hover:bg-surface-hover hover:text-fg",
-            "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent-soft",
-            replie && "w-11 justify-center px-0",
-          )}
-        >
-          {replie ? (
-            <PanelLeftOpen
-              aria-hidden="true"
-              strokeWidth={1.9}
-              className="size-[18px]"
-            />
-          ) : (
-            <>
-              <PanelLeftClose
+      {/* Bas de sidebar : équipe en ligne (F12) puis repli */}
+      <div className="mt-auto flex flex-col gap-3">
+        {!replie && <EquipeEnLigne />}
+        {basculerRepli && (
+          <button
+            type="button"
+            onClick={basculerRepli}
+            aria-label={replie ? "Déplier le menu" : "Replier le menu"}
+            aria-expanded={!replie}
+            title={replie ? "Déplier le menu" : "Replier le menu"}
+            className={cn(
+              "cible-tactile flex h-10 items-center gap-[11px] rounded-[9px] px-3 text-[13px] text-fg-3 transition-colors duration-[180ms] hover:bg-surface-hover hover:text-fg",
+              "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent-soft",
+              replie && "w-11 justify-center px-0",
+            )}
+          >
+            {replie ? (
+              <PanelLeftOpen
                 aria-hidden="true"
                 strokeWidth={1.9}
                 className="size-[18px]"
               />
-              Replier le menu
-            </>
-          )}
-        </button>
-      )}
+            ) : (
+              <>
+                <PanelLeftClose
+                  aria-hidden="true"
+                  strokeWidth={1.9}
+                  className="size-[18px]"
+                />
+                Replier le menu
+              </>
+            )}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

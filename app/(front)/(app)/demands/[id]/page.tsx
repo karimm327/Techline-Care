@@ -8,6 +8,11 @@ import HeroDemande from "@/components/demand/HeroDemande";
 import HistoriqueDemande from "@/components/demand/HistoriqueDemande";
 import OngletsConversation from "@/components/demand/OngletsConversation";
 import PiecesJointes from "@/components/demand/PiecesJointes";
+import { IndicateurFrappe, SignalPresence } from "@/components/demand/Presence";
+import {
+  AbonnesDemande,
+  DemandesLiees,
+} from "@/components/demand/SuiviDemande";
 import TexteAvecLiens from "@/components/demand/TexteAvecLiens";
 import Alert from "@/components/ui/Alert";
 import Avatar from "@/components/ui/Avatar";
@@ -25,6 +30,7 @@ import {
   countDemandesOuvertesAgent,
   findDemandDetailById,
 } from "@/lib/db/queries/demand.queries";
+import { findAbonnes, findDemandesLiees } from "@/lib/db/queries/suivi.queries";
 import { formaterDuree } from "@/lib/sla";
 import { dateCourte, dateHeure, ilYA, pluriel } from "@/lib/ui/format";
 
@@ -60,6 +66,8 @@ export default async function DemandDetailPage({
     mentionnables,
     reponsesRapides,
     pieces,
+    abonnes,
+    liees,
   ] = await Promise.all([
     findCommentsByDemandId(id, {
       inclureInternes: peutModifier,
@@ -73,6 +81,8 @@ export default async function DemandDetailPage({
     peutModifier ? findMentionnables() : Promise.resolve([]),
     peutModifier ? findQuickReplies().catch(() => []) : Promise.resolve([]),
     findPiecesJointes(id).catch(() => []),
+    findAbonnes(id).catch(() => []),
+    findDemandesLiees(id).catch(() => []),
   ]);
   const publics = comments.filter((c) => !c.is_internal);
   const internes = comments.filter((c) => c.is_internal);
@@ -131,6 +141,7 @@ export default async function DemandDetailPage({
         </section>
       )}
 
+      <SignalPresence demandId={id} />
       <HeroDemande
         id={id}
         titre={demand.title}
@@ -192,6 +203,7 @@ export default async function DemandDetailPage({
                         peutReagir={peutAgir}
                         vide="Aucun commentaire pour l’instant."
                       />
+                      <IndicateurFrappe />
                       {zoneSaisie}
                     </>
                   ),
@@ -328,6 +340,21 @@ export default async function DemandDetailPage({
                 Aucun agent assigné.
               </p>
             )}
+            <AbonnesDemande
+              demandId={id}
+              initiaux={abonnes}
+              moiId={moi.id}
+              actif={!supprimee}
+            />
+          </Card>
+
+          <Card className="animate-rise px-5 py-5 [animation-delay:260ms] sm:px-[22px]">
+            <h2 className="mb-3 font-display text-h3">Demandes liées</h2>
+            <DemandesLiees
+              demandId={id}
+              initiales={liees}
+              peutModifier={peutAgir}
+            />
           </Card>
 
           <Card className="animate-rise px-5 py-5 [animation-delay:300ms] sm:px-[22px]">

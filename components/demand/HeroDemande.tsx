@@ -34,6 +34,7 @@ import {
   PRIORITES,
   STATUTS,
 } from "@/lib/ui/status";
+import { AutresLecteurs } from "./Presence";
 
 const CODES_STATUT = Object.keys(STATUTS) as CodeStatut[];
 
@@ -248,6 +249,7 @@ export default function HeroDemande({
           <Link2 aria-hidden="true" strokeWidth={2} className="size-3.5" />
           Copier le lien
         </button>
+        <AutresLecteurs />
       </div>
 
       <div className="flex flex-wrap items-start justify-between gap-[18px]">
