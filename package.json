@@ -10,7 +10,8 @@
     "format": "biome format --write",
     "db:schema": "node scripts/db.js schema",
     "db:seed": "node scripts/db.js seed",
-    "db:reset": "node scripts/db.js reset"
+    "db:reset": "node scripts/db.js reset",
+    "test": "node --test \"lib/**/*.test.mjs\""
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

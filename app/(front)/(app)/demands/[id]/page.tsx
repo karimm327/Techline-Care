@@ -18,6 +18,7 @@ import {
   countDemandesOuvertesAgent,
   findDemandDetailById,
 } from "@/lib/db/queries/demand.queries";
+import { formaterDuree } from "@/lib/sla";
 import { dateCourte, dateHeure, heure, ilYA, pluriel } from "@/lib/ui/format";
 
 type Commentaire = {
@@ -69,7 +70,10 @@ export default async function DemandDetailPage({
       : Promise.resolve(0),
   ]);
 
-  const createur = historique.find((h) => h.action === "CREATION")?.actor_label;
+  // Créateur : colonne created_by (migration v2), sinon l'entrée CREATION du journal
+  const createur =
+    demand.created_by_name ??
+    historique.find((h) => h.action === "CREATION")?.actor_label;
   const creation = `Créée ${ilYA(demand.created_at)}${createur ? ` par ${createur}` : ""}`;
 
   const listeCommentaires =
@@ -164,6 +168,12 @@ export default async function DemandDetailPage({
         priorite={demand.priority}
         categorie={demand.category}
         creation={creation}
+        sla={{
+          createdAt: demand.created_at,
+          dueAt: demand.due_at,
+          closedAt: demand.closed_at,
+          maintenant: Date.now(),
+        }}
         peutAgir={peutAgir}
         lectureSeule={!peutModifier && !supprimee}
         moiId={
@@ -221,6 +231,24 @@ export default async function DemandDetailPage({
                 <dt className="text-fg-3">Créée le</dt>
                 <dd className="text-right font-medium">
                   {dateCourte(demand.created_at)}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-4 py-2.5">
+                <dt className="text-fg-3">1re réponse</dt>
+                <dd
+                  className={
+                    demand.first_response_at
+                      ? "text-right font-medium text-success-fg"
+                      : "text-right font-medium text-fg-3"
+                  }
+                >
+                  {demand.first_response_at
+                    ? `en ${formaterDuree(
+                        (new Date(demand.first_response_at).getTime() -
+                          new Date(demand.created_at).getTime()) /
+                          60000,
+                      )}`
+                    : "En attente"}
                 </dd>
               </div>
               {demand.updated_at && (

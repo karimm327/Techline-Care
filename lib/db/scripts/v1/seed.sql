@@ -34,7 +34,8 @@ VALUES ('BASSE', 1),
 INSERT INTO statuses (label, description)
 VALUES ('NOUVELLE', 'Demande créée, non traitée'),
        ('EN_COURS', 'Demande en cours de traitement'),
-       ('CLOTUREE', 'Demande terminée');
+       ('CLOTUREE', 'Demande terminée'),
+       ('ANNULEE', 'Demande annulée');
 
 -- =====================================================
 -- CATEGORIES

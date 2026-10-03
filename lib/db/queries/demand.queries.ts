@@ -79,13 +79,20 @@ export async function findDemandDetailById(id: string) {
         u.first_name || ' ' || u.last_name AS agent_full_name,
         d.deleted_at,
         d.delete_reason,
-        del.first_name || ' ' || del.last_name AS deleted_by_name
+        del.first_name || ' ' || del.last_name AS deleted_by_name,
+        d.due_at,
+        d.closed_at,
+        d.first_response_at,
+        p.resolution_minutes,
+        d.created_by,
+        cre.first_name || ' ' || cre.last_name AS created_by_name
       FROM demands d
       LEFT JOIN statuses   s ON d.id_status        = s.id_status
       LEFT JOIN priorities p ON d.id_priority      = p.id_priority
       LEFT JOIN categories c ON d.id_category      = c.id_category
       LEFT JOIN users      u ON d.id_assigned_agent = u.id_user
       LEFT JOIN users    del ON d.deleted_by        = del.id_user
+      LEFT JOIN users    cre ON d.created_by        = cre.id_user
       WHERE d.id_demand = $1
     `,
     [id],
@@ -100,7 +107,9 @@ export async function createDemand(
   idCategory: string,
   idPriority: string,
   idAssignedAgent: string | null | undefined,
+  idCreateur: string | null = null,
 ) {
+  // L'échéance (due_at) est calculée par le trigger tl_demande_sla
   return await db.query(
     `
       INSERT INTO demands (
@@ -110,7 +119,8 @@ export async function createDemand(
         id_priority,
         id_assigned_agent,
         id_status,
-        created_at
+        created_at,
+        created_by
       )
       VALUES (
         $1,
@@ -119,11 +129,19 @@ export async function createDemand(
         $4,
         $5,
         (SELECT id_status FROM statuses WHERE label = 'NOUVELLE'),
-        NOW()
+        NOW(),
+        $6
       )
       RETURNING id_demand
     `,
-    [title, description, idCategory, idPriority, idAssignedAgent || null],
+    [
+      title,
+      description,
+      idCategory,
+      idPriority,
+      idAssignedAgent || null,
+      idCreateur,
+    ],
   );
 }
 
@@ -238,6 +256,8 @@ export type LigneDemande = {
   category: string;
   id_assigned_agent: string | null;
   agent_full_name: string | null;
+  due_at: string | null;
+  closed_at: string | null;
 };
 
 const TRIS: Record<string, string> = {
@@ -248,6 +268,7 @@ const TRIS: Record<string, string> = {
   status: "s.label",
   category: "c.label",
   agent: "agent_full_name",
+  sla: "d.due_at",
 };
 
 // Clause WHERE commune (liste, export CSV) : paramètres positionnels à partir de $1
@@ -287,10 +308,12 @@ export function construireFiltres(f: FiltresDemandes) {
 
 const SELECT_LISTE = `
   SELECT
-    d.id_demand, d.title, d.created_at, d.updated_at,
+    -- updated_at peut être vide sur d'anciennes lignes : repli sur la date de création
+    d.id_demand, d.title, d.created_at, COALESCE(d.updated_at, d.created_at) AS updated_at,
     s.label AS status, p.label AS priority, c.label AS category,
     d.id_assigned_agent,
-    CASE WHEN u.id_user IS NOT NULL THEN u.first_name || ' ' || u.last_name END AS agent_full_name
+    CASE WHEN u.id_user IS NOT NULL THEN u.first_name || ' ' || u.last_name END AS agent_full_name,
+    d.due_at, d.closed_at
   FROM demands d
   JOIN statuses   s ON d.id_status   = s.id_status
   JOIN priorities p ON d.id_priority = p.id_priority
@@ -354,7 +377,13 @@ export async function findIndicateurs() {
       COUNT(*) FILTER (WHERE s.label = 'NOUVELLE' AND p.label = 'HAUTE')::int AS nouvelles_hautes,
       COUNT(*) FILTER (WHERE s.label IN ('NOUVELLE','EN_COURS') AND d.id_assigned_agent IS NULL)::int AS non_assignees,
       COUNT(*) FILTER (WHERE s.label IN ('NOUVELLE','EN_COURS') AND d.id_assigned_agent IS NULL AND p.label = 'HAUTE')::int AS non_assignees_urgentes,
-      COUNT(*) FILTER (WHERE d.created_at >= date_trunc('day', now()))::int AS creees_aujourdhui
+      COUNT(*) FILTER (WHERE d.created_at >= date_trunc('day', now()))::int AS creees_aujourdhui,
+      COUNT(*) FILTER (WHERE d.closed_at >= now() - interval '7 days')::int AS cloturees_7j,
+      -- 1re réponse moyenne (heures) des demandes créées ces 30 derniers jours
+      ROUND((AVG(EXTRACT(EPOCH FROM (d.first_response_at - d.created_at)) / 3600)
+        FILTER (WHERE d.first_response_at IS NOT NULL AND d.created_at >= now() - interval '30 days'))::numeric, 1)::float AS premiere_reponse_h,
+      AVG(p.first_response_minutes) FILTER (WHERE s.label IN ('NOUVELLE','EN_COURS'))::float / 60 AS objectif_reponse_h,
+      COUNT(*) FILTER (WHERE s.label IN ('NOUVELLE','EN_COURS') AND d.due_at < now())::int AS sla_depasses
     FROM demands d
     JOIN statuses s ON s.id_status = d.id_status
     JOIN priorities p ON p.id_priority = d.id_priority
@@ -367,10 +396,14 @@ export async function findIndicateurs() {
     non_assignees: number;
     non_assignees_urgentes: number;
     creees_aujourdhui: number;
+    cloturees_7j: number;
+    premiere_reponse_h: number | null;
+    objectif_reponse_h: number | null;
+    sla_depasses: number;
   };
 }
 
-// Séries des N derniers jours : créées, créées sans agent, passages en CLOTUREE (journal)
+// Séries des N derniers jours : créées, créées sans agent, clôturées, 1re réponse moyenne (h)
 export async function findDailyCounts(jours = 14) {
   const r = await db.query(
     `
@@ -385,9 +418,12 @@ export async function findDailyCounts(jours = 14) {
       (SELECT COUNT(*) FROM demands d
          WHERE d.deleted_at IS NULL AND d.id_assigned_agent IS NULL
            AND date_trunc('day', d.created_at) = j.jour)::int AS sans_agent,
-      (SELECT COUNT(DISTINCT a.id_demand) FROM activity_logs a
-         WHERE a.action = 'MODIFICATION' AND a.details LIKE '%Statut : % → CLOTUREE%'
-           AND date_trunc('day', a.created_at) = j.jour)::int AS cloturees
+      (SELECT COUNT(*) FROM demands d
+         WHERE d.deleted_at IS NULL AND date_trunc('day', d.closed_at) = j.jour)::int AS cloturees,
+      (SELECT COALESCE(AVG(EXTRACT(EPOCH FROM (d.first_response_at - d.created_at)) / 3600), 0)
+         FROM demands d
+         WHERE d.deleted_at IS NULL AND d.first_response_at IS NOT NULL
+           AND date_trunc('day', d.created_at) = j.jour)::float AS reponse_h
     FROM jours j
     ORDER BY j.jour
     `,
@@ -398,6 +434,7 @@ export async function findDailyCounts(jours = 14) {
     creees: number;
     sans_agent: number;
     cloturees: number;
+    reponse_h: number;
   }[];
 }
 

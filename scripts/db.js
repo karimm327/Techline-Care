@@ -1,4 +1,4 @@
-require("dotenv").config({ path: "..env.local" });
+require("dotenv").config({ path: ".env.local" });
 
 const { readFileSync } = require("node:fs");
 const { Pool } = require("pg");
@@ -16,6 +16,11 @@ const action = process.argv[2]; // schema | seed | reset
 
 const schemaPath = "lib/db/scripts/v1/schema.sql";
 const seedPath = "lib/db/scripts/v1/seed.sql";
+// Migrations appliquées après le schéma (la base neuve a ainsi les tables de la refonte)
+const migrations = [
+  "lib/db/scripts/v1/migration-journal.sql",
+  "lib/db/scripts/v2/migration-refonte.sql",
+];
 
 async function run() {
   if (!action) {
@@ -29,15 +34,18 @@ async function run() {
     switch (action) {
       case "schema":
         await runSchema();
+        await runMigrations();
         break;
 
       case "seed":
         await runSeed();
+        await runMigrations();
         break;
 
       case "reset":
         await runSchema();
         await runSeed();
+        await runMigrations();
         break;
 
       default:
@@ -58,6 +66,14 @@ async function runSchema() {
   console.log("Exécution schema.sql...");
   const schemaSql = readFileSync(schemaPath, "utf-8");
   await pool.query(schemaSql);
+}
+
+// Toujours après le schéma et le seed : les migrations complètent les données (SLA, triggers)
+async function runMigrations() {
+  for (const m of migrations) {
+    console.log(`Exécution ${m}...`);
+    await pool.query(readFileSync(m, "utf-8"));
+  }
 }
 
 async function runSeed() {

@@ -18,6 +18,7 @@ import Select from "@/components/ui/Select";
 import Textarea from "@/components/ui/Textarea";
 import { notifier } from "@/components/ui/Toast";
 import { erreursDemande } from "@/lib/schemas/demand.schema";
+import { libelleDelai } from "@/lib/sla";
 import { cn } from "@/lib/ui/cn";
 import { reference } from "@/lib/ui/format";
 import {
@@ -30,7 +31,13 @@ import {
 
 export type OptionsFormulaire = {
   categories: { id: string; label: string }[];
-  priorites: { id: string; label: string }[];
+  priorites: {
+    id: string;
+    label: string;
+    // Délais SLA en minutes (migration v2)
+    reponseMinutes?: number | null;
+    resolutionMinutes?: number | null;
+  }[];
   statuts: { id: string; label: string }[];
   agents: { id: string; nom: string; ouvertes: number }[];
 };
@@ -428,6 +435,18 @@ export default function DemandForm({
                   options={optionsPriorite}
                   className="grid w-full grid-cols-3 rounded-xl [&>button]:h-10"
                 />
+                {priorite?.resolutionMinutes && (
+                  <p
+                    className="mt-2 text-[12.5px] text-fg-3"
+                    aria-live="polite"
+                  >
+                    {priorite.label === "HAUTE"
+                      ? "Prise en charge prioritaire : "
+                      : ""}
+                    1re réponse sous {libelleDelai(priorite.reponseMinutes)},
+                    résolution sous {libelleDelai(priorite.resolutionMinutes)}.
+                  </p>
+                )}
               </fieldset>
 
               <div>
@@ -593,6 +612,14 @@ export default function DemandForm({
                   </li>
                 ))}
               </ul>
+              {priorite?.resolutionMinutes && (
+                <p className="mt-4 border-t border-line pt-3.5 text-[12.5px] text-fg-3">
+                  SLA estimé :{" "}
+                  <span className="font-semibold text-fg">
+                    résolution sous {libelleDelai(priorite.resolutionMinutes)}
+                  </span>
+                </p>
+              )}
             </Card>
           </aside>
         </div>

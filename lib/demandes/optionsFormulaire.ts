@@ -17,10 +17,19 @@ export async function chargerOptionsFormulaire(): Promise<OptionsFormulaire> {
       id: c.id_category,
       label: c.label,
     })),
-    priorites: priorites.map((p: { id_priority: string; label: string }) => ({
-      id: p.id_priority,
-      label: p.label,
-    })),
+    priorites: priorites.map(
+      (p: {
+        id_priority: string;
+        label: string;
+        first_response_minutes: number | null;
+        resolution_minutes: number | null;
+      }) => ({
+        id: p.id_priority,
+        label: p.label,
+        reponseMinutes: p.first_response_minutes,
+        resolutionMinutes: p.resolution_minutes,
+      }),
+    ),
     statuts: statuts.map((s: { id_status: string; label: string }) => ({
       id: s.id_status,
       label: s.label,

@@ -21,7 +21,8 @@ const TONS: Record<TonStat, { chip: string; trait: string }> = {
 
 type Props = {
   label: string;
-  value: number;
+  // null : aucune donnée, la carte affiche « — »
+  value: number | null;
   decimals?: number;
   unit?: string;
   // Pastille à droite du libellé (ex. « +2 aujourd'hui »)
@@ -73,8 +74,12 @@ export default function StatCard({
       </div>
       <div className="mt-2.5 flex items-end justify-between gap-3">
         <p className="font-display text-kpi tabular-nums">
-          <CountUp value={value} decimals={decimals} />
-          {unit && (
+          {value === null ? (
+            <span className="text-fg-4">—</span>
+          ) : (
+            <CountUp value={value} decimals={decimals} />
+          )}
+          {unit && value !== null && (
             <span className="ml-1 text-base font-medium text-fg-3">{unit}</span>
           )}
         </p>

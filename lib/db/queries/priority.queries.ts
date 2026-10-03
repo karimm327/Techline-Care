@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 
 export async function findAllPriorities() {
   const result = await db.query(`
-        SELECT id_priority, label
+        SELECT id_priority, label, first_response_minutes, resolution_minutes
         FROM priorities
         WHERE is_active = true
         ORDER BY id_priority

@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
       idCategory,
       idPriority,
       idAssignedAgent,
+      garde.user.id,
     );
 
     // Journal d'activité

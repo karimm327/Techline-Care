@@ -12,6 +12,7 @@ import { classesBouton } from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import EmptyState from "@/components/ui/EmptyState";
 import PriorityBars from "@/components/ui/PriorityBars";
+import SlaPill from "@/components/ui/SlaPill";
 import StatCard from "@/components/ui/StatCard";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { estAdmin, estLectureSeule } from "@/lib/auth";
@@ -379,7 +380,7 @@ export default async function DemandsPage({ searchParams }: Props) {
   const page = Math.min(pageDemandee, totalPages);
   const debut = (page - 1) * PAR_PAGE;
   const ouvertes = k.nouvelles + k.en_cours;
-  const cloturees7j = series.slice(-7).reduce((a, j) => a + j.cloturees, 0);
+  const maintenant = Date.now();
   const prenom = profil?.first_name ?? "";
 
   const lienPage = (p: number) => {
@@ -418,7 +419,7 @@ export default async function DemandsPage({ searchParams }: Props) {
         subtitle={sousTitre}
       />
 
-      {/* Indicateurs (la 1re réponse moyenne arrive avec le SLA, étape 10) */}
+      {/* Indicateurs */}
       <section
         aria-label="Indicateurs"
         className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4"
@@ -451,8 +452,29 @@ export default async function DemandsPage({ searchParams }: Props) {
         />
         <StatCard
           index={2}
+          label="1re réponse moyenne"
+          value={k.premiere_reponse_h}
+          decimals={1}
+          unit="h"
+          trend={
+            k.sla_depasses > 0
+              ? `${pluriel(k.sla_depasses, "SLA dépassé", "SLA dépassés")}`
+              : undefined
+          }
+          tone={k.sla_depasses > 0 ? "late" : "done"}
+          spark={series.map((j) => j.reponse_h)}
+          hint={
+            k.premiere_reponse_h === null
+              ? "Aucune réponse sur 30 jours"
+              : k.objectif_reponse_h
+                ? `Sur 30 jours · objectif moyen ${Math.round(k.objectif_reponse_h * 10) / 10} h`
+                : "Sur 30 jours"
+          }
+        />
+        <StatCard
+          index={3}
           label="Clôturées (7 jours)"
-          value={cloturees7j}
+          value={k.cloturees_7j}
           tone="warn"
           spark={series.map((j) => j.cloturees)}
           hint="Passages au statut Clôturée"
@@ -517,7 +539,7 @@ export default async function DemandsPage({ searchParams }: Props) {
           <>
             {/* Tableau (tablette et ordinateur) */}
             <div className="hidden overflow-x-auto md:block">
-              <table className="w-full min-w-[820px] border-collapse text-[13.5px]">
+              <table className="w-full min-w-[920px] border-collapse text-[13.5px]">
                 <thead>
                   <tr className="bg-surface-inset text-[11.5px] text-fg-3">
                     <SortableHeader
@@ -529,6 +551,7 @@ export default async function DemandsPage({ searchParams }: Props) {
                     <SortableHeader label="Priorité" field="priority" />
                     <SortableHeader label="Catégorie" field="category" />
                     <SortableHeader label="Agent" field="agent" />
+                    <SortableHeader label="SLA" field="sla" />
                     <SortableHeader
                       label="Mise à jour"
                       field="updated_at"
@@ -565,6 +588,15 @@ export default async function DemandsPage({ searchParams }: Props) {
                       </td>
                       <td className="max-w-[220px] border-t border-line-soft p-3">
                         <CelluleAgent d={d} peutModifier={peutModifier} />
+                      </td>
+                      <td className="border-t border-line-soft p-3">
+                        <SlaPill
+                          statut={d.status}
+                          createdAt={d.created_at}
+                          dueAt={d.due_at}
+                          closedAt={d.closed_at}
+                          maintenant={maintenant}
+                        />
                       </td>
                       <td
                         className="whitespace-nowrap border-t border-line-soft py-3 pl-3 pr-[18px] text-right text-fg-3"
@@ -603,6 +635,13 @@ export default async function DemandsPage({ searchParams }: Props) {
                   <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
                     <PriorityBars priority={d.priority} />
                     <span className="text-[13px] text-fg-3">{d.category}</span>
+                    <SlaPill
+                      statut={d.status}
+                      createdAt={d.created_at}
+                      dueAt={d.due_at}
+                      closedAt={d.closed_at}
+                      maintenant={maintenant}
+                    />
                   </div>
                   <div className="mt-3">
                     <CelluleAgent d={d} peutModifier={peutModifier} />

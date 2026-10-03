@@ -16,6 +16,7 @@ import BoutonInterdit from "@/components/ui/BoutonInterdit";
 import Button, { classesBouton } from "@/components/ui/Button";
 import ConfettiBurst from "@/components/ui/ConfettiBurst";
 import Menu from "@/components/ui/Menu";
+import SlaRing from "@/components/ui/SlaRing";
 import StatusBadge from "@/components/ui/StatusBadge";
 import StatusStepper from "@/components/ui/StatusStepper";
 import { notifier } from "@/components/ui/Toast";
@@ -50,6 +51,13 @@ type Props = {
   lectureSeule?: boolean;
   // Agent connecté pouvant se l'assigner (raccourci A) ; absent sinon
   moiId?: string;
+  // Données SLA (anneau à côté du suivi)
+  sla?: {
+    createdAt: string;
+    dueAt: string | null;
+    closedAt: string | null;
+    maintenant: number;
+  };
 };
 
 // Hero de la fiche : référence, titre, badges, actions, changement de statut (M12)
@@ -63,6 +71,7 @@ export default function HeroDemande({
   peutAgir,
   lectureSeule = false,
   moiId,
+  sla,
 }: Props) {
   const router = useRouter();
   const [statut, setStatut] = useState(statutInitial);
@@ -331,13 +340,32 @@ export default function HeroDemande({
         )}
       </div>
 
-      <div className="mt-[22px] border-t border-line pt-5">
+      <div className="mt-[22px] flex flex-wrap items-center gap-5 border-t border-line pt-5">
         {statut === "ANNULEE" ? (
-          <Alert tone="info" title="Demande annulée">
+          <Alert tone="info" title="Demande annulée" className="flex-1">
             Elle reste consultable mais ne suit plus le parcours de traitement.
           </Alert>
         ) : (
-          <StatusStepper status={statut} />
+          <>
+            <StatusStepper
+              status={statut}
+              className="min-w-0 flex-[1_1_480px]"
+            />
+            {sla && (
+              <SlaRing
+                statut={statut}
+                createdAt={sla.createdAt}
+                dueAt={sla.dueAt}
+                // Clôture en direct : l'anneau passe à « Respecté » sans attendre le rechargement
+                closedAt={
+                  statut === "CLOTUREE"
+                    ? (sla.closedAt ?? new Date(sla.maintenant).toISOString())
+                    : null
+                }
+                maintenant={sla.maintenant}
+              />
+            )}
+          </>
         )}
       </div>
       {/* Annonce du changement de statut aux lecteurs d'écran */}

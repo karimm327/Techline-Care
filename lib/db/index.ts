@@ -32,23 +32,28 @@ if (!globalPourPg.pgPool) {
   });
 }
 
+// Migrations idempotentes exécutées au démarrage, dans l'ordre (n'effacent rien)
+const MIGRATIONS = [
+  "lib/db/scripts/v1/migration-journal.sql",
+  "lib/db/scripts/v2/migration-refonte.sql",
+];
+
 const migration =
   globalPourPg.pgMigration ??
   (async () => {
-    try {
-      const sql = readFileSync(
-        path.join(process.cwd(), "lib/db/scripts/v1/migration-journal.sql"),
-        "utf-8",
-      );
-      await pool.query(sql);
-    } catch (e) {
-      console.error(
-        "⚠️ Mise à jour automatique de la base impossible :",
-        (e as Error).message,
-      );
-      console.error(
-        "   → Lance lib/db/scripts/v1/migration-journal.sql dans pgAdmin.",
-      );
+    for (const fichier of MIGRATIONS) {
+      try {
+        const sql = readFileSync(path.join(process.cwd(), fichier), "utf-8");
+        await pool.query(sql);
+      } catch (e) {
+        console.error(
+          "⚠️ Mise à jour automatique de la base impossible :",
+          (e as Error).message,
+        );
+        console.error(`   → Lance ${fichier} dans pgAdmin.`);
+        // Une migration en échec bloque les suivantes (elles en dépendent)
+        return;
+      }
     }
   })();
 
