@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { estAdmin, estLectureSeule } from "@/lib/auth";
 import { requireUser } from "@/lib/auth/session";
 import { findUserById } from "@/lib/db/queries/user.queries";
+import { findVues } from "@/lib/db/queries/view.queries";
 import AppFooter from "./AppFooter";
 import CadreApp from "./CadreApp";
 import { LIBELLES_ROLE } from "./navigation";
@@ -11,7 +12,10 @@ import type { UtilisateurShell } from "./types";
 // jamais du navigateur. Redirige vers /login si personne n'est connecté.
 export default async function AppShell({ children }: { children: ReactNode }) {
   const session = await requireUser();
-  const profil = await findUserById(session.id).catch(() => null);
+  const [profil, vues] = await Promise.all([
+    findUserById(session.id).catch(() => null),
+    findVues(session.id).catch(() => []),
+  ]);
 
   const nom =
     `${profil?.first_name ?? ""} ${profil?.last_name ?? ""}`.trim() ||
@@ -27,7 +31,7 @@ export default async function AppShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CadreApp utilisateur={utilisateur} footer={<AppFooter />}>
+    <CadreApp utilisateur={utilisateur} vues={vues} footer={<AppFooter />}>
       {children}
     </CadreApp>
   );

@@ -1,9 +1,11 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import DemandesSimilaires from "@/components/demand/DemandesSimilaires";
+import PiecesJointes from "@/components/demand/PiecesJointes";
 import TexteAvecLiens from "@/components/demand/TexteAvecLiens";
 import PageHeader from "@/components/layout/PageHeader";
 import Alert from "@/components/ui/Alert";
@@ -11,16 +13,23 @@ import Avatar from "@/components/ui/Avatar";
 import Button, { classesBouton } from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import ChoiceCard from "@/components/ui/ChoiceCard";
+import DropZone from "@/components/ui/DropZone";
 import Input from "@/components/ui/Input";
 import Kbd from "@/components/ui/Kbd";
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import Select from "@/components/ui/Select";
 import Textarea from "@/components/ui/Textarea";
 import { notifier } from "@/components/ui/Toast";
+import type { PieceJointe } from "@/lib/db/queries/attachment.queries";
 import { erreursDemande } from "@/lib/schemas/demand.schema";
 import { libelleDelai } from "@/lib/sla";
 import { cn } from "@/lib/ui/cn";
-import { reference } from "@/lib/ui/format";
+import {
+  envoyerFichier,
+  typeFichier,
+  verifierFichier,
+} from "@/lib/ui/envoiFichier";
+import { reference, tailleLisible } from "@/lib/ui/format";
 import {
   estCodePriorite,
   estCodeStatut,
@@ -58,6 +67,10 @@ type Props = {
   options: OptionsFormulaire;
   // Titre pré-rempli depuis la palette Ctrl K (création uniquement)
   titreSuggere?: string;
+  // Édition : pièces jointes existantes et droits de retrait
+  pieces?: PieceJointe[];
+  moiId?: string;
+  admin?: boolean;
 };
 
 type Champs = {
@@ -86,6 +99,9 @@ export default function DemandForm({
   initial,
   options,
   titreSuggere,
+  pieces = [],
+  moiId = "",
+  admin = false,
 }: Props) {
   const router = useRouter();
   const edition = mode === "edit";
@@ -122,6 +138,13 @@ export default function DemandForm({
   const [brouillonA, setBrouillonA] = useState<number | null>(null);
   const [brouillonRestaure, setBrouillonRestaure] = useState(false);
   const [maintenant, setMaintenant] = useState(() => Date.now());
+  // Création : fichiers mis en attente, envoyés une fois la demande créée
+  const [fichiers, setFichiers] = useState<File[]>([]);
+  const [envoiPj, setEnvoiPj] = useState<{
+    n: number;
+    total: number;
+    ratio: number;
+  } | null>(null);
   const formulaire = useRef<HTMLFormElement>(null);
 
   const modifier = (cle: keyof Champs, valeur: string) =>
@@ -154,7 +177,15 @@ export default function DemandForm({
 
   useEffect(() => {
     if (edition) return;
-    if (!champs.titre && !champs.description) return;
+    // Formulaire vidé : l'ancien brouillon ne doit pas revenir à la prochaine visite
+    if (!champs.titre && !champs.description) {
+      try {
+        localStorage.removeItem(CLE_BROUILLON);
+      } catch {
+        // stockage indisponible
+      }
+      return;
+    }
     const minuteur = window.setTimeout(() => {
       try {
         const savedAt = Date.now();
@@ -233,6 +264,30 @@ export default function DemandForm({
         );
       }
       const id = edition ? demandeId : data.id;
+      // Pièces jointes en attente : envoyées une à une sur la demande créée
+      if (!edition && id && fichiers.length > 0) {
+        let echecs = 0;
+        for (let i = 0; i < fichiers.length; i++) {
+          setEnvoiPj({ n: i + 1, total: fichiers.length, ratio: 0 });
+          try {
+            await envoyerFichier(
+              `/api/demands/${id}/attachments`,
+              fichiers[i],
+              (ratio) =>
+                setEnvoiPj({ n: i + 1, total: fichiers.length, ratio }),
+            );
+          } catch {
+            echecs++;
+          }
+        }
+        setEnvoiPj(null);
+        if (echecs > 0)
+          notifier({
+            titre: "Pièces jointes incomplètes",
+            description: `${echecs} fichier(s) n’ont pas pu être envoyés : ajoutez-les depuis la fiche.`,
+            ton: "alerte",
+          });
+      }
       if (!edition) {
         try {
           localStorage.removeItem(CLE_BROUILLON);
@@ -251,7 +306,7 @@ export default function DemandForm({
       setErreurServeur((err as Error).message);
       setEnvoi(false);
     }
-  }, [valide, envoi, edition, demandeId, champs, router]);
+  }, [valide, envoi, edition, demandeId, champs, router, fichiers]);
 
   // Ctrl / ⌘ + Entrée envoie depuis n'importe quel champ du formulaire
   useEffect(() => {
@@ -278,6 +333,10 @@ export default function DemandForm({
     {
       label: "Description détaillée",
       ok: champs.description.trim().length >= 40,
+    },
+    {
+      label: "Pièce jointe (facultatif)",
+      ok: fichiers.length > 0 || pieces.length > 0,
     },
   ];
   const faits = checklist.filter((c) => c.ok).length;
@@ -382,6 +441,7 @@ export default function DemandForm({
                 placeholder="Ex. Suivi dossier allocation"
                 error={afficher(erreurs.titre)}
               />
+              <DemandesSimilaires titre={champs.titre} exclure={demandeId} />
 
               <fieldset>
                 <legend className="mb-2 text-[13px] font-semibold text-fg-1">
@@ -486,6 +546,93 @@ export default function DemandForm({
                       <TexteAvecLiens texte={champs.description} />
                     ) : (
                       <span className="text-fg-4">Rien à prévisualiser.</span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <p className="mb-2 text-[13px] font-semibold text-fg-1">
+                  Pièces jointes
+                </p>
+                {edition && demandeId ? (
+                  <PiecesJointes
+                    demandId={demandeId}
+                    pieces={pieces}
+                    peutAjouter
+                    moiId={moiId}
+                    admin={admin}
+                  />
+                ) : (
+                  <div className="flex flex-col gap-2.5">
+                    <DropZone
+                      disabled={envoi}
+                      onFichiers={(liste) => {
+                        const acceptes: File[] = [];
+                        for (const f of liste) {
+                          const refus = verifierFichier(f);
+                          if (refus)
+                            notifier({
+                              titre: f.name,
+                              description: refus,
+                              ton: "erreur",
+                            });
+                          else acceptes.push(f);
+                        }
+                        setFichiers((l) => [...l, ...acceptes].slice(0, 10));
+                      }}
+                    />
+                    {fichiers.length > 0 && (
+                      <ul className="flex flex-col gap-2">
+                        {fichiers.map((f, i) => {
+                          const t = typeFichier(f.name, f.type);
+                          return (
+                            <li
+                              key={`${f.name}-${f.size}-${f.lastModified}`}
+                              className="flex animate-rise items-center gap-2.5 rounded-[10px] border border-line bg-surface-inset py-2 pl-3 pr-1.5 text-[13px]"
+                            >
+                              <span
+                                aria-hidden="true"
+                                className={cn(
+                                  "flex size-7 shrink-0 items-center justify-center rounded-[7px] text-[10px] font-bold",
+                                  t.classe,
+                                )}
+                              >
+                                {t.libelle}
+                              </span>
+                              <span className="min-w-0 flex-1 truncate">
+                                {f.name}
+                              </span>
+                              <span className="shrink-0 text-fg-4">
+                                {tailleLisible(f.size)}
+                              </span>
+                              <button
+                                type="button"
+                                disabled={envoi}
+                                onClick={() =>
+                                  setFichiers((l) =>
+                                    l.filter((_, j) => j !== i),
+                                  )
+                                }
+                                aria-label={`Retirer ${f.name}`}
+                                className="flex size-8 shrink-0 items-center justify-center rounded-[8px] text-fg-3 transition-colors hover:bg-danger/15 hover:text-danger-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft"
+                              >
+                                <X
+                                  aria-hidden="true"
+                                  strokeWidth={2.2}
+                                  className="size-4"
+                                />
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                    {envoiPj && (
+                      <p className="text-[12.5px] text-fg-3" aria-live="polite">
+                        Envoi des pièces jointes {envoiPj.n}/{envoiPj.total} ·{" "}
+                        {Math.round(envoiPj.ratio * 100)} %
+                      </p>
                     )}
                   </div>
                 )}

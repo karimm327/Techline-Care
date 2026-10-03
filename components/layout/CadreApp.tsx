@@ -7,6 +7,7 @@ import { Logo } from "@/components/brand/LogoMark";
 import CentreCommandes from "@/components/command/CentreCommandes";
 import Drawer from "@/components/ui/Drawer";
 import IconButton from "@/components/ui/IconButton";
+import type { Vue } from "@/lib/db/queries/view.queries";
 import { cn } from "@/lib/ui/cn";
 import AppHeader from "./AppHeader";
 import Sidebar from "./Sidebar";
@@ -17,12 +18,18 @@ const CLE_SIDEBAR = "tl.sidebar";
 
 type Props = {
   utilisateur: UtilisateurShell;
+  vues: Vue[];
   footer: ReactNode;
   children: ReactNode;
 };
 
 // Partie cliente de l'AppShell : header, sidebar (repliable), tiroir mobile, contenu, footer
-export default function CadreApp({ utilisateur, footer, children }: Props) {
+export default function CadreApp({
+  utilisateur,
+  vues,
+  footer,
+  children,
+}: Props) {
   const chemin = usePathname();
   const [replie, setReplie] = useState(false);
   const [tiroirOuvert, setTiroirOuvert] = useState(false);
@@ -79,6 +86,7 @@ export default function CadreApp({ utilisateur, footer, children }: Props) {
         >
           <Sidebar
             estAdmin={utilisateur.estAdmin}
+            vues={vues}
             replie={replie}
             basculerRepli={basculerRepli}
           />
@@ -122,6 +130,7 @@ export default function CadreApp({ utilisateur, footer, children }: Props) {
       >
         <Sidebar
           estAdmin={utilisateur.estAdmin}
+          vues={vues}
           idIndicateur="nav-indicator-mobile"
         />
       </Drawer>

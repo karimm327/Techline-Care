@@ -1,11 +1,13 @@
 "use client";
 
-import { Plus, Search, X } from "lucide-react";
+import { Bookmark, Plus, Search, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
+import DialogueVue from "@/components/demands/DialogueVue";
 import Checkbox from "@/components/ui/Checkbox";
 import { useParametresUrl } from "@/lib/hooks/useParametresUrl";
 import { cn } from "@/lib/ui/cn";
 import { PRIORITES, STATUTS } from "@/lib/ui/status";
+import { normaliserRequete } from "@/lib/ui/vues";
 
 type Option = { value: string; label: string };
 
@@ -128,6 +130,7 @@ function ChipFiltre({
 export default function BarreFiltres({ categories, agents }: Props) {
   const { params, liste, modifier } = useParametresUrl();
   const [recherche, setRecherche] = useState(params.get("q") ?? "");
+  const [dialogueVue, setDialogueVue] = useState(false);
   const derniereQ = useRef(params.get("q") ?? "");
 
   // Recherche : mise à jour de l'URL 300 ms après la dernière frappe
@@ -168,6 +171,15 @@ export default function BarreFiltres({ categories, agents }: Props) {
       options: [
         { value: "aucun", label: "Non assignée" },
         ...agents.map((a) => ({ value: a.id, label: a.nom })),
+      ],
+    },
+    {
+      cle: "sla",
+      titre: "SLA",
+      options: [
+        { value: "late", label: "Dépassé" },
+        { value: "warn", label: "Bientôt dépassé" },
+        { value: "ok", label: "Dans les délais" },
       ],
     },
   ];
@@ -214,6 +226,7 @@ export default function BarreFiltres({ categories, agents }: Props) {
               priorite: null,
               categorie: null,
               agent: null,
+              sla: null,
               q: null,
             });
           }}
@@ -221,6 +234,28 @@ export default function BarreFiltres({ categories, agents }: Props) {
         >
           Effacer les filtres
         </button>
+      )}
+      {filtresActifs && (
+        <>
+          <span className="flex-1" />
+          <button
+            type="button"
+            onClick={() => setDialogueVue(true)}
+            className="cible-tactile inline-flex h-9 items-center gap-[7px] rounded-[9px] px-3 text-[13px] font-semibold text-accent-fg transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft"
+          >
+            <Bookmark
+              aria-hidden="true"
+              strokeWidth={2}
+              className="size-[15px]"
+            />
+            Enregistrer la vue
+          </button>
+          <DialogueVue
+            open={dialogueVue}
+            onClose={() => setDialogueVue(false)}
+            requete={normaliserRequete(params.toString())}
+          />
+        </>
       )}
     </section>
   );

@@ -11,9 +11,11 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
+import type { Vue } from "@/lib/db/queries/view.queries";
 import { SPRING } from "@/lib/motion";
 import { cn } from "@/lib/ui/cn";
 import { estActif, type IconeNav, SECTIONS_NAV } from "./navigation";
+import SectionVues from "./SectionVues";
 
 const ICONES: Record<IconeNav, ReactNode> = {
   tableau: <LayoutDashboard strokeWidth={1.9} className="size-[18px]" />,
@@ -23,6 +25,8 @@ const ICONES: Record<IconeNav, ReactNode> = {
 
 type Props = {
   estAdmin: boolean;
+  // Vues enregistrées (F7), affichées après « Pilotage »
+  vues?: Vue[];
   // Sidebar repliée à 72 px (icônes + infobulles)
   replie?: boolean;
   // Absent dans le tiroir mobile (pas de repli)
@@ -35,6 +39,7 @@ type Props = {
 // Navigation principale : sections par rôle, item actif avec barre lumineuse animée (M03)
 export default function Sidebar({
   estAdmin,
+  vues = [],
   replie = false,
   basculerRepli,
   idIndicateur = "nav-indicator",
@@ -56,66 +61,69 @@ export default function Sidebar({
         aria-label="Navigation principale"
         className="flex flex-col gap-[18px]"
       >
-        {sections.map((section) => (
-          <div key={section.titre} className="flex flex-col gap-0.5">
-            {replie ? (
-              <hr className="mx-auto mb-1.5 w-6 border-line" />
-            ) : (
-              <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-[.08em] text-fg-4">
-                {section.titre}
-              </p>
-            )}
-            <ul className="flex flex-col gap-0.5">
-              {section.liens.map((lien) => {
-                const actif = estActif(lien.href, chemin, mode);
-                return (
-                  <li key={lien.href} className="relative">
-                    <Link
-                      href={lien.href}
-                      aria-current={actif ? "page" : undefined}
-                      aria-label={replie ? lien.label : undefined}
-                      className={cn(
-                        "cible-tactile group relative flex h-10 items-center gap-[11px] rounded-[9px] px-3 transition-colors duration-[180ms]",
-                        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent-soft",
-                        replie && "w-11 justify-center px-0",
-                        actif
-                          ? "bg-accent/15 font-semibold text-fg"
-                          : "text-fg-2 hover:bg-surface-hover hover:text-fg",
-                      )}
-                    >
-                      {actif && (
-                        <motion.span
-                          layoutId={idIndicateur}
-                          transition={SPRING}
-                          aria-hidden="true"
-                          className={cn(
-                            "absolute bottom-[9px] top-[9px] w-[3px] rounded-r-[3px] bg-accent shadow-glow-nav",
-                            replie ? "-left-2" : "-left-3",
-                          )}
-                        />
-                      )}
-                      <span
-                        aria-hidden="true"
-                        className={cn("flex", actif && "text-accent-fg")}
+        {sections.map((section, indexSection) => (
+          <div key={section.titre} className="contents">
+            <div className="flex flex-col gap-0.5">
+              {replie ? (
+                <hr className="mx-auto mb-1.5 w-6 border-line" />
+              ) : (
+                <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-[.08em] text-fg-4">
+                  {section.titre}
+                </p>
+              )}
+              <ul className="flex flex-col gap-0.5">
+                {section.liens.map((lien) => {
+                  const actif = estActif(lien.href, chemin, mode);
+                  return (
+                    <li key={lien.href} className="relative">
+                      <Link
+                        href={lien.href}
+                        aria-current={actif ? "page" : undefined}
+                        aria-label={replie ? lien.label : undefined}
+                        className={cn(
+                          "cible-tactile group relative flex h-10 items-center gap-[11px] rounded-[9px] px-3 transition-colors duration-[180ms]",
+                          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent-soft",
+                          replie && "w-11 justify-center px-0",
+                          actif
+                            ? "bg-accent/15 font-semibold text-fg"
+                            : "text-fg-2 hover:bg-surface-hover hover:text-fg",
+                        )}
                       >
-                        {ICONES[lien.icone]}
-                      </span>
-                      {replie ? (
-                        // Infobulle au survol / focus clavier
+                        {actif && (
+                          <motion.span
+                            layoutId={idIndicateur}
+                            transition={SPRING}
+                            aria-hidden="true"
+                            className={cn(
+                              "absolute bottom-[9px] top-[9px] w-[3px] rounded-r-[3px] bg-accent shadow-glow-nav",
+                              replie ? "-left-2" : "-left-3",
+                            )}
+                          />
+                        )}
                         <span
                           aria-hidden="true"
-                          className="pointer-events-none absolute left-full top-1/2 z-overlay ml-3 hidden -translate-y-1/2 whitespace-nowrap rounded-[8px] border border-line-strong bg-surface-2 px-2.5 py-1.5 text-[12.5px] font-medium text-fg shadow-lg group-hover:block group-focus-visible:block"
+                          className={cn("flex", actif && "text-accent-fg")}
                         >
-                          {lien.label}
+                          {ICONES[lien.icone]}
                         </span>
-                      ) : (
-                        <span className="flex-1 truncate">{lien.label}</span>
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+                        {replie ? (
+                          // Infobulle au survol / focus clavier
+                          <span
+                            aria-hidden="true"
+                            className="pointer-events-none absolute left-full top-1/2 z-overlay ml-3 hidden -translate-y-1/2 whitespace-nowrap rounded-[8px] border border-line-strong bg-surface-2 px-2.5 py-1.5 text-[12.5px] font-medium text-fg shadow-lg group-hover:block group-focus-visible:block"
+                          >
+                            {lien.label}
+                          </span>
+                        ) : (
+                          <span className="flex-1 truncate">{lien.label}</span>
+                        )}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+            {indexSection === 0 && !replie && <SectionVues vues={vues} />}
           </div>
         ))}
       </nav>

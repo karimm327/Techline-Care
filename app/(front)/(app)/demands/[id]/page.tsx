@@ -7,6 +7,7 @@ import FilConversation from "@/components/demand/FilConversation";
 import HeroDemande from "@/components/demand/HeroDemande";
 import HistoriqueDemande from "@/components/demand/HistoriqueDemande";
 import OngletsConversation from "@/components/demand/OngletsConversation";
+import PiecesJointes from "@/components/demand/PiecesJointes";
 import TexteAvecLiens from "@/components/demand/TexteAvecLiens";
 import Alert from "@/components/ui/Alert";
 import Avatar from "@/components/ui/Avatar";
@@ -14,6 +15,7 @@ import Card from "@/components/ui/Card";
 import { estAdmin, estLectureSeule } from "@/lib/auth";
 import { requireUser } from "@/lib/auth/session";
 import { findActivityByDemand } from "@/lib/db/queries/activity.queries";
+import { findPiecesJointes } from "@/lib/db/queries/attachment.queries";
 import {
   findCommentsByDemandId,
   findMentionnables,
@@ -51,20 +53,27 @@ export default async function DemandDetailPage({
   if (supprimee && !admin) notFound();
   const peutAgir = peutModifier && !supprimee;
 
-  const [comments, historique, ouvertesAgent, mentionnables, reponsesRapides] =
-    await Promise.all([
-      findCommentsByDemandId(id, {
-        inclureInternes: peutModifier,
-        idUtilisateur: moi.id,
-      }),
-      findActivityByDemand(id),
-      demand.id_assigned_agent
-        ? countDemandesOuvertesAgent(demand.id_assigned_agent)
-        : Promise.resolve(0),
-      // Composer (ADMIN / AGENT) : personnes mentionnables et réponses rapides
-      peutModifier ? findMentionnables() : Promise.resolve([]),
-      peutModifier ? findQuickReplies().catch(() => []) : Promise.resolve([]),
-    ]);
+  const [
+    comments,
+    historique,
+    ouvertesAgent,
+    mentionnables,
+    reponsesRapides,
+    pieces,
+  ] = await Promise.all([
+    findCommentsByDemandId(id, {
+      inclureInternes: peutModifier,
+      idUtilisateur: moi.id,
+    }),
+    findActivityByDemand(id),
+    demand.id_assigned_agent
+      ? countDemandesOuvertesAgent(demand.id_assigned_agent)
+      : Promise.resolve(0),
+    // Composer (ADMIN / AGENT) : personnes mentionnables et réponses rapides
+    peutModifier ? findMentionnables() : Promise.resolve([]),
+    peutModifier ? findQuickReplies().catch(() => []) : Promise.resolve([]),
+    findPiecesJointes(id).catch(() => []),
+  ]);
   const publics = comments.filter((c) => !c.is_internal);
   const internes = comments.filter((c) => c.is_internal);
   const noms = mentionnables.map((p) => p.nom);
@@ -155,6 +164,14 @@ export default async function DemandDetailPage({
             <p className="whitespace-pre-line break-words leading-[1.7] text-fg-1">
               <TexteAvecLiens texte={demand.description} />
             </p>
+            <PiecesJointes
+              compact
+              demandId={id}
+              pieces={pieces}
+              peutAjouter={false}
+              moiId={moi.id}
+              admin={admin}
+            />
           </Card>
 
           <Card
@@ -206,6 +223,20 @@ export default async function DemandDetailPage({
                       },
                     ]
                   : []),
+                {
+                  value: "pieces",
+                  label: "Pièces jointes",
+                  count: pieces.length,
+                  contenu: (
+                    <PiecesJointes
+                      demandId={id}
+                      pieces={pieces}
+                      peutAjouter={peutAgir}
+                      moiId={moi.id}
+                      admin={admin}
+                    />
+                  ),
+                },
               ]}
             />
           </Card>

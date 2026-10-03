@@ -7,6 +7,7 @@ export const ACTIONS = [
   "SUPPRESSION",
   "RESTAURATION",
   "COMMENTAIRE",
+  "PIECE_JOINTE",
 ] as const;
 export type Action = (typeof ACTIONS)[number];
 

@@ -1,8 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 import DeleteDemandButton from "@/components/demand/DeleteDemandButton";
 import DemandForm from "@/components/demand/DemandForm";
-import { estLectureSeule } from "@/lib/auth";
+import { estAdmin, estLectureSeule } from "@/lib/auth";
 import { requireUser } from "@/lib/auth/session";
+import { findPiecesJointes } from "@/lib/db/queries/attachment.queries";
 import { findDemandById } from "@/lib/db/queries/demand.queries";
 import { chargerOptionsFormulaire } from "@/lib/demandes/optionsFormulaire";
 
@@ -18,9 +19,10 @@ export default async function EditDemandPage({
   if (!UUID.test(id)) notFound();
   if (estLectureSeule(moi.role)) redirect(`/demands/${id}`); // lecture seule : pas de modification
 
-  const [demand, options] = await Promise.all([
+  const [demand, options, pieces] = await Promise.all([
     findDemandById(id),
     chargerOptionsFormulaire(),
+    findPiecesJointes(id).catch(() => []),
   ]);
   if (!demand) notFound();
   // Demande supprimée : plus modifiable, on renvoie vers le détail
@@ -32,6 +34,9 @@ export default async function EditDemandPage({
         mode="edit"
         demandeId={id}
         options={options}
+        pieces={pieces}
+        moiId={moi.id}
+        admin={estAdmin(moi.role)}
         initial={{
           title: demand.title,
           description: demand.description,

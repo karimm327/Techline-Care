@@ -49,3 +49,10 @@ export function ilYA(d: string | Date) {
 // Pluriel simple : pluriel(3, "demande") → « 3 demandes »
 export const pluriel = (n: number, mot: string, motPluriel = `${mot}s`) =>
   `${n.toLocaleString("fr-FR")} ${n > 1 ? motPluriel : mot}`;
+
+// « 212 Ko », « 1,4 Mo »
+export function tailleLisible(octets: number): string {
+  if (octets < 1024) return `${octets} o`;
+  if (octets < 1024 * 1024) return `${Math.round(octets / 1024)} Ko`;
+  return `${(octets / (1024 * 1024)).toFixed(1).replace(".", ",")} Mo`;
+}

@@ -62,10 +62,38 @@ if (process.env.NODE_ENV !== "production") {
   globalPourPg.pgMigration = migration;
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: lignes SQL brutes, typées à l'usage
+type LigneSql = any;
+
+// Requête dans une transaction (même signature que db.query)
+export type Requete = (
+  texte: string,
+  valeurs?: unknown[],
+) => Promise<QueryResult<LigneSql>>;
+
 export const db = {
   // biome-ignore lint/suspicious/noExplicitAny: lignes SQL brutes, typées à l'usage
   async query(texte: string, valeurs?: unknown[]): Promise<QueryResult<any>> {
     await migration;
     return pool.query(texte, valeurs);
+  },
+
+  // Plusieurs requêtes tout-ou-rien : COMMIT si la fonction réussit, ROLLBACK sinon
+  async transaction<T>(travail: (q: Requete) => Promise<T>): Promise<T> {
+    await migration;
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const resultat = await travail((texte, valeurs) =>
+        client.query(texte, valeurs),
+      );
+      await client.query("COMMIT");
+      return resultat;
+    } catch (e) {
+      await client.query("ROLLBACK").catch(() => {});
+      throw e;
+    } finally {
+      client.release();
+    }
   },
 };

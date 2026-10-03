@@ -243,7 +243,15 @@ export type FiltresDemandes = {
   categories?: string[];
   // Identifiants d'agents, ou « aucun » pour les demandes non assignées
   agents?: string[];
+  // État SLA des demandes ouvertes : late (dépassé), warn (< 25 % restant), ok
+  sla?: string[];
   q?: string;
+};
+
+const CONDITIONS_SLA: Record<string, string> = {
+  late: "d.due_at < now()",
+  warn: "d.due_at >= now() AND (d.due_at - now()) < (d.due_at - d.created_at) * 0.25",
+  ok: "d.due_at >= now() AND (d.due_at - now()) >= (d.due_at - d.created_at) * 0.25",
 };
 
 export type LigneDemande = {
@@ -292,6 +300,12 @@ export function construireFiltres(f: FiltresDemandes) {
     const n = valeurs.length;
     conditions.push(
       `(d.id_assigned_agent::text = ANY($${n}::text[])${sansAgent ? " OR d.id_assigned_agent IS NULL" : ""})`,
+    );
+  }
+  const etatsSla = (f.sla ?? []).filter((e) => e in CONDITIONS_SLA);
+  if (etatsSla.length) {
+    conditions.push(
+      `(s.label IN ('NOUVELLE', 'EN_COURS') AND (${etatsSla.map((e) => `(${CONDITIONS_SLA[e]})`).join(" OR ")}))`,
     );
   }
   if (f.q?.trim()) {

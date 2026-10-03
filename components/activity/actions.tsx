@@ -62,6 +62,17 @@ export const ACTIONS_JOURNAL: Record<string, StyleAction> = {
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     ),
   },
+  PIECE_JOINTE: {
+    label: "Pièce jointe",
+    verbe: "a joint un fichier à",
+    badge: "text-fg-1 bg-surface-3 ring-line-strong",
+    point: "bg-fg-3",
+    pastille: "text-fg-1 bg-surface-3",
+    lettre: "P",
+    icone: (
+      <path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5" />
+    ),
+  },
 };
 
 // Anciennes lignes du journal (texte libre, ex. données de démonstration) : classées « Autre »

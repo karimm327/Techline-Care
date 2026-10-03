@@ -5,6 +5,12 @@ import BarreFiltres from "@/components/demands/BarreFiltres";
 import BasculeVue from "@/components/demands/BasculeVue";
 import KanbanBoard from "@/components/demands/KanbanBoard";
 import RafraichissementAuto from "@/components/demands/RafraichissementAuto";
+import {
+  BarreActionsGroupees,
+  CaseSelection,
+  CaseToutes,
+  SelectionDemandes,
+} from "@/components/demands/SelectionDemandes";
 import ToastSuppression from "@/components/demands/ToastSuppression";
 import PageHeader from "@/components/layout/PageHeader";
 import SortableHeader from "@/components/SortableHeader";
@@ -49,6 +55,7 @@ type Params = {
   categorie?: string;
   agent?: string;
   q?: string;
+  sla?: string;
   mode?: string;
 };
 
@@ -328,6 +335,7 @@ export default async function DemandsPage({ searchParams }: Props) {
     priorites: liste(sp.priorite),
     categories: liste(sp.categorie),
     agents: liste(sp.agent),
+    sla: liste(sp.sla),
     q: sp.q,
   };
   const pageDemandee = Math.max(1, Number.parseInt(sp.page ?? "1", 10) || 1);
@@ -511,181 +519,220 @@ export default async function DemandsPage({ searchParams }: Props) {
 
       {/* Vue liste */}
       {mode === "liste" && (
-        <section
-          aria-labelledby="titre-liste"
-          className="animate-rise overflow-hidden rounded-md border border-line bg-surface [animation-delay:280ms]"
-        >
-          <div className="flex items-center justify-between gap-3 border-b border-line px-[18px] py-3.5">
-            <h2 id="titre-liste" className="font-display text-h3">
-              {filtree ? "Demandes filtrées" : "Toutes les demandes"}
-            </h2>
-            {total > 0 && (
-              <p className="text-[12.5px] tabular-nums text-fg-3">
-                {debut + 1}–{Math.min(debut + PAR_PAGE, total)} sur {total}
-              </p>
-            )}
-          </div>
-
-          {total === 0 ? (
-            filtree ? (
-              <EmptyState
-                title="Aucune demande ne correspond"
-                text="Modifiez ou effacez les filtres pour élargir la recherche."
-              />
-            ) : (
-              <EmptyState
-                title="Aucune demande pour l’instant"
-                text={
-                  peutModifier
-                    ? "Créez la première pour démarrer le suivi."
-                    : "Les demandes créées par l’équipe apparaîtront ici."
-                }
-                action={
-                  peutModifier ? (
-                    <Link href="/demands/new" className={classesBouton()}>
-                      <Plus
-                        aria-hidden="true"
-                        strokeWidth={2.2}
-                        className="size-4"
-                      />
-                      Nouvelle demande
-                    </Link>
-                  ) : undefined
-                }
-              />
-            )
-          ) : (
-            <>
-              {/* Tableau (tablette et ordinateur) */}
-              <div className="hidden overflow-x-auto md:block">
-                <table className="w-full min-w-[920px] border-collapse text-[13.5px]">
-                  <thead>
-                    <tr className="bg-surface-inset text-[11.5px] text-fg-3">
-                      <SortableHeader
-                        label="Demande"
-                        field="title"
-                        className="pl-[18px]"
-                      />
-                      <SortableHeader label="Statut" field="status" />
-                      <SortableHeader label="Priorité" field="priority" />
-                      <SortableHeader label="Catégorie" field="category" />
-                      <SortableHeader label="Agent" field="agent" />
-                      <SortableHeader label="SLA" field="sla" />
-                      <SortableHeader
-                        label="Mise à jour"
-                        field="updated_at"
-                        className="pr-[18px] text-right"
-                      />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pageListe.lignes.map((d, i) => (
-                      <tr
-                        key={d.id_demand}
-                        className="group animate-rise transition-colors duration-[180ms] hover:bg-surface-row"
-                        style={{ animationDelay: `${320 + i * 45}ms` }}
-                      >
-                        <td className="max-w-[340px] border-t border-line-soft py-3 pl-[18px] pr-3">
-                          <Link
-                            href={`/demands/${d.id_demand}`}
-                            className="block truncate rounded-xs font-semibold text-fg transition-colors duration-[180ms] group-hover:text-accent-fg-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft"
-                          >
-                            {d.title}
-                          </Link>
-                          <span className="font-mono text-[11.5px] text-fg-4">
-                            {reference(d.id_demand)}
-                          </span>
-                        </td>
-                        <td className="border-t border-line-soft p-3">
-                          <StatusBadge status={d.status} />
-                        </td>
-                        <td className="border-t border-line-soft p-3">
-                          <PriorityBars priority={d.priority} />
-                        </td>
-                        <td className="border-t border-line-soft p-3 text-fg-2">
-                          {d.category}
-                        </td>
-                        <td className="max-w-[220px] border-t border-line-soft p-3">
-                          <CelluleAgent d={d} peutModifier={peutModifier} />
-                        </td>
-                        <td className="border-t border-line-soft p-3">
-                          <SlaPill
-                            statut={d.status}
-                            createdAt={d.created_at}
-                            dueAt={d.due_at}
-                            closedAt={d.closed_at}
-                            maintenant={maintenant}
-                          />
-                        </td>
-                        <td
-                          className="whitespace-nowrap border-t border-line-soft py-3 pl-3 pr-[18px] text-right text-fg-3"
-                          title={new Date(d.updated_at).toLocaleString("fr-FR")}
-                        >
-                          {ilYA(d.updated_at)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Cartes (mobile) */}
-              <ul className="divide-y divide-line-soft md:hidden">
-                {pageListe.lignes.map((d, i) => (
-                  <li
-                    key={d.id_demand}
-                    className="animate-rise p-4"
-                    style={{ animationDelay: `${320 + i * 45}ms` }}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <Link
-                        href={`/demands/${d.id_demand}`}
-                        className="min-w-0 rounded-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft"
-                      >
-                        <p className="truncate font-semibold text-fg">
-                          {d.title}
-                        </p>
-                        <p className="mt-0.5 font-mono text-[11.5px] text-fg-4">
-                          {reference(d.id_demand)} · {ilYA(d.updated_at)}
-                        </p>
-                      </Link>
-                      <StatusBadge status={d.status} />
-                    </div>
-                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-                      <PriorityBars priority={d.priority} />
-                      <span className="text-[13px] text-fg-3">
-                        {d.category}
-                      </span>
-                      <SlaPill
-                        statut={d.status}
-                        createdAt={d.created_at}
-                        dueAt={d.due_at}
-                        closedAt={d.closed_at}
-                        maintenant={maintenant}
-                      />
-                    </div>
-                    <div className="mt-3">
-                      <CelluleAgent d={d} peutModifier={peutModifier} />
-                    </div>
-                  </li>
-                ))}
-              </ul>
-
-              {totalPages > 1 && (
-                <div className="flex flex-col items-center justify-between gap-3 border-t border-line px-[18px] py-3.5 sm:flex-row">
-                  <p className="text-[12.5px] text-fg-3">
-                    Page {page} sur {totalPages}
-                  </p>
-                  <Pagination
-                    page={page}
-                    totalPages={totalPages}
-                    lien={lienPage}
-                  />
-                </div>
+        <SelectionDemandes ids={pageListe.lignes.map((d) => d.id_demand)}>
+          <section
+            aria-labelledby="titre-liste"
+            className="animate-rise overflow-hidden rounded-md border border-line bg-surface [animation-delay:280ms]"
+          >
+            <div className="flex items-center justify-between gap-3 border-b border-line px-[18px] py-3.5">
+              <h2 id="titre-liste" className="font-display text-h3">
+                {filtree ? "Demandes filtrées" : "Toutes les demandes"}
+              </h2>
+              {total > 0 && (
+                <p className="text-[12.5px] tabular-nums text-fg-3">
+                  {debut + 1}–{Math.min(debut + PAR_PAGE, total)} sur {total}
+                </p>
               )}
-            </>
-          )}
-        </section>
+            </div>
+
+            {peutModifier && total > 0 && (
+              <BarreActionsGroupees
+                agents={donnees.agents.map(
+                  (a: {
+                    id_user: string;
+                    first_name: string;
+                    last_name: string;
+                  }) => ({
+                    id: a.id_user,
+                    nom: `${a.first_name} ${a.last_name}`,
+                  }),
+                )}
+              />
+            )}
+
+            {total === 0 ? (
+              filtree ? (
+                <EmptyState
+                  title="Aucune demande ne correspond"
+                  text="Modifiez ou effacez les filtres pour élargir la recherche."
+                />
+              ) : (
+                <EmptyState
+                  title="Aucune demande pour l’instant"
+                  text={
+                    peutModifier
+                      ? "Créez la première pour démarrer le suivi."
+                      : "Les demandes créées par l’équipe apparaîtront ici."
+                  }
+                  action={
+                    peutModifier ? (
+                      <Link href="/demands/new" className={classesBouton()}>
+                        <Plus
+                          aria-hidden="true"
+                          strokeWidth={2.2}
+                          className="size-4"
+                        />
+                        Nouvelle demande
+                      </Link>
+                    ) : undefined
+                  }
+                />
+              )
+            ) : (
+              <>
+                {/* Tableau (tablette et ordinateur) */}
+                <div className="hidden overflow-x-auto overflow-y-hidden md:block">
+                  <table className="w-full min-w-[920px] border-collapse text-[13.5px]">
+                    <thead>
+                      <tr className="bg-surface-inset text-[11.5px] text-fg-3">
+                        {peutModifier && (
+                          <th scope="col" className="w-11 py-2.5 pl-[18px]">
+                            <CaseToutes />
+                          </th>
+                        )}
+                        <SortableHeader
+                          label="Demande"
+                          field="title"
+                          className={peutModifier ? "" : "pl-[18px]"}
+                        />
+                        <SortableHeader label="Statut" field="status" />
+                        <SortableHeader label="Priorité" field="priority" />
+                        <SortableHeader label="Catégorie" field="category" />
+                        <SortableHeader label="Agent" field="agent" />
+                        <SortableHeader label="SLA" field="sla" />
+                        <SortableHeader
+                          label="Mise à jour"
+                          field="updated_at"
+                          className="pr-[18px] text-right"
+                        />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pageListe.lignes.map((d, i) => (
+                        <tr
+                          key={d.id_demand}
+                          className="group animate-rise transition-colors duration-[180ms] hover:bg-surface-row has-[:checked]:bg-accent/10"
+                          style={{ animationDelay: `${320 + i * 45}ms` }}
+                        >
+                          {peutModifier && (
+                            <td className="border-t border-line-soft py-3 pl-[18px]">
+                              <CaseSelection id={d.id_demand} titre={d.title} />
+                            </td>
+                          )}
+                          <td
+                            className={cn(
+                              "max-w-[340px] border-t border-line-soft py-3 pr-3",
+                              peutModifier ? "pl-3" : "pl-[18px]",
+                            )}
+                          >
+                            <Link
+                              href={`/demands/${d.id_demand}`}
+                              className="block truncate rounded-xs font-semibold text-fg transition-colors duration-[180ms] group-hover:text-accent-fg-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft"
+                            >
+                              {d.title}
+                            </Link>
+                            <span className="font-mono text-[11.5px] text-fg-4">
+                              {reference(d.id_demand)}
+                            </span>
+                          </td>
+                          <td className="border-t border-line-soft p-3">
+                            <StatusBadge status={d.status} />
+                          </td>
+                          <td className="border-t border-line-soft p-3">
+                            <PriorityBars priority={d.priority} />
+                          </td>
+                          <td className="border-t border-line-soft p-3 text-fg-2">
+                            {d.category}
+                          </td>
+                          <td className="max-w-[220px] border-t border-line-soft p-3">
+                            <CelluleAgent d={d} peutModifier={peutModifier} />
+                          </td>
+                          <td className="border-t border-line-soft p-3">
+                            <SlaPill
+                              statut={d.status}
+                              createdAt={d.created_at}
+                              dueAt={d.due_at}
+                              closedAt={d.closed_at}
+                              maintenant={maintenant}
+                            />
+                          </td>
+                          <td
+                            className="whitespace-nowrap border-t border-line-soft py-3 pl-3 pr-[18px] text-right text-fg-3"
+                            title={new Date(d.updated_at).toLocaleString(
+                              "fr-FR",
+                            )}
+                          >
+                            {ilYA(d.updated_at)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Cartes (mobile) */}
+                <ul className="divide-y divide-line-soft md:hidden">
+                  {pageListe.lignes.map((d, i) => (
+                    <li
+                      key={d.id_demand}
+                      className="animate-rise p-4 has-[:checked]:bg-accent/10"
+                      style={{ animationDelay: `${320 + i * 45}ms` }}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        {peutModifier && (
+                          <span className="pt-0.5">
+                            <CaseSelection id={d.id_demand} titre={d.title} />
+                          </span>
+                        )}
+                        <Link
+                          href={`/demands/${d.id_demand}`}
+                          className="min-w-0 flex-1 rounded-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft"
+                        >
+                          <p className="truncate font-semibold text-fg">
+                            {d.title}
+                          </p>
+                          <p className="mt-0.5 font-mono text-[11.5px] text-fg-4">
+                            {reference(d.id_demand)} · {ilYA(d.updated_at)}
+                          </p>
+                        </Link>
+                        <StatusBadge status={d.status} />
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                        <PriorityBars priority={d.priority} />
+                        <span className="text-[13px] text-fg-3">
+                          {d.category}
+                        </span>
+                        <SlaPill
+                          statut={d.status}
+                          createdAt={d.created_at}
+                          dueAt={d.due_at}
+                          closedAt={d.closed_at}
+                          maintenant={maintenant}
+                        />
+                      </div>
+                      <div className="mt-3">
+                        <CelluleAgent d={d} peutModifier={peutModifier} />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                {totalPages > 1 && (
+                  <div className="flex flex-col items-center justify-between gap-3 border-t border-line px-[18px] py-3.5 sm:flex-row">
+                    <p className="text-[12.5px] text-fg-3">
+                      Page {page} sur {totalPages}
+                    </p>
+                    <Pagination
+                      page={page}
+                      totalPages={totalPages}
+                      lien={lienPage}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        </SelectionDemandes>
       )}
 
       {/* Bas de page : activité (ADMIN) et charge de l'équipe (ADMIN, AGENT) */}
