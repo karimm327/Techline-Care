@@ -6,6 +6,10 @@
 -- =====================================================
 SET search_path TO techlinecare;
 
+-- ---------- Mots de passe ----------
+-- Une empreinte bcrypt fait 60 caractères (certaines bases avaient VARCHAR(20))
+ALTER TABLE users ALTER COLUMN password TYPE VARCHAR(255);
+
 -- ---------- Statut ANNULEE (utilisé par l'UI mais absent du seed) ----------
 INSERT INTO statuses (label, description)
 VALUES ('ANNULEE', 'Demande annulée')

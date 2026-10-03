@@ -46,3 +46,6 @@ next-env.d.ts
 
 # Modèle de configuration (sans secrets) : versionné
 !.env.example
+
+# Variables du client HTTP (test.http) : mots de passe locaux
+http-client.private.env.json

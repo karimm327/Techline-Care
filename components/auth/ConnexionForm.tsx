@@ -36,7 +36,10 @@ export default function ConnexionForm() {
         setError(
           res.status === 401
             ? "Identifiants incorrects. Vérifiez votre e-mail et votre mot de passe."
-            : "Connexion impossible. Réessayez dans un instant.",
+            : res.status === 429
+              ? ((await res.json().catch(() => null))?.error ??
+                "Trop de tentatives. Réessayez plus tard.")
+              : "Connexion impossible. Réessayez dans un instant.",
         );
         setTentative((n) => n + 1);
         setEnvoi(false);

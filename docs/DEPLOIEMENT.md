@@ -7,7 +7,7 @@ Le code est récupéré par Render depuis le dépôt Git (GitHub ou GitLab).
 
 1. **Mots de passe.** Ils sont hachés avec bcrypt (`db:schema`, `db:reset` et `db:hacher` hachent les
    valeurs en clair ; une ancienne valeur en clair est aussi remplacée à la première connexion).
-2. **Comptes de test.** `seed.sql` crée 12 comptes avec des mots de passe connus (`alicePwd!`…).
+2. **Comptes de test.** `seed.sql` crée 12 comptes qui partagent le mot de passe `SEED_PASSWORD`.
    Ne pas lancer le seed en production, ou changer ces mots de passe juste après.
 3. **Pièces jointes.** Elles sont écrites sur le disque du serveur (`UPLOAD_DIR`). Le disque de Render
    est **effacé à chaque déploiement** : sans disque persistant (offre payante « Starter » + « Disk »),

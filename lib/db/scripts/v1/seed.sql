@@ -50,31 +50,31 @@ VALUES ('Autre'),
 -- USERS
 -- =====================================================
 INSERT INTO users (first_name, last_name, email, password, id_role)
-VALUES ('Alice', 'Martin', 'alice.martin@techline-care.fr', 'alicePwd!',
+VALUES ('Alice', 'Martin', 'alice.martin@techline-care.fr', '__MOT_DE_PASSE_SEED__',
         (SELECT id_role FROM roles WHERE label = 'ADMIN')),
-       ('Bruno', 'Lefevre', 'bruno.lefevre@techline-care.fr', 'brunoPwd!',
+       ('Bruno', 'Lefevre', 'bruno.lefevre@techline-care.fr', '__MOT_DE_PASSE_SEED__',
         (SELECT id_role FROM roles WHERE label = 'ADMIN')),
-       ('Claire', 'Dubois', 'claire.dubois@techline-care.fr', 'clairePwd!',
+       ('Claire', 'Dubois', 'claire.dubois@techline-care.fr', '__MOT_DE_PASSE_SEED__',
         (SELECT id_role FROM roles WHERE label = 'ADMIN')),
-       ('David', 'Moreau', 'david.moreau@techline-care.fr', 'davidPwd!',
+       ('David', 'Moreau', 'david.moreau@techline-care.fr', '__MOT_DE_PASSE_SEED__',
         (SELECT id_role FROM roles WHERE label = 'ADMIN')),
 
-       ('Emma', 'Bernard', 'emma.bernard@techline-care.fr', 'emmaPwd!',
+       ('Emma', 'Bernard', 'emma.bernard@techline-care.fr', '__MOT_DE_PASSE_SEED__',
         (SELECT id_role FROM roles WHERE label = 'AGENT')),
-       ('Lucas', 'Petit', 'lucas.petit@techline-care.fr', 'lucasPwd!',
+       ('Lucas', 'Petit', 'lucas.petit@techline-care.fr', '__MOT_DE_PASSE_SEED__',
         (SELECT id_role FROM roles WHERE label = 'AGENT')),
-       ('Sarah', 'Nguyen', 'sarah.nguyen@techline-care.fr', 'sarahPwd!',
+       ('Sarah', 'Nguyen', 'sarah.nguyen@techline-care.fr', '__MOT_DE_PASSE_SEED__',
         (SELECT id_role FROM roles WHERE label = 'AGENT')),
-       ('Thomas', 'Roche', 'thomas.roche@techline-care.fr', 'thomasPwd!',
+       ('Thomas', 'Roche', 'thomas.roche@techline-care.fr', '__MOT_DE_PASSE_SEED__',
         (SELECT id_role FROM roles WHERE label = 'AGENT')),
 
-       ('Isabelle', 'Garnier', 'isabelle.garnier@techline-care.fr', 'isabellePwd!',
+       ('Isabelle', 'Garnier', 'isabelle.garnier@techline-care.fr', '__MOT_DE_PASSE_SEED__',
         (SELECT id_role FROM roles WHERE label = 'LECTURE')),
-       ('Julien', 'Marchand', 'julien.marchand@techline-care.fr', 'julienPwd!',
+       ('Julien', 'Marchand', 'julien.marchand@techline-care.fr', '__MOT_DE_PASSE_SEED__',
         (SELECT id_role FROM roles WHERE label = 'LECTURE')),
-       ('Nadia', 'Benali', 'nadia.benali@techline-care.fr', 'nadiaPwd!',
+       ('Nadia', 'Benali', 'nadia.benali@techline-care.fr', '__MOT_DE_PASSE_SEED__',
         (SELECT id_role FROM roles WHERE label = 'LECTURE')),
-       ('Olivier', 'Renard', 'olivier.renard@techline-care.fr', 'olivierPwd!',
+       ('Olivier', 'Renard', 'olivier.renard@techline-care.fr', '__MOT_DE_PASSE_SEED__',
         (SELECT id_role FROM roles WHERE label = 'LECTURE'));
 
 -- =====================================================

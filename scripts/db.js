@@ -98,7 +98,15 @@ async function runMigrations() {
 
 async function runSeed() {
   console.log("Exécution seed.sql...");
-  const seedSql = readFileSync(seedPath, "utf-8");
+  // Mot de passe des comptes de test : jamais dans le dépôt, fourni par SEED_PASSWORD (.env.local)
+  const motDePasse = process.env.SEED_PASSWORD;
+  if (!motDePasse) {
+    throw new Error("SEED_PASSWORD non défini (mot de passe des comptes de test)");
+  }
+  const seedSql = readFileSync(seedPath, "utf-8").replaceAll(
+    "'__MOT_DE_PASSE_SEED__'",
+    `'${motDePasse.replaceAll("'", "''")}'`,
+  );
   await pool.query(seedSql);
 }
 

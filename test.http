@@ -1,7 +1,10 @@
+# Mot de passe : variable {{password}} définie dans http-client.private.env.json (non versionné)
+# {"dev": {"password": "..."}}
+
 POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
   "email": "alice.martin@techline-care.fr",
-  "password": "alicePwd!"
+  "password": "{{password}}"
 }
