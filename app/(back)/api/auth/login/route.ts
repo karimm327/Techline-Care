@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { type NextRequest, NextResponse } from "next/server";
 import { findUserByEmail } from "@/lib/db/queries/auth.queries";
+import { createSession } from "@/lib/db/queries/session.queries";
 
 export async function POST(req: NextRequest) {
   const { email, password, resterConnecte } = await req.json();
@@ -30,8 +31,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Session enregistrée (liste et révocation dans Mon compte › Sécurité)
+  const sid = await createSession(
+    user.id_user,
+    req.headers.get("user-agent"),
+  ).catch(() => undefined);
+
   const token = jwt.sign(
-    { id: user.id_user, email: user.email, role: user.role },
+    { id: user.id_user, email: user.email, role: user.role, sid },
     process.env.JWT_SECRET as string,
     { expiresIn: dureeSecondes },
   );

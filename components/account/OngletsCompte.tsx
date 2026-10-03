@@ -12,6 +12,8 @@ const ANCRES: Record<string, string> = {
   apercu: "profil",
   support: "profil",
   securite: "securite",
+  notifications: "notifications",
+  preferences: "preferences",
   droits: "droits",
 };
 

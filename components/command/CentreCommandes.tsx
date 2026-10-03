@@ -24,6 +24,12 @@ function listeRaccourcis(u: UtilisateurShell, mod: string) {
     { touches: ["G", "D"], label: "Aller au tableau de bord", sequence: true },
     { touches: ["G", "C"], label: "Aller à mon compte", sequence: true },
   ];
+  if (!u.lectureSeule)
+    general.push({
+      touches: ["G", "S"],
+      label: "Aller aux statistiques",
+      sequence: true,
+    });
   if (u.estAdmin)
     general.push({
       touches: ["G", "J"],
@@ -80,6 +86,7 @@ export default function CentreCommandes({
     "?": ouvrirAide,
     "g d": () => router.push("/demands"),
     "g c": () => router.push("/account"),
+    ...(utilisateur.lectureSeule ? {} : { "g s": () => router.push("/stats") }),
     ...(utilisateur.estAdmin ? { "g j": () => router.push("/journal") } : {}),
     ...(utilisateur.lectureSeule
       ? {}

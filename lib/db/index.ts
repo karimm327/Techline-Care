@@ -32,6 +32,8 @@ if (!globalPourPg.pgPool) {
   });
 }
 
+import { marquerRevoquees } from "@/lib/auth/revocations";
+
 // Migrations idempotentes exécutées au démarrage, dans l'ordre (n'effacent rien)
 const MIGRATIONS = [
   "lib/db/scripts/v1/migration-journal.sql",
@@ -54,6 +56,15 @@ const migration =
         // Une migration en échec bloque les suivantes (elles en dépendent)
         return;
       }
+    }
+    // Sessions révoquées encore valides (jetons de 30 jours au plus)
+    try {
+      const r = await pool.query(
+        "SELECT id_session FROM user_sessions WHERE revoked_at > now() - interval '31 days'",
+      );
+      marquerRevoquees(r.rows.map((l) => l.id_session as string));
+    } catch {
+      // table absente (migration en échec) : aucune révocation à charger
     }
   })();
 

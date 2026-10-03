@@ -86,6 +86,7 @@ export default function CadreApp({
         >
           <Sidebar
             estAdmin={utilisateur.estAdmin}
+            lectureSeule={utilisateur.lectureSeule}
             vues={vues}
             replie={replie}
             basculerRepli={basculerRepli}
@@ -130,6 +131,7 @@ export default function CadreApp({
       >
         <Sidebar
           estAdmin={utilisateur.estAdmin}
+          lectureSeule={utilisateur.lectureSeule}
           vues={vues}
           idIndicateur="nav-indicator-mobile"
         />

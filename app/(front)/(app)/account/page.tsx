@@ -2,10 +2,16 @@ import { Check, Clock, LifeBuoy, Mail, Minus, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import FormulaireMotDePasse from "@/components/account/FormulaireMotDePasse";
 import OngletsCompte from "@/components/account/OngletsCompte";
+import PreferencesCompte from "@/components/account/PreferencesCompte";
+import SessionsActives from "@/components/account/SessionsActives";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import { estLectureSeule } from "@/lib/auth";
 import { requireUser } from "@/lib/auth/session";
+import {
+  findPreferences,
+  PREFERENCES_DEFAUT,
+} from "@/lib/db/queries/preference.queries";
 import {
   countAssignedDemandsByStatus,
   countCommentsByUser,
@@ -22,7 +28,13 @@ import {
 import { dateCourte } from "@/lib/ui/format";
 import { avatarColor, initiales } from "@/lib/ui/status";
 
-const ONGLETS = ["profil", "securite", "droits"] as const;
+const ONGLETS = [
+  "profil",
+  "securite",
+  "notifications",
+  "preferences",
+  "droits",
+] as const;
 
 interface Props {
   searchParams: Promise<{ onglet?: string }>;
@@ -41,10 +53,11 @@ export default async function AccountPage({ searchParams }: Props) {
     ? (onglet as string)
     : "profil";
 
-  const [user, parStatut, commentaires] = await Promise.all([
+  const [user, parStatut, commentaires, prefs] = await Promise.all([
     findUserById(moi.id),
     countAssignedDemandsByStatus(moi.id),
     countCommentsByUser(moi.id),
+    findPreferences(moi.id).catch(() => PREFERENCES_DEFAUT),
   ]);
   const nom =
     `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() || moi.email;
@@ -235,6 +248,23 @@ export default async function AccountPage({ searchParams }: Props) {
     </Card>
   );
 
+  const notifications = (
+    <Card className="animate-rise">
+      <TitreCarte>Notifications</TitreCarte>
+      <p className="-mt-2 mb-2 text-fg-3">
+        Choisissez quand l’application vous prévient (cloche du header).
+      </p>
+      <PreferencesCompte initiales={prefs} section="notifications" />
+    </Card>
+  );
+
+  const preferences = (
+    <Card className="animate-rise">
+      <TitreCarte>Préférences d’affichage</TitreCarte>
+      <PreferencesCompte initiales={prefs} section="affichage" />
+    </Card>
+  );
+
   const droits = (
     <Card className="animate-rise overflow-hidden p-0 sm:p-0">
       <div className="flex items-start gap-3 px-5 pb-3 pt-5 sm:px-6">
@@ -341,7 +371,25 @@ export default async function AccountPage({ searchParams }: Props) {
         initial={initial}
         onglets={[
           { value: "profil", label: "Profil", contenu: profil },
-          { value: "securite", label: "Sécurité", contenu: securite },
+          {
+            value: "securite",
+            label: "Sécurité",
+            contenu: (
+              <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+                {securite}
+                <Card className="animate-rise [animation-delay:80ms]">
+                  <TitreCarte>Sessions actives</TitreCarte>
+                  <SessionsActives />
+                </Card>
+              </div>
+            ),
+          },
+          {
+            value: "notifications",
+            label: "Notifications",
+            contenu: notifications,
+          },
+          { value: "preferences", label: "Préférences", contenu: preferences },
           { value: "droits", label: "Mes droits", contenu: droits },
         ]}
       />

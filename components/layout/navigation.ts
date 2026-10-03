@@ -4,12 +4,16 @@ import { reference } from "@/lib/ui/format";
 // Les entrées des fonctionnalités pas encore livrées (Kanban, Statistiques, Mes demandes,
 // vues enregistrées, équipe) sont ajoutées à leur étape de la refonte.
 
-export type IconeNav = "tableau" | "kanban" | "journal";
+export type IconeNav = "tableau" | "kanban" | "stats" | "journal";
 
 export type LienNav = {
   label: string;
   href: string;
   icone: IconeNav;
+  // Masqué pour le rôle LECTURE
+  pasLecture?: boolean;
+  // Pastille à droite (ex. « NOUVEAU »)
+  badge?: string;
 };
 
 export type SectionNav = {
@@ -25,6 +29,13 @@ export const SECTIONS_NAV: SectionNav[] = [
     liens: [
       { label: "Tableau de bord", href: "/demands", icone: "tableau" },
       { label: "Kanban", href: "/demands?mode=kanban", icone: "kanban" },
+      {
+        label: "Statistiques",
+        href: "/stats",
+        icone: "stats",
+        pasLecture: true,
+        badge: "NOUVEAU",
+      },
     ],
   },
   {
@@ -75,6 +86,8 @@ export function miettesPour(chemin: string): Miette[] {
       ];
     return [{ label: "Pilotage" }, tableau, { label: `Demande ${ref}` }];
   }
+  if (segments[0] === "stats")
+    return [{ label: "Pilotage" }, { label: "Statistiques" }];
   if (segments[0] === "journal")
     return [{ label: "Administration" }, { label: "Journal d’activité" }];
   if (segments[0] === "account") {

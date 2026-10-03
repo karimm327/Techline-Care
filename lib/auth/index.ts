@@ -1,11 +1,14 @@
 import jwt from "jsonwebtoken";
 import { type NextRequest, NextResponse } from "next/server";
+import { estRevoquee } from "@/lib/auth/revocations";
 import type { Role } from "@/lib/types/Role";
 
 export type AuthUser = {
   id: string;
   email: string;
   role: Role;
+  // Identifiant de session (connexions depuis la refonte) : révocable depuis Mon compte
+  sid?: string;
 };
 
 // Vérifie un token JWT et renvoie l'utilisateur, ou null s'il est absent / invalide / expiré
@@ -18,6 +21,8 @@ export function verifierToken(
       token,
       process.env.JWT_SECRET as string,
     ) as AuthUser;
+    // Session révoquée depuis « Sessions actives » : jeton refusé
+    if (estRevoquee(user.sid)) return null;
     // Rôle en MAJUSCULES : "admin", "Admin" ou "ADMIN" sont traités pareil
     return {
       ...user,

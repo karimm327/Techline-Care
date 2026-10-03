@@ -3,6 +3,7 @@ import Link from "next/link";
 import { detailAction, styleAction } from "@/components/activity/actions";
 import BarreFiltres from "@/components/demands/BarreFiltres";
 import BasculeVue from "@/components/demands/BasculeVue";
+import BoutonExport from "@/components/demands/BoutonExport";
 import KanbanBoard from "@/components/demands/KanbanBoard";
 import RafraichissementAuto from "@/components/demands/RafraichissementAuto";
 import {
@@ -39,6 +40,10 @@ import {
   findIndicateurs,
   type LigneDemande,
 } from "@/lib/db/queries/demand.queries";
+import {
+  findPreferences,
+  PREFERENCES_DEFAUT,
+} from "@/lib/db/queries/preference.queries";
 import { findAllAgents, findUserById } from "@/lib/db/queries/user.queries";
 import { cn } from "@/lib/ui/cn";
 import { ilYA, jourLong, pluriel, reference } from "@/lib/ui/format";
@@ -339,7 +344,10 @@ export default async function DemandsPage({ searchParams }: Props) {
     q: sp.q,
   };
   const pageDemandee = Math.max(1, Number.parseInt(sp.page ?? "1", 10) || 1);
-  const mode = sp.mode === "kanban" ? "kanban" : "liste";
+  // Sans ?mode : vue par défaut choisie dans Mon compte › Préférences
+  const prefs = await findPreferences(moi.id).catch(() => PREFERENCES_DEFAUT);
+  const mode =
+    (sp.mode ?? prefs.default_view) === "kanban" ? "kanban" : "liste";
 
   let donnees: Awaited<ReturnType<typeof charger>>;
   async function charger() {
@@ -434,7 +442,12 @@ export default async function DemandsPage({ searchParams }: Props) {
         eyebrow={`Pilotage · ${nomJour}`}
         title={prenom ? `Bonjour ${prenom}` : "Bonjour"}
         subtitle={sousTitre}
-        actions={<BasculeVue mode={mode} />}
+        actions={
+          <>
+            <BasculeVue mode={mode} />
+            <BoutonExport />
+          </>
+        }
       />
 
       {/* Indicateurs */}

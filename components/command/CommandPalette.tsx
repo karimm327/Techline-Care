@@ -4,6 +4,7 @@ import { Command } from "cmdk";
 import {
   Activity,
   ArrowRight,
+  ChartLine,
   FilePlus2,
   Keyboard,
   LayoutDashboard,
@@ -175,6 +176,13 @@ export default function CommandPalette({ utilisateur }: Props) {
           touche: "G puis D",
           icone: <LayoutDashboard strokeWidth={1.9} className="size-4" />,
         },
+        !utilisateur.lectureSeule && {
+          id: "nav-stats",
+          label: "Statistiques",
+          href: "/stats",
+          touche: "G puis S",
+          icone: <ChartLine strokeWidth={1.9} className="size-4" />,
+        },
         utilisateur.estAdmin && {
           id: "nav-journal",
           label: "Journal d’activité",
@@ -202,7 +210,7 @@ export default function CommandPalette({ utilisateur }: Props) {
         touche?: string;
         icone: ReactNode;
       }[],
-    [utilisateur.estAdmin],
+    [utilisateur.estAdmin, utilisateur.lectureSeule],
   );
 
   const terme = normaliser(saisie.trim());
