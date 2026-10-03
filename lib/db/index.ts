@@ -25,6 +25,8 @@ if (!globalPourPg.pgPool) {
   // Fuseau de la base = celui de l'équipe (TZ, Europe/Paris par défaut) même si le serveur est en UTC
   const fuseau = (process.env.TZ || "Europe/Paris").replace(/'/g, "");
   pool.on("connect", (client) => {
+    // Schéma de l'application fixé ici aussi : ne dépend plus du paramètre options de DATABASE_URL
+    client.query("SET search_path TO techlinecare").catch(() => {});
     client.query(`SET TIME ZONE '${fuseau}'`).catch(() => {});
   });
 }
