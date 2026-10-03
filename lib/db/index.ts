@@ -30,6 +30,17 @@ if (!globalPourPg.pgPool) {
 
 import { marquerRevoquees } from "@/lib/auth/revocations";
 
+// Diagnostic sans secret : hôte, port, base, SSL (jamais le mot de passe)
+function cibleConnexion(): string {
+  const config = configurationPool();
+  try {
+    const u = new URL(config.connectionString ?? "");
+    return `${u.hostname || "(hôte vide)"}:${u.port || "5432"}/${u.pathname.slice(1)} · utilisateur ${u.username || "(vide)"} · SSL ${config.ssl ? "avec certificat" : "désactivé"}`;
+  } catch {
+    return "DATABASE_URL illisible (doit commencer par postgres://)";
+  }
+}
+
 // Migrations idempotentes exécutées au démarrage, dans l'ordre (n'effacent rien)
 const MIGRATIONS = [
   "lib/db/scripts/v1/migration-journal.sql",
@@ -48,6 +59,7 @@ const migration =
           "⚠️ Mise à jour automatique de la base impossible :",
           (e as Error).message,
         );
+        console.error(`   Connexion tentée : ${cibleConnexion()}`);
         console.error(`   → Lance ${fichier} dans pgAdmin.`);
         // Une migration en échec bloque les suivantes (elles en dépendent)
         return;
