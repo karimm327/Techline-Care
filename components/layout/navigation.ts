@@ -4,7 +4,7 @@ import { reference } from "@/lib/ui/format";
 // Les entrées des fonctionnalités pas encore livrées (Kanban, Statistiques, Mes demandes,
 // vues enregistrées, équipe) sont ajoutées à leur étape de la refonte.
 
-export type IconeNav = "tableau" | "journal";
+export type IconeNav = "tableau" | "kanban" | "journal";
 
 export type LienNav = {
   label: string;
@@ -22,7 +22,10 @@ export type SectionNav = {
 export const SECTIONS_NAV: SectionNav[] = [
   {
     titre: "Pilotage",
-    liens: [{ label: "Tableau de bord", href: "/demands", icone: "tableau" }],
+    liens: [
+      { label: "Tableau de bord", href: "/demands", icone: "tableau" },
+      { label: "Kanban", href: "/demands?mode=kanban", icone: "kanban" },
+    ],
   },
   {
     titre: "Administration",
@@ -34,9 +37,18 @@ export const SECTIONS_NAV: SectionNav[] = [
 ];
 
 // Lien actif : /demands couvre aussi les fiches et l'édition, mais pas la création
-export function estActif(href: string, chemin: string): boolean {
+// Le tableau de bord en mode Kanban (?mode=kanban) active l'entrée « Kanban ».
+export function estActif(
+  href: string,
+  chemin: string,
+  mode?: string | null,
+): boolean {
+  if (href === "/demands?mode=kanban") {
+    return chemin === "/demands" && mode === "kanban";
+  }
   if (href === "/demands") {
-    return chemin === "/demands" || /^\/demands\/(?!new(\/|$))/.test(chemin);
+    if (chemin === "/demands") return mode !== "kanban";
+    return /^\/demands\/(?!new(\/|$))/.test(chemin);
   }
   return chemin === href || chemin.startsWith(`${href}/`);
 }

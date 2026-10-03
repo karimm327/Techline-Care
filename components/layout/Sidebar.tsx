@@ -2,13 +2,14 @@
 
 import {
   Activity,
+  Columns3,
   LayoutDashboard,
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { SPRING } from "@/lib/motion";
 import { cn } from "@/lib/ui/cn";
@@ -16,6 +17,7 @@ import { estActif, type IconeNav, SECTIONS_NAV } from "./navigation";
 
 const ICONES: Record<IconeNav, ReactNode> = {
   tableau: <LayoutDashboard strokeWidth={1.9} className="size-[18px]" />,
+  kanban: <Columns3 strokeWidth={1.9} className="size-[18px]" />,
   journal: <Activity strokeWidth={1.9} className="size-[18px]" />,
 };
 
@@ -39,6 +41,7 @@ export default function Sidebar({
   className,
 }: Props) {
   const chemin = usePathname();
+  const mode = useSearchParams().get("mode");
   const sections = SECTIONS_NAV.filter((s) => !s.adminSeulement || estAdmin);
 
   return (
@@ -64,7 +67,7 @@ export default function Sidebar({
             )}
             <ul className="flex flex-col gap-0.5">
               {section.liens.map((lien) => {
-                const actif = estActif(lien.href, chemin);
+                const actif = estActif(lien.href, chemin, mode);
                 return (
                   <li key={lien.href} className="relative">
                     <Link
