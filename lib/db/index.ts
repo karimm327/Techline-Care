@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import net from "node:net";
 import path from "node:path";
 import { Pool, type QueryResult } from "pg";
 import { configurationPool } from "./configuration";
@@ -41,6 +42,40 @@ function cibleConnexion(): string {
   }
 }
 
+// Le port de la base est-il joignable (TCP), et répond-il à une demande SSL PostgreSQL ?
+function sondeReseau(): Promise<string> {
+  let hote = "";
+  let port = 5432;
+  try {
+    const u = new URL(configurationPool().connectionString ?? "");
+    hote = u.hostname;
+    port = Number(u.port) || 5432;
+  } catch {
+    return Promise.resolve("URL illisible");
+  }
+  return new Promise((resoudre) => {
+    const debut = Date.now();
+    const socket = net.connect({ host: hote, port });
+    const fin = (texte: string) => {
+      socket.destroy();
+      resoudre(
+        `${texte} (${Date.now() - debut} ms, ${socket.remoteAddress ?? "IP inconnue"})`,
+      );
+    };
+    socket.setTimeout(8000, () => fin("AUCUNE réponse TCP : port bloqué"));
+    socket.on("error", (e) =>
+      fin(`erreur TCP ${(e as NodeJS.ErrnoException).code ?? e.message}`),
+    );
+    socket.on("connect", () => {
+      // SSLRequest PostgreSQL : le serveur répond « S » s'il accepte le SSL
+      socket.write(Buffer.from([0, 0, 0, 8, 0x04, 0xd2, 0x16, 0x2f]));
+    });
+    socket.on("data", (d) =>
+      fin(`TCP OK, réponse SSL « ${String.fromCharCode(d[0])} »`),
+    );
+  });
+}
+
 // Migrations idempotentes exécutées au démarrage, dans l'ordre (n'effacent rien)
 const MIGRATIONS = [
   "lib/db/scripts/v1/migration-journal.sql",
@@ -60,6 +95,7 @@ const migration =
           (e as Error).message,
         );
         console.error(`   Connexion tentée : ${cibleConnexion()}`);
+        console.error(`   Test réseau : ${await sondeReseau()}`);
         console.error(`   → Lance ${fichier} dans pgAdmin.`);
         // Une migration en échec bloque les suivantes (elles en dépendent)
         return;
