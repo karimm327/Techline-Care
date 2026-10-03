@@ -12,15 +12,24 @@ export type AuthUser = {
 };
 
 // Vérifie un token JWT et renvoie l'utilisateur, ou null s'il est absent / invalide / expiré
+// Secret de signature des sessions : obligatoire et suffisamment long (32 caractères minimum)
+export function secretJwt(): string {
+  const secret = process.env.JWT_SECRET ?? "";
+  if (secret.length < 32) {
+    throw new Error("JWT_SECRET manquant ou trop court (32 caractères minimum)");
+  }
+  return secret;
+}
+
 export function verifierToken(
   token: string | undefined | null,
 ): AuthUser | null {
   if (!token) return null;
   try {
-    const user = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string,
-    ) as AuthUser;
+    // Algorithme imposé : refuse tout jeton signé autrement (ou non signé)
+    const user = jwt.verify(token, secretJwt(), {
+      algorithms: ["HS256"],
+    }) as AuthUser;
     // Session révoquée depuis « Sessions actives » : jeton refusé
     if (estRevoquee(user.sid)) return null;
     // Rôle en MAJUSCULES : "admin", "Admin" ou "ADMIN" sont traités pareil
@@ -107,4 +116,13 @@ export function estAdmin(role: string | undefined | null): boolean {
       .trim()
       .toUpperCase(),
   );
+}
+
+// Rôle canonique quel que soit le libellé en base (« administrateur », « ADMIN », « lecture »…)
+export function roleCanonique(
+  role: string | undefined | null,
+): "ADMIN" | "AGENT" | "LECTURE" {
+  if (estAdmin(role)) return "ADMIN";
+  if (estLectureSeule(role)) return "LECTURE";
+  return "AGENT";
 }

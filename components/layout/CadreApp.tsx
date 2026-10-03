@@ -78,7 +78,7 @@ export default function CadreApp({
         <aside
           aria-label="Menu latéral"
           className={cn(
-            "sticky top-14 hidden h-[calc(100dvh-3.5rem)] shrink-0 border-r border-line bg-bg-sunken lg:block",
+            "sticky top-14 z-sticky hidden h-[calc(100dvh-4rem)] shrink-0 border-r border-line bg-bg-sunken lg:block",
             replie
               ? "w-sidebar-collapsed overflow-visible"
               : "w-sidebar overflow-y-auto",
@@ -104,7 +104,7 @@ export default function CadreApp({
 
       {footer}
 
-      {/* Palette Ctrl K, raccourcis globaux et feuille d'aide « ? » */}
+      {/* Palette de recherche (ouverte depuis la barre de recherche du header) */}
       <CentreCommandes utilisateur={utilisateur} />
 
       {/* Mobile (< 1024 px) : la sidebar devient un tiroir gauche */}

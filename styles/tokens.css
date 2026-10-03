@@ -102,6 +102,59 @@
   --sidebar-w-collapsed: 72px;
 }
 
+/* Thème clair (préférence « Clair », classe theme-clair sur <html>).
+   Mêmes rôles que le thème sombre ; textes et statuts assombris pour garder un contraste ≥ 4.5:1 sur blanc. */
+.theme-clair {
+  color-scheme: light;
+
+  --bg-sunken: 241 243 247; /* #F1F3F7 */
+  --bg: 246 247 250; /* #F6F7FA */
+  --surface: 255 255 255;
+  --surface-2: 243 245 248; /* #F3F5F8 */
+  --surface-3: 230 234 241; /* #E6EAF1 */
+  --line: 223 227 234; /* #DFE3EA */
+  --line-strong: 200 206 216; /* #C8CED8 */
+  --line-soft: 234 237 242; /* #EAEDF2 */
+
+  --fg: 23 28 38; /* #171C26 */
+  --fg-1: 45 52 66; /* #2D3442 */
+  --fg-2: 72 81 97; /* #485161  ≈ 8:1 sur blanc */
+  --fg-3: 92 102 120; /* #5C6678  ≈ 5.9:1 */
+  --fg-4: 104 113 130; /* #687182  ≈ 4.8:1 */
+
+  --accent-soft: 99 113 240; /* #6371F0 */
+  --accent-fg: 64 76 206; /* #404CCE  liens ≈ 6.4:1 */
+  --accent-fg-2: 46 56 168; /* #2E38A8 */
+
+  --st-nouvelle: 37 129 220; /* #2581DC */
+  --st-nouvelle-fg: 20 94 166; /* #145EA6 */
+  --st-encours: 217 150 30; /* #D9961E */
+  --st-encours-fg: 140 88 6; /* #8C5806 */
+  --st-cloturee: 22 163 110; /* #16A36E */
+  --st-cloturee-fg: 10 106 70; /* #0A6A46 */
+  --st-annulee: 220 70 90; /* #DC465A */
+  --st-annulee-fg: 170 34 56; /* #AA2238 */
+
+  --prio-haute: 232 93 58; /* #E85D3A */
+  --prio-haute-fg: 172 58 28; /* #AC3A1C */
+  --prio-normale: 217 150 30;
+  --prio-basse: 140 151 169;
+
+  --surface-hover: 236 239 244; /* #ECEFF4 */
+  --surface-row: 245 247 250; /* #F5F7FA */
+  --surface-inset: 243 245 248; /* #F3F5F8 */
+  --field-focus: 255 255 255;
+  --line-hover: 166 175 190; /* #A6AFBE */
+  --line-field: 200 206 216; /* #C8CED8 */
+  --line-card: 218 223 231; /* #DADFE7 */
+  --skeleton-hi: 228 232 239; /* #E4E8EF */
+
+  --shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.1);
+  --shadow-md: 0 14px 32px -16px rgba(16, 24, 40, 0.22);
+  --shadow-lg: 0 24px 48px -18px rgba(16, 24, 40, 0.25);
+  --shadow-xl: 0 32px 70px -28px rgba(16, 24, 40, 0.32);
+}
+
 /* Préférence « Animations : désactivées » (classe posée sur <html> par le layout) */
 .no-motion *,
 .no-motion *::before,

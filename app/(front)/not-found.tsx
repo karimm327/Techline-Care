@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/LogoMark";
 import { classesBouton } from "@/components/ui/Button";
-import Kbd from "@/components/ui/Kbd";
 
 // 404 — « 404 » avec glitch (M20). Utilisée par notFound() et par les URL inconnues.
 export default function PageIntrouvable() {
@@ -34,7 +33,6 @@ export default function PageIntrouvable() {
             className={classesBouton({ variant: "secondary" })}
           >
             Rechercher
-            <Kbd className="ml-1.5 text-fg-3">Ctrl K</Kbd>
           </Link>
         </div>
       </main>

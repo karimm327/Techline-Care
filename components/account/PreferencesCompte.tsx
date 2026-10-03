@@ -1,5 +1,6 @@
 "use client";
 
+import { Moon, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import SegmentedControl from "@/components/ui/SegmentedControl";
@@ -9,7 +10,7 @@ import type { Preferences } from "@/lib/db/queries/preference.queries";
 
 type Props = {
   initiales: Preferences;
-  // « notifications » : quatre interrupteurs ; « affichage » : animations, densité, raccourcis, vue
+  // « notifications » : quatre interrupteurs ; « affichage » : animations, densité, vue
   section: "notifications" | "affichage";
 };
 
@@ -27,9 +28,10 @@ export default function PreferencesCompte({ initiales, section }: Props) {
     // Effet immédiat sur la page courante (sans attendre le rechargement serveur)
     const html = document.documentElement;
     if (cle === "motion") html.classList.toggle("no-motion", !valeur);
+    if (cle === "theme")
+      html.classList.toggle("theme-clair", valeur === "clair");
     if (cle === "density")
       html.classList.toggle("density-compact", valeur === "compact");
-    if (cle === "shortcuts") html.dataset.raccourcis = valeur ? "on" : "off";
     try {
       const res = await fetch("/api/users/me/preferences", {
         method: "PATCH",
@@ -82,6 +84,36 @@ export default function PreferencesCompte({ initiales, section }: Props) {
 
   return (
     <div className="flex flex-col divide-y divide-line-soft">
+      <div className="flex flex-wrap items-center justify-between gap-3 py-3.5">
+        <div>
+          <p className="font-semibold">Thème</p>
+          <p className="text-[12.5px] text-fg-3">
+            TechLine Care (sombre, par défaut) ou clair
+          </p>
+        </div>
+        <SegmentedControl<"sombre" | "clair">
+          label="Thème"
+          layoutId="seg-theme"
+          value={prefs.theme}
+          onChange={(v) => changer("theme", v)}
+          options={[
+            {
+              value: "sombre",
+              label: "TechLine Care",
+              icon: (
+                <Moon aria-hidden="true" strokeWidth={1.9} className="size-4" />
+              ),
+            },
+            {
+              value: "clair",
+              label: "Clair",
+              icon: (
+                <Sun aria-hidden="true" strokeWidth={1.9} className="size-4" />
+              ),
+            },
+          ]}
+        />
+      </div>
       <Switch
         label="Animations"
         description="Désactivées automatiquement si votre système demande moins de mouvement"
@@ -94,13 +126,6 @@ export default function PreferencesCompte({ initiales, section }: Props) {
         description="Lignes de tableau plus serrées"
         checked={prefs.density === "compact"}
         onChange={(v) => changer("density", v ? "compact" : "confort")}
-        className="py-3.5"
-      />
-      <Switch
-        label="Raccourcis clavier"
-        description="N, E, G puis D… (Ctrl K reste toujours disponible)"
-        checked={prefs.shortcuts}
-        onChange={(v) => changer("shortcuts", v)}
         className="py-3.5"
       />
       <div className="flex flex-wrap items-center justify-between gap-3 py-3.5">

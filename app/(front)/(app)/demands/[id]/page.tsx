@@ -17,7 +17,7 @@ import TexteAvecLiens from "@/components/demand/TexteAvecLiens";
 import Alert from "@/components/ui/Alert";
 import Avatar from "@/components/ui/Avatar";
 import Card from "@/components/ui/Card";
-import { estAdmin, estLectureSeule } from "@/lib/auth";
+import { estAdmin, estLectureSeule, roleCanonique } from "@/lib/auth";
 import { requireUser } from "@/lib/auth/session";
 import { findActivityByDemand } from "@/lib/db/queries/activity.queries";
 import { findPiecesJointes } from "@/lib/db/queries/attachment.queries";
@@ -158,7 +158,8 @@ export default async function DemandDetailPage({
         peutAgir={peutAgir}
         lectureSeule={!peutModifier && !supprimee}
         moiId={
-          moi.role === "AGENT" && demand.id_assigned_agent !== moi.id
+          roleCanonique(moi.role) === "AGENT" &&
+          demand.id_assigned_agent !== moi.id
             ? moi.id
             : undefined
         }

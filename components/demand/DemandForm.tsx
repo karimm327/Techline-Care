@@ -15,7 +15,6 @@ import Card from "@/components/ui/Card";
 import ChoiceCard from "@/components/ui/ChoiceCard";
 import DropZone from "@/components/ui/DropZone";
 import Input from "@/components/ui/Input";
-import Kbd from "@/components/ui/Kbd";
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import Select from "@/components/ui/Select";
 import Textarea from "@/components/ui/Textarea";
@@ -307,19 +306,6 @@ export default function DemandForm({
       setEnvoi(false);
     }
   }, [valide, envoi, edition, demandeId, champs, router, fichiers]);
-
-  // Ctrl / ⌘ + Entrée envoie depuis n'importe quel champ du formulaire
-  useEffect(() => {
-    const surTouche = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        envoyer();
-      }
-    };
-    const f = formulaire.current;
-    f?.addEventListener("keydown", surTouche);
-    return () => f?.removeEventListener("keydown", surTouche);
-  }, [envoyer]);
 
   const categorie = options.categories.find((c) => c.id === champs.categorie);
   const priorite = priorites.find((p) => p.id === champs.priorite);
@@ -803,9 +789,6 @@ export default function DemandForm({
               className="px-[18px]"
             >
               {edition ? "Enregistrer" : "Créer la demande"}
-              <Kbd className="ml-1 hidden border-fg/30 bg-fg/10 text-current sm:inline-flex">
-                Ctrl ↵
-              </Kbd>
             </Button>
           </div>
         </div>

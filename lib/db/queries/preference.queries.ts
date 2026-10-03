@@ -5,6 +5,8 @@ export type Preferences = {
   density: "confort" | "compact";
   shortcuts: boolean;
   default_view: "liste" | "kanban";
+  // Thème d'affichage : sombre (TechLine Care, par défaut) ou clair
+  theme: "sombre" | "clair";
   notify_assign: boolean;
   notify_mention: boolean;
   notify_sla: boolean;
@@ -16,6 +18,7 @@ export const PREFERENCES_DEFAUT: Preferences = {
   density: "confort",
   shortcuts: true,
   default_view: "liste",
+  theme: "sombre",
   notify_assign: true,
   notify_mention: true,
   notify_sla: true,
@@ -34,7 +37,7 @@ const BOOLEENS = [
 // Préférences de l'utilisateur (valeurs par défaut si aucune ligne)
 export async function findPreferences(idUser: string): Promise<Preferences> {
   const r = await db.query(
-    `SELECT motion, density, shortcuts, default_view, notify_assign, notify_mention,
+    `SELECT motion, density, shortcuts, default_view, theme, notify_assign, notify_mention,
             notify_sla, notify_digest
      FROM user_preferences WHERE id_user = $1`,
     [idUser],
@@ -52,6 +55,7 @@ export function nettoyerPreferences(brut: Record<string, unknown>) {
     p.density = brut.density;
   if (brut.default_view === "liste" || brut.default_view === "kanban")
     p.default_view = brut.default_view;
+  if (brut.theme === "sombre" || brut.theme === "clair") p.theme = brut.theme;
   return p;
 }
 
@@ -64,13 +68,14 @@ export async function updatePreferences(
   const p = { ...actuelles, ...changements };
   await db.query(
     `INSERT INTO user_preferences (id_user, motion, density, shortcuts, default_view,
-       notify_assign, notify_mention, notify_sla, notify_digest, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now())
+       notify_assign, notify_mention, notify_sla, notify_digest, theme, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now())
      ON CONFLICT (id_user) DO UPDATE SET
        motion = EXCLUDED.motion, density = EXCLUDED.density,
        shortcuts = EXCLUDED.shortcuts, default_view = EXCLUDED.default_view,
        notify_assign = EXCLUDED.notify_assign, notify_mention = EXCLUDED.notify_mention,
        notify_sla = EXCLUDED.notify_sla, notify_digest = EXCLUDED.notify_digest,
+       theme = EXCLUDED.theme,
        updated_at = now()`,
     [
       idUser,
@@ -82,6 +87,7 @@ export async function updatePreferences(
       p.notify_mention,
       p.notify_sla,
       p.notify_digest,
+      p.theme,
     ],
   );
   return p;

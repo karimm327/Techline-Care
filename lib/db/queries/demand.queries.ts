@@ -529,3 +529,29 @@ export async function countDemandesOuvertesAgent(idAgent: string) {
   );
   return r.rows[0].total as number;
 }
+
+// « Ma file du jour » (bannière du tableau de bord) : demandes ouvertes assignées à l'utilisateur,
+// réparties par état SLA (en retard, bientôt dues, dans les délais) + nouvelles du jour
+export async function findMaFile(idUser: string) {
+  const r = await db.query(
+    `SELECT
+       COUNT(*)::int AS total,
+       COUNT(*) FILTER (WHERE d.due_at < now())::int AS en_retard,
+       COUNT(*) FILTER (WHERE d.due_at >= now()
+         AND (d.due_at - now()) < (d.due_at - d.created_at) * 0.25)::int AS bientot,
+       COUNT(*) FILTER (WHERE s.label = 'NOUVELLE')::int AS a_prendre,
+       COUNT(*) FILTER (WHERE s.label = 'EN_COURS')::int AS en_cours
+     FROM demands d
+     JOIN statuses s ON s.id_status = d.id_status
+     WHERE d.deleted_at IS NULL AND d.id_assigned_agent = $1
+       AND s.label IN ('NOUVELLE', 'EN_COURS')`,
+    [idUser],
+  );
+  return r.rows[0] as {
+    total: number;
+    en_retard: number;
+    bientot: number;
+    a_prendre: number;
+    en_cours: number;
+  };
+}

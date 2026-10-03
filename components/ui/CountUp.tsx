@@ -44,9 +44,7 @@ export default function CountUp({
   }, [value, duration, anime]);
 
   return (
-    <span className={className}>
-      <span aria-hidden="true">{formater(affiche, decimals)}</span>
-      <span className="sr-only">{formater(value, decimals)}</span>
-    </span>
+    // Un seul nombre dans le DOM (pas de doublon au copier-coller) ; la valeur finale arrive en ~1 s
+    <span className={className}>{formater(affiche, decimals)}</span>
   );
 }

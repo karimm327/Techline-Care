@@ -1,0 +1,23 @@
+# Déploiement Render (Blueprint) — voir docs/DEPLOIEMENT.md
+services:
+  - type: web
+    name: techline-care
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Heures affichées et heure de la base en heure de Paris (les serveurs Render sont en UTC)
+      - key: TZ
+        value: Europe/Paris
+      # À renseigner dans le tableau de bord Render (jamais dans le dépôt)
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_CA_CERT
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true

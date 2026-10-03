@@ -25,7 +25,6 @@ import Drawer from "@/components/ui/Drawer";
 import EmptyState from "@/components/ui/EmptyState";
 import IconButton from "@/components/ui/IconButton";
 import Input from "@/components/ui/Input";
-import Kbd from "@/components/ui/Kbd";
 import Menu from "@/components/ui/Menu";
 import PriorityBars from "@/components/ui/PriorityBars";
 import SegmentedControl from "@/components/ui/SegmentedControl";
@@ -130,10 +129,7 @@ export default function DemoUI() {
               Petit
             </Button>
             <Button size="lg">Grand</Button>
-            <Button
-              icon={<Plus strokeWidth={2.2} className="size-4" />}
-              kbd="N"
-            >
+            <Button icon={<Plus strokeWidth={2.2} className="size-4" />}>
               Nouvelle demande
             </Button>
             <Button
@@ -150,7 +146,6 @@ export default function DemoUI() {
             <IconButton label="Supprimer" size={36}>
               <Trash2 strokeWidth={1.9} className="size-4" />
             </IconButton>
-            <Kbd>Ctrl K</Kbd>
           </div>
         </Bloc>
 
@@ -310,7 +305,6 @@ export default function DemoUI() {
                   {
                     label: "Mes droits",
                     icon: <ShieldCheck className="size-4" />,
-                    kbd: "G D",
                   },
                   { type: "separator" },
                   {

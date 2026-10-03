@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { estAdmin, estLectureSeule } from "@/lib/auth";
+import { estAdmin, estLectureSeule, roleCanonique } from "@/lib/auth";
 import { requireUser } from "@/lib/auth/session";
 import { findUserById } from "@/lib/db/queries/user.queries";
 import { findVues } from "@/lib/db/queries/view.queries";
@@ -25,7 +25,7 @@ export default async function AppShell({ children }: { children: ReactNode }) {
     nom,
     email: profil?.email ?? session.email,
     role: session.role,
-    libelleRole: LIBELLES_ROLE[session.role] ?? session.role,
+    libelleRole: LIBELLES_ROLE[roleCanonique(session.role)],
     estAdmin: estAdmin(session.role),
     lectureSeule: estLectureSeule(session.role),
   };

@@ -1,3 +1,12 @@
+import {
+  type LucideIcon,
+  MessageSquare,
+  Paperclip,
+  Pencil,
+  Plus,
+  RotateCcw,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { styleAction } from "@/components/activity/actions";
@@ -7,8 +16,8 @@ import {
   RechercheJournal,
 } from "@/components/journal/FiltresJournal";
 import PageHeader from "@/components/layout/PageHeader";
-import { classesBouton } from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
+import Pagination from "@/components/ui/Pagination";
 import { estAdmin } from "@/lib/auth";
 import { requireUser } from "@/lib/auth/session";
 import {
@@ -23,7 +32,8 @@ import { cn } from "@/lib/ui/cn";
 import { dateHeure, heure } from "@/lib/ui/format";
 import { libellePriorite, libelleStatut } from "@/lib/ui/status";
 
-const PAR_LOT = 30;
+// 10 événements par page (limite la surcharge visuelle)
+const PAR_PAGE = 10;
 
 // Symbole de chaque action dans la frise (maquette Journal)
 const SYMBOLES: Record<string, string> = {
@@ -35,11 +45,30 @@ const SYMBOLES: Record<string, string> = {
 };
 
 const LIBELLES_COMPTEURS: Record<string, string> = {
-  CREATION: "Création",
-  MODIFICATION: "Modification",
-  SUPPRESSION: "Suppression",
-  RESTAURATION: "Restauration",
-  COMMENTAIRE: "Commentaire",
+  CREATION: "Créations",
+  MODIFICATION: "Modifications",
+  SUPPRESSION: "Suppressions",
+  RESTAURATION: "Restaurations",
+  COMMENTAIRE: "Commentaires",
+  PIECE_JOINTE: "Pièces jointes",
+};
+
+// Icône et couleur de chaque compteur
+const ICONES_ACTIONS: Record<string, LucideIcon> = {
+  CREATION: Plus,
+  MODIFICATION: Pencil,
+  SUPPRESSION: Trash2,
+  RESTAURATION: RotateCcw,
+  COMMENTAIRE: MessageSquare,
+  PIECE_JOINTE: Paperclip,
+};
+const COULEURS_ICONES: Record<string, string> = {
+  CREATION: "text-st-nouvelle-fg",
+  MODIFICATION: "text-st-encours-fg",
+  SUPPRESSION: "text-danger-fg",
+  RESTAURATION: "text-success-fg",
+  COMMENTAIRE: "text-accent-fg",
+  PIECE_JOINTE: "text-fg-2",
 };
 
 interface Props {
@@ -48,7 +77,7 @@ interface Props {
     q?: string;
     du?: string;
     au?: string;
-    n?: string;
+    page?: string;
   }>;
 }
 
@@ -185,21 +214,21 @@ export default async function JournalPage({ searchParams }: Props) {
     du: sp.du,
     au: sp.au,
   };
-  const limite = Math.min(
-    600,
-    Math.max(PAR_LOT, Number.parseInt(sp.n ?? "", 10) || PAR_LOT),
-  );
+  const pageDemandee = Math.max(1, Number.parseInt(sp.page ?? "1", 10) || 1);
 
   const [{ lignes, total }, parAction] = await Promise.all([
-    findJournal(filtres, limite),
+    findJournal(filtres, PAR_PAGE, (pageDemandee - 1) * PAR_PAGE),
     countJournalParAction(filtres),
   ]);
-  const max = Math.max(1, ...Object.values(parAction));
+  const totalPages = Math.max(1, Math.ceil(total / PAR_PAGE));
+  const page = Math.min(pageDemandee, totalPages);
 
   // Lien qui conserve les autres filtres
   const lien = (changements: Record<string, string | null>) => {
     const p = new URLSearchParams();
     for (const [k, v] of Object.entries(sp)) if (v) p.set(k, v);
+    // Tout changement de filtre revient à la page 1
+    if (!("page" in changements)) p.delete("page");
     for (const [k, v] of Object.entries(changements)) {
       if (v) p.set(k, v);
       else p.delete(k);
@@ -227,59 +256,54 @@ export default async function JournalPage({ searchParams }: Props) {
         actions={<FiltrePeriode />}
       />
 
-      <section
+      {/* Répartition compacte, alignée à gauche : icône + nombre + libellé, clic = filtre */}
+      <nav
         aria-label="Répartition par action (cliquer pour filtrer)"
-        className="grid animate-rise grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3 [animation-delay:80ms]"
+        className="-mt-2 flex flex-wrap items-center gap-x-1 gap-y-1"
       >
-        {ACTIONS.map((a, i) => {
-          const s = styleAction(a);
+        {ACTIONS.map((a) => {
+          const Icone = ICONES_ACTIONS[a];
           const actif = filtres.action === a;
+          const estompe = !!filtres.action && !actif;
           const n = parAction[a] ?? 0;
           return (
             <Link
               key={a}
-              href={lien({ action: actif ? null : a, n: null })}
+              href={lien({ action: actif ? null : a, page: null })}
               aria-current={actif ? "true" : undefined}
               scroll={false}
               className={cn(
-                "flex flex-col gap-1.5 rounded-[14px] border px-4 py-3.5 transition-[transform,box-shadow,border-color,background-color] duration-[280ms] ease-out",
-                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-soft",
-                "[@media(hover:hover)]:hover:-translate-y-[3px] [@media(hover:hover)]:hover:shadow-md",
+                "cible-tactile inline-flex h-7 items-center gap-1.5 rounded-[7px] px-2 text-xs transition-[opacity,background-color] duration-[180ms]",
+                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft",
                 actif
-                  ? "border-accent-fg/60 bg-accent/[.12]"
-                  : "border-line bg-surface hover:border-line-hover",
+                  ? "bg-surface-2 text-fg"
+                  : "text-fg-3 hover:bg-surface-2 hover:text-fg-1",
+                estompe && "opacity-50",
               )}
             >
-              <span className="flex items-center gap-2 text-[13px] text-fg-2">
-                <span
-                  aria-hidden="true"
-                  className={cn("size-2 rounded-full", s.point)}
-                />
-                {LIBELLES_COMPTEURS[a]}
-                {actif && <span className="sr-only"> (filtre actif)</span>}
-              </span>
-              <span className="font-display text-[28px] font-semibold tabular-nums text-fg">
+              <Icone
+                aria-hidden="true"
+                strokeWidth={2}
+                className={cn("size-3.5", COULEURS_ICONES[a])}
+              />
+              <span className="font-semibold tabular-nums text-fg">
                 {n.toLocaleString("fr-FR")}
               </span>
-              <span
-                aria-hidden="true"
-                className="block h-1 overflow-hidden rounded-full bg-bg-sunken"
-              >
-                <span
-                  className={cn(
-                    "block h-full origin-left animate-bar rounded-full",
-                    s.point,
-                  )}
-                  style={{
-                    width: `${Math.round((n / max) * 100)}%`,
-                    animationDelay: `${300 + i * 80}ms`,
-                  }}
-                />
-              </span>
+              {LIBELLES_COMPTEURS[a].toLowerCase()}
+              {actif && <span className="sr-only"> (filtre actif)</span>}
             </Link>
           );
         })}
-      </section>
+        {filtres.action && (
+          <Link
+            href={lien({ action: null, page: null })}
+            scroll={false}
+            className="cible-tactile inline-flex h-7 items-center rounded-[7px] px-2 text-xs font-semibold text-accent-fg hover:text-accent-fg-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft"
+          >
+            Tout afficher
+          </Link>
+        )}
+      </nav>
 
       <section
         aria-label="Événements"
@@ -310,15 +334,17 @@ export default async function JournalPage({ searchParams }: Props) {
           ))
         )}
 
-        {lignes.length < total && (
-          <div className="mt-5 flex justify-center">
-            <Link
-              href={lien({ n: String(limite + PAR_LOT) })}
-              scroll={false}
-              className={classesBouton({ variant: "secondary" })}
-            >
-              Charger plus d’événements
-            </Link>
+        {totalPages > 1 && (
+          <div className="mt-5 flex flex-col items-center justify-between gap-3 border-t border-line pt-4 sm:flex-row">
+            <p className="text-[12.5px] tabular-nums text-fg-3">
+              {(page - 1) * PAR_PAGE + 1}–{Math.min(page * PAR_PAGE, total)} sur{" "}
+              {total} · page {page} sur {totalPages}
+            </p>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              lien={(p) => lien({ page: p > 1 ? String(p) : null })}
+            />
           </div>
         )}
       </section>

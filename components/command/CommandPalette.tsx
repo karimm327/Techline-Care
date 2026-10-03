@@ -6,7 +6,6 @@ import {
   ArrowRight,
   ChartLine,
   FilePlus2,
-  Keyboard,
   LayoutDashboard,
   LogOut,
   Search,
@@ -27,16 +26,13 @@ import { createPortal } from "react-dom";
 import type { UtilisateurShell } from "@/components/layout/types";
 import Avatar from "@/components/ui/Avatar";
 import { useMonteClient } from "@/components/ui/Dialog";
-import Kbd from "@/components/ui/Kbd";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { useCoucheModale } from "@/lib/hooks/useCoucheModale";
-import { libelleMod, useShortcuts } from "@/lib/hooks/useShortcuts";
 import { dialogIn, voile } from "@/lib/motion";
 import { cn } from "@/lib/ui/cn";
 import {
-  ouvrirAideRaccourcis,
   useCommandesContextuelles,
-  useEvenement,
+  useOuverturePalette,
 } from "@/lib/ui/commandes";
 
 type ResultatDemande = {
@@ -109,8 +105,7 @@ export default function CommandPalette({ utilisateur }: Props) {
     setOuvert(true);
   }, []);
   useCoucheModale(ouvert, fermer, boite);
-  useEvenement("palette", ouvrir);
-  useShortcuts({ "mod+k": () => (ouvert ? fermer() : ouvrir()) });
+  useOuverturePalette(ouvrir);
 
   // /demands?palette=1 (bouton « Rechercher » de la page 404) ouvre la palette
   useEffect(() => {
@@ -173,28 +168,24 @@ export default function CommandPalette({ utilisateur }: Props) {
           id: "nav-tableau",
           label: "Tableau de bord",
           href: "/demands",
-          touche: "G puis D",
           icone: <LayoutDashboard strokeWidth={1.9} className="size-4" />,
         },
         !utilisateur.lectureSeule && {
           id: "nav-stats",
           label: "Statistiques",
           href: "/stats",
-          touche: "G puis S",
           icone: <ChartLine strokeWidth={1.9} className="size-4" />,
         },
         utilisateur.estAdmin && {
           id: "nav-journal",
           label: "Journal d’activité",
           href: "/journal",
-          touche: "G puis J",
           icone: <Activity strokeWidth={1.9} className="size-4" />,
         },
         {
           id: "nav-compte",
           label: "Mon compte",
           href: "/account",
-          touche: "G puis C",
           icone: <User strokeWidth={1.9} className="size-4" />,
         },
         {
@@ -207,7 +198,6 @@ export default function CommandPalette({ utilisateur }: Props) {
         id: string;
         label: string;
         href: string;
-        touche?: string;
         icone: ReactNode;
       }[],
     [utilisateur.estAdmin, utilisateur.lectureSeule],
@@ -222,11 +212,7 @@ export default function CommandPalette({ utilisateur }: Props) {
   );
   const navVisibles = navigation.filter((n) => correspond(n.label));
   const creerVisible = !utilisateur.lectureSeule;
-  const autresVisibles = correspond(
-    "raccourcis clavier aide",
-    "déconnexion se déconnecter",
-  );
-  const mod = libelleMod();
+  const autresVisibles = correspond("déconnexion se déconnecter");
 
   if (!monte) return null;
 
@@ -280,7 +266,6 @@ export default function CommandPalette({ utilisateur }: Props) {
                     className="size-4 animate-spin rounded-full border-2 border-line-strong border-t-accent-fg"
                   />
                 )}
-                <Kbd>Échap</Kbd>
               </div>
 
               <Command.List className="max-h-[min(420px,60vh)] overflow-y-auto overscroll-contain p-2">
@@ -358,7 +343,6 @@ export default function CommandPalette({ utilisateur }: Props) {
                           )}
                         </span>
                         <span className="flex-1">{c.label}</span>
-                        {c.touche && <Kbd>{c.touche}</Kbd>}
                       </Command.Item>
                     ))}
                     {creerVisible && (
@@ -382,7 +366,6 @@ export default function CommandPalette({ utilisateur }: Props) {
                             ? `Créer une demande « ${saisie.trim()} »`
                             : "Créer une demande"}
                         </span>
-                        <Kbd>N</Kbd>
                       </Command.Item>
                     )}
                   </Groupe>
@@ -399,7 +382,6 @@ export default function CommandPalette({ utilisateur }: Props) {
                       >
                         <span className="text-fg-3">{n.icone}</span>
                         <span className="flex-1">{n.label}</span>
-                        {n.touche && <Kbd>{n.touche}</Kbd>}
                       </Command.Item>
                     ))}
                   </Groupe>
@@ -407,21 +389,6 @@ export default function CommandPalette({ utilisateur }: Props) {
 
                 {autresVisibles && (
                   <Groupe titre="Autres">
-                    <Command.Item
-                      value="aide-raccourcis"
-                      onSelect={() => {
-                        fermer();
-                        ouvrirAideRaccourcis();
-                      }}
-                      className={classeItem}
-                    >
-                      <Keyboard
-                        strokeWidth={1.9}
-                        className="size-4 text-fg-3"
-                      />
-                      <span className="flex-1">Raccourcis clavier</span>
-                      <Kbd>?</Kbd>
-                    </Command.Item>
                     <Command.Item
                       value="deconnexion"
                       onSelect={async () => {
@@ -438,13 +405,6 @@ export default function CommandPalette({ utilisateur }: Props) {
                   </Groupe>
                 )}
               </Command.List>
-
-              <div className="flex flex-wrap gap-4 border-t border-line px-[18px] py-2.5 text-xs text-fg-4">
-                <span>↑↓ naviguer</span>
-                <span>↵ ouvrir</span>
-                <span>Échap fermer</span>
-                <span className="ml-auto">{mod} K pour rouvrir</span>
-              </div>
             </Command>
           </motion.div>
         </div>

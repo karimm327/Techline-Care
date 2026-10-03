@@ -24,7 +24,7 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  // Préférences (F14) : animations, densité, raccourcis — appliquées dès le rendu serveur
+  // Préférences (F14) : animations et densité — appliquées dès le rendu serveur
   const user = await getSessionUser();
   const prefs = user
     ? await findPreferences(user.id).catch(() => PREFERENCES_DEFAUT)
@@ -36,8 +36,8 @@ export default async function RootLayout({
         classesPolices,
         !prefs.motion && "no-motion",
         prefs.density === "compact" && "density-compact",
+        prefs.theme === "clair" && "theme-clair",
       )}
-      data-raccourcis={prefs.shortcuts ? "on" : "off"}
     >
       <body className="min-h-screen bg-bg font-sans text-sm leading-normal text-fg antialiased selection:bg-accent/40">
         <MotionProvider>

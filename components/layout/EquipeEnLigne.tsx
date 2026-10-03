@@ -25,10 +25,7 @@ export default function EquipeEnLigne() {
 
   if (!equipe || equipe.length === 0) return null;
   return (
-    <section
-      aria-label="Équipe en ligne"
-      className="rounded-xl border border-line bg-surface p-3.5"
-    >
+    <section aria-label="Équipe en ligne" className="px-3 py-1">
       <div className="mb-2.5 flex items-center justify-between gap-2">
         <p className="text-[12.5px] font-semibold">Équipe en ligne</p>
         <span className="flex items-center gap-1.5 text-[11.5px] text-success-fg">
@@ -39,19 +36,19 @@ export default function EquipeEnLigne() {
           {pluriel(equipe.length, "actif")}
         </span>
       </div>
-      <ul className="flex">
+      <ul className="flex pb-1 pl-0.5 pt-0.5">
         {equipe.slice(0, 6).map((p, i) => (
           <li key={p.id} className={i > 0 ? "-ml-2" : undefined}>
             <Avatar
               id={p.id}
               name={p.nom}
               size={30}
-              className="border-2 border-surface"
+              className="border-2 border-bg-sunken"
             />
           </li>
         ))}
         {equipe.length > 6 && (
-          <li className="-ml-2 flex size-[30px] items-center justify-center rounded-full border-2 border-surface bg-surface-3 text-[11px] font-semibold">
+          <li className="-ml-2 flex size-[30px] items-center justify-center rounded-full border-2 border-bg-sunken bg-surface-3 text-[11px] font-semibold">
             +{equipe.length - 6}
           </li>
         )}

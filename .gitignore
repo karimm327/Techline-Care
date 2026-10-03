@@ -43,3 +43,6 @@ next-env.d.ts
 
 # pièces jointes (UPLOAD_DIR)
 /uploads
+
+# Modèle de configuration (sans secrets) : versionné
+!.env.example

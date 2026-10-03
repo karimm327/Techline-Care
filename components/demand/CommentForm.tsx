@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Avatar from "@/components/ui/Avatar";
 import Button from "@/components/ui/Button";
-import Kbd from "@/components/ui/Kbd";
 import { notifier } from "@/components/ui/Toast";
 import type { Personne } from "@/lib/demandes/mentions";
 import { cn } from "@/lib/ui/cn";
@@ -55,7 +54,7 @@ function jetonEnCours(texte: string, curseur: number) {
   return null;
 }
 
-// Composer : zone auto-extensible, @mentions, réponses rapides, Ctrl/⌘ + Entrée pour envoyer
+// Composer : zone auto-extensible, @mentions, réponses rapides
 export default function CommentForm({
   demandId,
   mentionnables = [],
@@ -226,11 +225,9 @@ export default function CommentForm({
                   return;
                 }
                 if (e.key === "Enter" || e.key === "Tab") {
-                  if (!(e.ctrlKey || e.metaKey)) {
-                    e.preventDefault();
-                    choisir(suggestions[actif]);
-                    return;
-                  }
+                  e.preventDefault();
+                  choisir(suggestions[actif]);
+                  return;
                 }
                 if (e.key === "Escape") {
                   e.preventDefault();
@@ -238,10 +235,6 @@ export default function CommentForm({
                   setSuggestionsFermees(true);
                   return;
                 }
-              }
-              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-                e.preventDefault();
-                envoyer();
               }
             }}
             rows={3}
@@ -357,9 +350,6 @@ export default function CommentForm({
             }
           >
             {interne ? "Ajouter la note" : "Envoyer"}
-            <Kbd className="ml-1 hidden border-fg/30 bg-fg/10 text-current sm:inline-flex">
-              Ctrl ↵
-            </Kbd>
           </Button>
         </div>
       </div>

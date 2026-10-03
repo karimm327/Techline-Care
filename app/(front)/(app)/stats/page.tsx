@@ -1,3 +1,4 @@
+import { FilePlus2, RotateCcw, ShieldCheck, Timer } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
@@ -8,7 +9,7 @@ import {
 import Avatar from "@/components/ui/Avatar";
 import Card from "@/components/ui/Card";
 import EmptyState from "@/components/ui/EmptyState";
-import StatCard from "@/components/ui/StatCard";
+import Indicateur from "@/components/ui/Indicateur";
 import { estLectureSeule } from "@/lib/auth";
 import { requireUser } from "@/lib/auth/session";
 import {
@@ -94,53 +95,50 @@ export default async function StatistiquesPage({
         }
       />
 
+      {/* Indicateurs compacts, alignés à gauche (précisions au survol) */}
       <section
         aria-label="Indicateurs"
-        className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4"
+        className="-mt-2 flex flex-wrap items-center gap-x-1 gap-y-1"
       >
-        <StatCard
-          index={0}
-          label="Demandes créées"
-          value={k.crees}
-          tone="accent"
-          spark={s.serie.map((j) => j.crees)}
-          trend={
+        <Indicateur
+          label="demandes créées"
+          icone={FilePlus2}
+          couleurIcone="text-st-nouvelle-fg"
+          valeur={k.crees}
+          indication={
             variation === null
-              ? undefined
+              ? `${k.clotureesPeriode} clôturée${k.clotureesPeriode > 1 ? "s" : ""} sur la période`
               : `${variation > 0 ? "+" : ""}${variation} % vs période précédente`
           }
-          hint={`${k.clotureesPeriode} clôturée${k.clotureesPeriode > 1 ? "s" : ""} sur la période`}
         />
-        <StatCard
-          index={1}
-          label="Délai moyen de résolution"
-          value={heures(k.delaiMoyenH)}
-          decimals={1}
-          unit="h"
-          tone="done"
-          hint={
+        <Indicateur
+          label="délai moyen de résolution"
+          icone={Timer}
+          couleurIcone="text-st-encours-fg"
+          valeur={heures(k.delaiMoyenH)}
+          decimales={1}
+          unite="h"
+          indication={
             k.delaiMoyenH === null
               ? "Aucune clôture sur la période"
               : "De la création à la clôture"
           }
         />
-        <StatCard
-          index={2}
+        <Indicateur
           label="SLA respectés"
-          value={k.slaRespectes}
-          unit="%"
-          tone={
-            k.slaRespectes === null || k.slaRespectes >= 90 ? "done" : "warn"
-          }
-          hint="Objectif 90 % · demandes clôturées"
+          icone={ShieldCheck}
+          couleurIcone="text-success-fg"
+          valeur={k.slaRespectes}
+          unite="%"
+          indication="Objectif 90 %"
         />
-        <StatCard
-          index={3}
-          label="Taux de réouverture"
-          value={k.reouverture}
-          unit="%"
-          tone="warn"
-          hint="Clôturées puis rouvertes"
+        <Indicateur
+          label="réouverture"
+          icone={RotateCcw}
+          couleurIcone="text-prio-haute-fg"
+          valeur={k.reouverture}
+          unite="%"
+          indication="Demandes clôturées puis rouvertes"
         />
       </section>
 

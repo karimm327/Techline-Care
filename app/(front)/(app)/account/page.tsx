@@ -6,7 +6,7 @@ import PreferencesCompte from "@/components/account/PreferencesCompte";
 import SessionsActives from "@/components/account/SessionsActives";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
-import { estLectureSeule } from "@/lib/auth";
+import { estLectureSeule, roleCanonique } from "@/lib/auth";
 import { requireUser } from "@/lib/auth/session";
 import {
   findPreferences,
@@ -61,9 +61,7 @@ export default async function AccountPage({ searchParams }: Props) {
   ]);
   const nom =
     `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() || moi.email;
-  const role = (ROLES_MATRICE as readonly string[]).includes(moi.role)
-    ? (moi.role as RoleMatrice)
-    : "LECTURE";
+  const role: RoleMatrice = roleCanonique(moi.role);
   const compte = (s: string) =>
     parStatut.find((l) => l.status === s)?.total ?? 0;
   const assignees = parStatut.reduce((a, l) => a + l.total, 0);
@@ -91,8 +89,11 @@ export default async function AccountPage({ searchParams }: Props) {
     <>
       <div
         aria-hidden="true"
-        className="h-24 animate-grid bg-bg-sunken bg-[radial-gradient(circle_at_1px_1px,rgb(var(--line))_1px,transparent_0)] bg-[length:18px_18px] [animation-duration:8s]"
-      />
+        className="relative h-32 bg-bg-sunken bg-cover bg-[center_40%]"
+        style={{ backgroundImage: "url(/images/connexion.jpg)" }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-scrim/20 to-surface" />
+      </div>
       <div className="-mt-10 flex flex-wrap items-end gap-[18px] px-6 pb-5">
         <span
           aria-hidden="true"

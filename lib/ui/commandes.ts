@@ -8,8 +8,6 @@ export type CommandeContextuelle = {
   id: string;
   label: string;
   icone?: ReactNode;
-  // Raccourci affiché à droite (ex. "E", "1")
-  touche?: string;
   // Mots-clés supplémentaires pour le filtrage
   motsCles?: string[];
   action: () => void;
@@ -48,18 +46,14 @@ export function useDeclarerCommandes(liste: CommandeContextuelle[]) {
   }, [liste]);
 }
 
-// Ouverture de la palette et de la feuille d'aide depuis n'importe quel composant
+// Ouverture de la palette depuis n'importe quel composant (barre de recherche du header)
 const EVT_PALETTE = "tl:palette";
-const EVT_AIDE = "tl:aide-raccourcis";
 
 export const ouvrirPalette = () => window.dispatchEvent(new Event(EVT_PALETTE));
-export const ouvrirAideRaccourcis = () =>
-  window.dispatchEvent(new Event(EVT_AIDE));
 
-export function useEvenement(nom: "palette" | "aide", f: () => void) {
+export function useOuverturePalette(f: () => void) {
   useEffect(() => {
-    const evt = nom === "palette" ? EVT_PALETTE : EVT_AIDE;
-    window.addEventListener(evt, f);
-    return () => window.removeEventListener(evt, f);
-  }, [nom, f]);
+    window.addEventListener(EVT_PALETTE, f);
+    return () => window.removeEventListener(EVT_PALETTE, f);
+  }, [f]);
 }

@@ -1,32 +1,38 @@
+import {
+  ChartColumn,
+  FilePlus2,
+  History,
+  ListChecks,
+  type LucideIcon,
+} from "lucide-react";
 import { redirect } from "next/navigation";
 import ConnexionForm from "@/components/auth/ConnexionForm";
 import { getSessionUser } from "@/lib/auth/session";
-import { cn } from "@/lib/ui/cn";
 
-// Cartes-tickets décoratives du fond (M18) : illustration, sans lien avec les données réelles
-const CARTES = [
+// Photo d'ambiance (à déposer dans public/images/connexion.jpg, format paysage ≥ 1600 px)
+const PHOTO = "/images/connexion.jpg";
+
+// Ce que permet l'application, affiché en bas de la photo
+const ATOUTS: { icone: LucideIcon; titre: string; texte: string }[] = [
   {
-    ref: "#4F1A92C0",
-    titre: "Demande aide logement",
-    etiquette: "Haute",
-    couleur: "text-prio-haute-fg",
-    position: "left-[14%] top-[52%] [--r:-4deg] [animation-duration:6s]",
+    icone: FilePlus2,
+    titre: "Nouvelle demande",
+    texte: "Créée en quelques secondes",
   },
   {
-    ref: "#7B20E1AA",
-    titre: "Suivi dossier allocation",
-    etiquette: "En cours",
-    couleur: "text-st-encours-fg",
-    position:
-      "left-[46%] top-[64%] [--r:3deg] [animation-delay:1.2s] [animation-duration:7.2s]",
+    icone: ListChecks,
+    titre: "Suivi des demandes",
+    texte: "Statut, priorité, agent",
   },
   {
-    ref: "#06BB93AF",
-    titre: "Mise à jour situation familiale",
-    etiquette: "Clôturée",
-    couleur: "text-st-cloturee-fg",
-    position:
-      "left-[22%] top-[78%] [--r:2deg] [animation-delay:2.1s] [animation-duration:8.1s]",
+    icone: History,
+    titre: "Journal d’activité",
+    texte: "Chaque action tracée",
+  },
+  {
+    icone: ChartColumn,
+    titre: "Statistiques",
+    texte: "Délais et charge d’équipe",
   },
 ];
 
@@ -36,46 +42,56 @@ export default async function LoginPage() {
 
   return (
     <div className="flex flex-1 flex-wrap">
-      {/* Présentation : grille animée + cartes flottantes */}
-      <section className="relative min-h-[280px] flex-[1_1_520px] animate-grid overflow-hidden border-line bg-bg-sunken bg-[linear-gradient(rgb(var(--grille))_1px,transparent_1px),linear-gradient(90deg,rgb(var(--grille))_1px,transparent_1px)] bg-[length:48px_48px] md:min-h-[520px] md:border-r">
-        <div className="relative z-[2] max-w-[560px] px-6 pt-10 sm:px-16 sm:pt-[72px]">
-          <p className="mb-3.5 animate-rise text-xs font-semibold uppercase tracking-[.1em] text-accent-fg">
+      {/* Présentation : photo d'équipe + atouts de l'outil */}
+      <section
+        className="relative flex min-h-[320px] flex-[1_1_520px] flex-col justify-between overflow-hidden bg-bg-sunken bg-cover bg-center md:min-h-[560px]"
+        style={{ backgroundImage: `url(${PHOTO})` }}
+      >
+        {/* Voile pour garder le texte lisible quelle que soit la photo */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-t from-scrim/95 via-scrim/55 to-scrim/30"
+        />
+
+        <div className="relative max-w-[560px] px-6 pt-10 sm:px-14 sm:pt-16">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[.1em] text-accent-fg-2">
             Portail des demandes
           </p>
-          <h1 className="animate-rise font-display text-[34px] font-semibold leading-[1.08] tracking-[-.03em] [animation-delay:80ms] sm:text-display-xl">
-            Le support de l’équipe,
-            <br />
-            <span className="text-accent-fg">sans friction.</span>
+          <h1 className="font-display text-[32px] font-semibold leading-[1.1] tracking-[-.03em] text-fg sm:text-[42px]">
+            Le support de l’équipe, sans friction.
           </h1>
-          <p className="mt-[18px] max-w-[440px] animate-rise text-base text-fg-2 [animation-delay:160ms]">
-            Créez, suivez et clôturez les demandes, avec un historique complet
-            de chaque action.
+          <p className="mt-4 max-w-[440px] text-base text-fg-1">
+            Créez, suivez et clôturez les demandes de support, avec un
+            historique complet de chaque action.
           </p>
         </div>
-        <div aria-hidden="true" className="hidden md:block">
-          {CARTES.map((c) => (
-            <div
-              key={c.ref}
-              className={cn(
-                "absolute w-[250px] animate-float rounded-[14px] border border-line-strong bg-surface-2/[.92] px-4 py-3.5 shadow-lg",
-                c.position,
-              )}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[11px] text-fg-4">{c.ref}</span>
-                <span
-                  className={cn(
-                    "rounded-full bg-fg/[.06] px-2 py-0.5 text-[11.5px] font-semibold",
-                    c.couleur,
-                  )}
-                >
-                  {c.etiquette}
-                </span>
+
+        <ul className="relative grid gap-x-8 gap-y-5 border-t border-fg/15 px-6 py-7 sm:grid-cols-2 sm:px-14 xl:grid-cols-4">
+          {ATOUTS.map(({ icone: Icone, titre, texte }) => (
+            <li key={titre} className="flex items-start gap-3">
+              <Icone
+                aria-hidden="true"
+                strokeWidth={1.8}
+                className="mt-0.5 size-5 shrink-0 text-accent-fg-2"
+              />
+              <div>
+                <p className="text-[14px] font-semibold text-fg">{titre}</p>
+                <p className="text-[12.5px] text-fg-2">{texte}</p>
               </div>
-              <p className="mt-2 font-semibold text-fg">{c.titre}</p>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
+        <p className="absolute bottom-1.5 right-3 text-[11px] text-fg-3">
+          Photo :{" "}
+          <a
+            href="https://unsplash.com/photos/people-working-at-desks-in-a-modern-office-CXxH2EiX760"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-xs underline-offset-2 hover:text-fg-1 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft"
+          >
+            Vitaly Gariev / Unsplash
+          </a>
+        </p>
       </section>
 
       {/* Connexion */}

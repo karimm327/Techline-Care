@@ -165,12 +165,16 @@ function conditionsJournal(f: FiltresJournal, avecAction: boolean) {
 }
 
 // Événements les plus récents d'abord, `limite` premiers (« Charger plus » augmente la limite)
-export async function findJournal(f: FiltresJournal, limite: number) {
+export async function findJournal(
+  f: FiltresJournal,
+  limite: number,
+  decalage = 0,
+) {
   const { where, valeurs } = conditionsJournal(f, true);
   const [lignes, total] = await Promise.all([
     db.query(
-      `${SELECT_JOURNAL} ${where} ORDER BY a.created_at DESC LIMIT $${valeurs.length + 1}`,
-      [...valeurs, limite],
+      `${SELECT_JOURNAL} ${where} ORDER BY a.created_at DESC LIMIT $${valeurs.length + 1} OFFSET $${valeurs.length + 2}`,
+      [...valeurs, limite, decalage],
     ),
     db.query(
       `SELECT COUNT(*)::int AS total FROM activity_logs a

@@ -1,7 +1,10 @@
 import jwt from "jsonwebtoken";
 import { type NextRequest, NextResponse } from "next/server";
+import { secretJwt } from "@/lib/auth";
+import { hacherMotDePasse, verifierMotDePasse } from "@/lib/auth/motDePasse";
 import { findUserByEmail } from "@/lib/db/queries/auth.queries";
 import { createSession } from "@/lib/db/queries/session.queries";
+import { updateUserPassword } from "@/lib/db/queries/user.queries";
 
 export async function POST(req: NextRequest) {
   const { email, password, resterConnecte } = await req.json();
@@ -15,20 +18,24 @@ export async function POST(req: NextRequest) {
 
   const user = await findUserByEmail(email);
 
-  if (!user) {
+  // Même réponse (et même durée) que l'adresse existe ou non : n'aide pas à deviner les comptes
+  const verification = await verifierMotDePasse(
+    String(password),
+    user?.password,
+  );
+  if (!user || !verification.ok) {
     return NextResponse.json(
-      { error: "Utilisateur introuvable" },
+      { error: "Identifiants incorrects" },
       { status: 401 },
     );
   }
 
-  const passwordMatch = password === user.password;
-
-  if (!passwordMatch) {
-    return NextResponse.json(
-      { error: "Mot de passe incorrect" },
-      { status: 401 },
-    );
+  // Ancien mot de passe encore en clair : remplacé par son empreinte bcrypt dès cette connexion
+  if (verification.aRehacher) {
+    await updateUserPassword(
+      user.id_user,
+      await hacherMotDePasse(String(password)),
+    ).catch((e) => console.error("Re-hachage du mot de passe impossible", e));
   }
 
   // Session enregistrée (liste et révocation dans Mon compte › Sécurité)
@@ -39,8 +46,8 @@ export async function POST(req: NextRequest) {
 
   const token = jwt.sign(
     { id: user.id_user, email: user.email, role: user.role, sid },
-    process.env.JWT_SECRET as string,
-    { expiresIn: dureeSecondes },
+    secretJwt(),
+    { expiresIn: dureeSecondes, algorithm: "HS256" },
   );
 
   const response = NextResponse.json(

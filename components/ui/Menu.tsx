@@ -13,7 +13,6 @@ import {
 } from "react";
 import { indexDepuisTouche } from "@/lib/ui/clavier";
 import { cn } from "@/lib/ui/cn";
-import Kbd from "./Kbd";
 
 export type ElementMenu =
   | {
@@ -22,7 +21,6 @@ export type ElementMenu =
       icon?: ReactNode;
       href?: string;
       onSelect?: () => void;
-      kbd?: string;
       tone?: "danger";
     }
   | { type: "separator" }
@@ -183,7 +181,6 @@ export default function Menu({
                   </span>
                 )}
                 <span className="flex-1">{it.label}</span>
-                {it.kbd && <Kbd>{it.kbd}</Kbd>}
               </>
             );
             const choisir = () => {

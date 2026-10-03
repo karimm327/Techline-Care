@@ -20,7 +20,6 @@ import SlaRing from "@/components/ui/SlaRing";
 import StatusBadge from "@/components/ui/StatusBadge";
 import StatusStepper from "@/components/ui/StatusStepper";
 import { notifier } from "@/components/ui/Toast";
-import { useShortcuts } from "@/lib/hooks/useShortcuts";
 import { cn } from "@/lib/ui/cn";
 import {
   type CommandeContextuelle,
@@ -50,7 +49,7 @@ type Props = {
   peutAgir: boolean;
   // Rôle LECTURE : actions affichées désactivées avec une explication
   lectureSeule?: boolean;
-  // Agent connecté pouvant se l'assigner (raccourci A) ; absent sinon
+  // Agent connecté pouvant se l'assigner ; absent sinon
   moiId?: string;
   // Données SLA (anneau à côté du suivi)
   sla?: {
@@ -144,22 +143,6 @@ export default function HeroDemande({
     champ?.focus({ preventScroll: true });
   };
 
-  // Raccourcis de la fiche (F2) : E modifier, 1–4 statut, A m'assigner, C commenter
-  useShortcuts(
-    {
-      e: () => router.push(`/demands/${id}/edit`),
-      c: ecrireCommentaire,
-      ...Object.fromEntries(
-        CODES_STATUT.map((code) => [
-          STATUTS[code].touche,
-          () => changerStatut(code),
-        ]),
-      ),
-      ...(moiId ? { a: mAssigner } : {}),
-    },
-    peutAgir,
-  );
-
   // Commandes proposées dans la palette Ctrl K tant que la fiche est affichée
   // biome-ignore lint/correctness/useExhaustiveDependencies: les actions lisent l'état courant au moment du choix
   const commandes = useMemo<CommandeContextuelle[]>(
@@ -169,7 +152,6 @@ export default function HeroDemande({
             ...CODES_STATUT.filter((code) => code !== statut).map((code) => ({
               id: `statut-${code}`,
               label: `Passer en « ${STATUTS[code].label} »`,
-              touche: STATUTS[code].touche,
               motsCles: ["statut", "changer"],
               icone: (
                 <span
@@ -184,7 +166,6 @@ export default function HeroDemande({
             {
               id: "modifier",
               label: "Modifier la demande",
-              touche: "E",
               icone: <Pencil strokeWidth={1.9} className="size-4" />,
               action: () => router.push(`/demands/${id}/edit`),
             },
@@ -193,7 +174,6 @@ export default function HeroDemande({
                   {
                     id: "m-assigner",
                     label: "M’assigner la demande",
-                    touche: "A",
                     icone: <UserCheck strokeWidth={1.9} className="size-4" />,
                     action: mAssigner,
                   },
@@ -202,7 +182,6 @@ export default function HeroDemande({
             {
               id: "commenter",
               label: "Écrire un commentaire",
-              touche: "C",
               icone: <MessageSquare strokeWidth={1.9} className="size-4" />,
               action: ecrireCommentaire,
             },

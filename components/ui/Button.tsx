@@ -1,6 +1,5 @@
 import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from "react";
 import { cn } from "@/lib/ui/cn";
-import Kbd from "./Kbd";
 
 export type VarianteBouton =
   | "primary"
@@ -67,7 +66,6 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   // Libellé pendant le chargement (ex. « Enregistrement… »)
   loadingLabel?: string;
   icon?: ReactNode;
-  kbd?: string;
 };
 
 const Button = forwardRef<HTMLButtonElement, Props>(function Button(
@@ -77,7 +75,6 @@ const Button = forwardRef<HTMLButtonElement, Props>(function Button(
     loading = false,
     loadingLabel,
     icon,
-    kbd,
     className,
     children,
     disabled,
@@ -97,11 +94,6 @@ const Button = forwardRef<HTMLButtonElement, Props>(function Button(
     >
       {loading ? <Spinner /> : icon}
       {loading && loadingLabel ? loadingLabel : children}
-      {kbd && !loading && (
-        <Kbd className="ml-1 hidden border-fg/30 bg-fg/10 text-current md:inline-flex">
-          {kbd}
-        </Kbd>
-      )}
     </button>
   );
 });

@@ -1,10 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { Pool, type QueryResult } from "pg";
-
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL n'est pas configuré");
-}
+import { configurationPool } from "./configuration";
 
 // En développement, Next.js recharge les fichiers à chaque modification :
 // sans ça, un NOUVEAU pool de connexions serait créé à chaque fois, jusqu'à saturer
@@ -17,16 +14,15 @@ const globalPourPg = globalThis as unknown as {
 const pool =
   globalPourPg.pgPool ??
   new Pool({
-    connectionString: process.env.DATABASE_URL,
+    ...configurationPool(),
     max: 5,
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 8_000,
   });
 
 if (!globalPourPg.pgPool) {
-  const fuseau = (
-    Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Paris"
-  ).replace(/'/g, "");
+  // Fuseau de la base = celui de l'équipe (TZ, Europe/Paris par défaut) même si le serveur est en UTC
+  const fuseau = (process.env.TZ || "Europe/Paris").replace(/'/g, "");
   pool.on("connect", (client) => {
     client.query(`SET TIME ZONE '${fuseau}'`).catch(() => {});
   });

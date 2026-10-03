@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, Plus, Search, X } from "lucide-react";
+import { Bookmark, ChevronDown, Search, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import DialogueVue from "@/components/demands/DialogueVue";
 import Checkbox from "@/components/ui/Checkbox";
@@ -18,7 +18,7 @@ type Props = {
 
 type DefFiltre = { cle: string; titre: string; options: Option[] };
 
-// Popover de sélection multiple d'un filtre (cases à cocher, Échap / clic extérieur ferment)
+// Menu déroulant d'un filtre (flèche vers le bas, cases à cocher ; Échap / clic extérieur ferment)
 function ChipFiltre({
   def,
   valeurs,
@@ -55,72 +55,86 @@ function ChipFiltre({
     };
   }, [ouvert]);
 
-  const libelles = valeurs
-    .map((v) => def.options.find((o) => o.value === v)?.label ?? v)
-    .join(", ");
+  // Libellé du bouton : « Statut », « Statut · Nouvelle » ou « Statut · 2 »
+  const resume =
+    valeurs.length === 1
+      ? (def.options.find((o) => o.value === valeurs[0])?.label ?? valeurs[0])
+      : valeurs.length > 1
+        ? String(valeurs.length)
+        : null;
 
   return (
     <div ref={racine} className="relative">
-      <div
+      <button
+        ref={bouton}
+        type="button"
+        aria-haspopup="true"
+        aria-expanded={ouvert}
+        aria-controls={idPanneau}
+        onClick={() => setOuvert((v) => !v)}
         className={cn(
-          "cible-tactile flex h-9 items-center rounded-full text-[13px] transition-colors duration-[180ms]",
+          "cible-tactile inline-flex h-9 max-w-[260px] items-center gap-1.5 rounded-[10px] border px-3 text-[13px] transition-colors duration-[180ms]",
+          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-soft",
           actif
-            ? "border border-accent-fg/45 bg-accent/15 font-medium text-accent-fg-2"
-            : "border border-dashed border-line-strong text-fg-2 hover:bg-surface-2 hover:text-fg",
+            ? "border-accent-fg/40 bg-accent/15 font-medium text-accent-fg-2"
+            : "border-line-strong/70 bg-surface text-fg-2 hover:border-line-hover hover:text-fg",
+          ouvert && !actif && "border-line-hover text-fg",
         )}
       >
-        <button
-          ref={bouton}
-          type="button"
-          aria-expanded={ouvert}
-          aria-controls={idPanneau}
-          onClick={() => setOuvert((v) => !v)}
-          className="flex h-full max-w-[280px] items-center gap-1 truncate rounded-full px-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft"
-        >
-          {actif ? (
-            <span className="truncate">
-              {def.titre} : {libelles}
-            </span>
-          ) : (
+        <span className="truncate">
+          {def.titre}
+          {resume && (
             <>
-              <Plus aria-hidden="true" strokeWidth={2.2} className="size-3.5" />
-              {def.titre}
+              <span className="mx-1 text-fg-4">·</span>
+              {resume}
             </>
           )}
-        </button>
-        {actif && (
-          <button
-            type="button"
-            aria-label={`Retirer le filtre ${def.titre}`}
-            onClick={() => onChange([])}
-            className="-ml-1 mr-1 flex size-7 items-center justify-center rounded-full hover:bg-accent/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft"
-          >
-            <X aria-hidden="true" strokeWidth={2.4} className="size-3.5" />
-          </button>
-        )}
-      </div>
+        </span>
+        <ChevronDown
+          aria-hidden="true"
+          strokeWidth={2.2}
+          className={cn(
+            "size-3.5 shrink-0 transition-transform duration-[250ms]",
+            ouvert && "rotate-180",
+          )}
+        />
+      </button>
       {ouvert && (
-        <fieldset
+        <div
           id={idPanneau}
-          className="absolute left-0 top-full z-overlay mt-2 max-h-[320px] min-w-[220px] animate-menu overflow-y-auto rounded-[14px] border border-line-strong bg-surface-2 p-2 shadow-lg"
+          className="absolute left-0 top-full z-overlay mt-2 min-w-[230px] animate-menu rounded-[12px] border border-line-strong bg-surface-2 shadow-lg"
         >
-          <legend className="sr-only">{def.titre}</legend>
-          {def.options.map((o) => (
-            <Checkbox
-              key={o.value}
-              label={o.label}
-              checked={valeurs.includes(o.value)}
-              onChange={(e) =>
-                onChange(
-                  e.target.checked
-                    ? [...valeurs, o.value]
-                    : valeurs.filter((v) => v !== o.value),
-                )
-              }
-              className="w-full rounded-[9px] px-2 hover:bg-surface-3"
-            />
-          ))}
-        </fieldset>
+          <fieldset className="max-h-[300px] overflow-y-auto p-1.5">
+            <legend className="sr-only">{def.titre}</legend>
+            {def.options.map((o) => (
+              <Checkbox
+                key={o.value}
+                label={o.label}
+                checked={valeurs.includes(o.value)}
+                onChange={(e) =>
+                  onChange(
+                    e.target.checked
+                      ? [...valeurs, o.value]
+                      : valeurs.filter((v) => v !== o.value),
+                  )
+                }
+                className="w-full rounded-[8px] px-2.5 hover:bg-surface-3"
+              />
+            ))}
+          </fieldset>
+          {actif && (
+            <div className="border-t border-line px-1.5 py-1.5">
+              <button
+                type="button"
+                onClick={() => onChange([])}
+                className="cible-tactile flex h-9 w-full items-center gap-2 rounded-[8px] px-2.5 text-[13px] text-fg-2 transition-colors hover:bg-surface-3 hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft"
+              >
+                <X aria-hidden="true" strokeWidth={2.2} className="size-3.5" />
+                Retirer ce filtre
+              </button>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
@@ -190,7 +204,7 @@ export default function BarreFiltres({ categories, agents }: Props) {
   return (
     <section
       aria-label="Filtres"
-      className="flex animate-rise flex-wrap items-center gap-2 [animation-delay:220ms]"
+      className="relative z-sticky flex animate-rise flex-wrap items-center gap-2 [animation-delay:220ms]"
     >
       <label className="relative flex min-w-[200px] flex-1 basis-[220px] sm:max-w-[300px]">
         <span className="sr-only">Rechercher par titre ou référence</span>
@@ -204,7 +218,7 @@ export default function BarreFiltres({ categories, agents }: Props) {
           value={recherche}
           onChange={(e) => setRecherche(e.target.value)}
           placeholder="Titre ou #référence"
-          className="cible-tactile h-9 w-full rounded-full border border-line-strong/70 bg-surface pl-9 pr-3 text-[13px] text-fg placeholder:text-fg-4 transition-[border-color,box-shadow] hover:border-line-hover focus:border-accent-soft focus:shadow-focus focus:outline-none"
+          className="cible-tactile h-9 w-full rounded-[10px] border border-line-strong/70 bg-surface pl-9 pr-3 text-[13px] text-fg placeholder:text-fg-4 transition-[border-color,box-shadow] hover:border-line-hover focus:border-accent-soft focus:shadow-focus focus:outline-none"
         />
       </label>
       {defs.map((def) => (

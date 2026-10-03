@@ -63,3 +63,10 @@ Une ligne par étape de [PROMPTS.md](PROMPTS.md) : ce qui est fait, ce qui est r
 - **Statistiques par défaut** (étape 14) : période de 14 jours, comme la maquette.
 - **Suivre une demande en lecture seule** (étape 15) : autorisé (recevoir des notifications ne modifie pas la demande).
 - **Équipe en ligne** (étape 15) : basée sur l'activité des sessions (mise à jour au plus une fois par minute) et la présence sur les fiches ; les sessions ouvertes avant l'étape 14 ne comptent pas.
+
+## Retouches après livraison (demandes de l'utilisateur)
+
+- **Journal** : 10 événements par page, pagination numérotée (composant partagé `components/ui/Pagination.tsx`) à la place de « Charger plus » ; compteur « Pièce jointe » libellé.
+- **Raccourcis clavier supprimés** : plus de Ctrl K, N, G puis …, E, 1–4, A, C, ?, Ctrl+Entrée, ni d'indications (Kbd), de feuille d'aide ou d'option dans les préférences. La palette de recherche s'ouvre en cliquant sur la barre de recherche ; les flèches et Échap restent actifs dans les listes et dialogues (accessibilité).
+- **Bannière d'accueil** du tableau de bord (`BanniereAccueil`) : date, « Bonjour, {prénom} », éléments à traiter, boutons Nouvelle demande / Historique (admin) / Point d'équipe (ancre vers « Charge de l'équipe »), encart « Ma file du jour » (demandes assignées : en retard, bientôt dues, dans les délais) et indicateurs en petit ; Liste / Kanban et export déplacés à droite des filtres.
+- **Sidebar** : « Replier le menu » en haut ; sidebar au-dessus du contenu (les infobulles du menu replié ne passent plus sous les cartes).

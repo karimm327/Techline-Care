@@ -1,10 +1,10 @@
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { detailAction, styleAction } from "@/components/activity/actions";
+import BanniereAccueil from "@/components/demands/BanniereAccueil";
 import BarreFiltres from "@/components/demands/BarreFiltres";
-import BasculeVue from "@/components/demands/BasculeVue";
-import BoutonExport from "@/components/demands/BoutonExport";
 import KanbanBoard from "@/components/demands/KanbanBoard";
+import OptionsAffichage from "@/components/demands/OptionsAffichage";
 import RafraichissementAuto from "@/components/demands/RafraichissementAuto";
 import {
   BarreActionsGroupees,
@@ -20,9 +20,9 @@ import Avatar from "@/components/ui/Avatar";
 import { classesBouton } from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import EmptyState from "@/components/ui/EmptyState";
+import Pagination from "@/components/ui/Pagination";
 import PriorityBars from "@/components/ui/PriorityBars";
 import SlaPill from "@/components/ui/SlaPill";
-import StatCard from "@/components/ui/StatCard";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { estAdmin, estLectureSeule } from "@/lib/auth";
 import { requireUser } from "@/lib/auth/session";
@@ -34,10 +34,10 @@ import { findAllCategories } from "@/lib/db/queries/category.queries";
 import {
   type FiltresDemandes,
   findChargeEquipe,
-  findDailyCounts,
   findDemandsFiltrees,
   findDemandsPage,
   findIndicateurs,
+  findMaFile,
   type LigneDemande,
 } from "@/lib/db/queries/demand.queries";
 import {
@@ -75,78 +75,6 @@ const liste = (v?: string) =>
     .filter(Boolean);
 
 /* ---------- Blocs ---------- */
-
-function Pagination({
-  page,
-  totalPages,
-  lien,
-}: {
-  page: number;
-  totalPages: number;
-  lien: (p: number) => string;
-}) {
-  if (totalPages <= 1) return null;
-  // Numéros affichés : 1 … (page-1) page (page+1) … dernière
-  const numeros: (number | "…")[] = [];
-  for (let p = 1; p <= totalPages; p++) {
-    if (p === 1 || p === totalPages || Math.abs(p - page) <= 1) numeros.push(p);
-    else if (numeros[numeros.length - 1] !== "…") numeros.push("…");
-  }
-  const base =
-    "cible-tactile inline-flex h-9 min-w-9 items-center justify-center rounded-[9px] px-2.5 text-[13px] font-semibold transition-colors duration-[180ms] focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-soft";
-  const inactif = `${base} cursor-not-allowed text-fg-4`;
-  return (
-    <nav className="flex items-center gap-1" aria-label="Pagination">
-      {page > 1 ? (
-        <Link
-          href={lien(page - 1)}
-          className={cn(base, "text-fg-2 hover:bg-surface-2 hover:text-fg")}
-          aria-label="Page précédente"
-        >
-          <ChevronLeft aria-hidden="true" className="size-4" />
-        </Link>
-      ) : (
-        <span className={inactif} aria-hidden="true">
-          <ChevronLeft className="size-4" />
-        </span>
-      )}
-      {numeros.map((n, i) =>
-        n === "…" ? (
-          <span key={`e-${numeros[i - 1]}`} className="px-1 text-fg-4">
-            …
-          </span>
-        ) : (
-          <Link
-            key={n}
-            href={lien(n)}
-            aria-current={n === page ? "page" : undefined}
-            className={cn(
-              base,
-              n === page
-                ? "bg-accent text-white"
-                : "text-fg-2 hover:bg-surface-2 hover:text-fg",
-            )}
-          >
-            {n}
-          </Link>
-        ),
-      )}
-      {page < totalPages ? (
-        <Link
-          href={lien(page + 1)}
-          className={cn(base, "text-fg-2 hover:bg-surface-2 hover:text-fg")}
-          aria-label="Page suivante"
-        >
-          <ChevronRight aria-hidden="true" className="size-4" />
-        </Link>
-      ) : (
-        <span className={inactif} aria-hidden="true">
-          <ChevronRight className="size-4" />
-        </span>
-      )}
-    </nav>
-  );
-}
 
 function CelluleAgent({
   d,
@@ -280,7 +208,8 @@ function ChargeEquipe({
   return (
     <Card
       as="article"
-      className="animate-rise px-5 py-[18px] [animation-delay:420ms] sm:px-5 sm:py-[18px]"
+      id="charge-equipe"
+      className="scroll-mt-24 animate-rise px-5 py-[18px] [animation-delay:420ms] sm:px-5 sm:py-[18px]"
     >
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="font-display text-h3">Charge de l’équipe</h2>
@@ -351,7 +280,7 @@ export default async function DemandsPage({ searchParams }: Props) {
 
   let donnees: Awaited<ReturnType<typeof charger>>;
   async function charger() {
-    const [pageListe, indicateurs, series, profil, categories, agents] =
+    const [pageListe, indicateurs, profil, categories, agents] =
       await Promise.all([
         findDemandsPage({
           filtres,
@@ -361,11 +290,17 @@ export default async function DemandsPage({ searchParams }: Props) {
           parPage: PAR_PAGE,
         }),
         findIndicateurs(),
-        findDailyCounts(14),
         findUserById(moi.id),
         findAllCategories(),
         findAllAgents(),
       ]);
+    const maFile = await findMaFile(moi.id).catch(() => ({
+      total: 0,
+      en_retard: 0,
+      bientot: 0,
+      a_prendre: 0,
+      en_cours: 0,
+    }));
     // Kanban : toutes les demandes filtrées (pas de pagination)
     const kanban =
       mode === "kanban" ? await findDemandsFiltrees(filtres, 500) : [];
@@ -376,13 +311,13 @@ export default async function DemandsPage({ searchParams }: Props) {
     return {
       pageListe,
       indicateurs,
-      series,
       profil,
       categories,
       agents,
       activite,
       charge,
       kanban,
+      maFile,
     };
   }
   try {
@@ -399,7 +334,7 @@ export default async function DemandsPage({ searchParams }: Props) {
     );
   }
 
-  const { pageListe, indicateurs: k, series, profil } = donnees;
+  const { pageListe, indicateurs: k, profil } = donnees;
   const total = pageListe.total;
   const totalPages = Math.max(1, Math.ceil(total / PAR_PAGE));
   const page = Math.min(pageDemandee, totalPages);
@@ -428,6 +363,12 @@ export default async function DemandsPage({ searchParams }: Props) {
             : ""
         }.`;
 
+  // « 2 éléments à traiter » : ma file ; sans demande assignée, les nouvelles de l'équipe
+  const aTraiter =
+    donnees.maFile.total > 0
+      ? `${pluriel(donnees.maFile.total, "élément")} à traiter${donnees.maFile.en_retard > 0 ? `, dont ${donnees.maFile.en_retard} en retard` : ""}`
+      : sousTitre;
+
   const filtree = Object.values(filtres).some((v) =>
     Array.isArray(v) ? v.length > 0 : !!v?.trim(),
   );
@@ -438,89 +379,79 @@ export default async function DemandsPage({ searchParams }: Props) {
       <ToastSuppression admin={admin} />
       {admin && <RafraichissementAuto />}
 
-      <PageHeader
-        eyebrow={`Pilotage · ${nomJour}`}
-        title={prenom ? `Bonjour ${prenom}` : "Bonjour"}
-        subtitle={sousTitre}
-        actions={
-          <>
-            <BasculeVue mode={mode} />
-            <BoutonExport />
-          </>
-        }
+      <BanniereAccueil
+        prenom={prenom}
+        date={`Pilotage · ${nomJour}`}
+        aTraiter={aTraiter}
+        file={donnees.maFile}
+        peutCreer={peutModifier}
+        admin={admin}
+        indicateurs={[
+          {
+            label: "Demandes ouvertes",
+            valeur: ouvertes,
+            pastille:
+              k.creees_aujourdhui > 0
+                ? `+${k.creees_aujourdhui} aujourd’hui`
+                : undefined,
+            ton: "accent",
+            detail: `${pluriel(k.nouvelles, "nouvelle")} · ${k.en_cours} en cours`,
+          },
+          {
+            label: "Non assignées",
+            valeur: k.non_assignees,
+            pastille:
+              k.non_assignees_urgentes > 0
+                ? pluriel(k.non_assignees_urgentes, "urgente")
+                : undefined,
+            ton: "late",
+            detail: "À répartir dans l’équipe",
+          },
+          {
+            label: "1re réponse moyenne",
+            valeur: k.premiere_reponse_h,
+            unite: "h",
+            decimales: 1,
+            pastille:
+              k.sla_depasses > 0
+                ? pluriel(k.sla_depasses, "SLA dépassé", "SLA dépassés")
+                : undefined,
+            ton: "late",
+            detail:
+              k.premiere_reponse_h === null
+                ? "Aucune réponse sur 30 jours"
+                : "Sur 30 jours",
+          },
+          {
+            label: "Clôturées (7 jours)",
+            valeur: k.cloturees_7j,
+            ton: "done",
+            detail: "Passages au statut Clôturée",
+          },
+        ]}
       />
 
-      {/* Indicateurs */}
-      <section
-        aria-label="Indicateurs"
-        className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4"
-      >
-        <StatCard
-          index={0}
-          label="Demandes ouvertes"
-          value={ouvertes}
-          trend={
-            k.creees_aujourdhui > 0
-              ? `+${k.creees_aujourdhui} aujourd’hui`
-              : undefined
-          }
-          tone="accent"
-          spark={series.map((j) => j.creees)}
-          hint={`${pluriel(k.nouvelles, "nouvelle")} · ${k.en_cours} en cours`}
-        />
-        <StatCard
-          index={1}
-          label="Non assignées"
-          value={k.non_assignees}
-          trend={
-            k.non_assignees_urgentes > 0
-              ? pluriel(k.non_assignees_urgentes, "urgente")
-              : undefined
-          }
-          tone="late"
-          spark={series.map((j) => j.sans_agent)}
-          hint="À répartir dans l’équipe"
-        />
-        <StatCard
-          index={2}
-          label="1re réponse moyenne"
-          value={k.premiere_reponse_h}
-          decimals={1}
-          unit="h"
-          trend={
-            k.sla_depasses > 0
-              ? `${pluriel(k.sla_depasses, "SLA dépassé", "SLA dépassés")}`
-              : undefined
-          }
-          tone={k.sla_depasses > 0 ? "late" : "done"}
-          spark={series.map((j) => j.reponse_h)}
-          hint={
-            k.premiere_reponse_h === null
-              ? "Aucune réponse sur 30 jours"
-              : k.objectif_reponse_h
-                ? `Sur 30 jours · objectif moyen ${Math.round(k.objectif_reponse_h * 10) / 10} h`
-                : "Sur 30 jours"
-          }
-        />
-        <StatCard
-          index={3}
-          label="Clôturées (7 jours)"
-          value={k.cloturees_7j}
-          tone="warn"
-          spark={series.map((j) => j.cloturees)}
-          hint="Passages au statut Clôturée"
-        />
-      </section>
-
-      <BarreFiltres
-        categories={donnees.categories.map((c: { label: string }) => c.label)}
-        agents={donnees.agents.map(
-          (a: { id_user: string; first_name: string; last_name: string }) => ({
-            id: a.id_user,
-            nom: `${a.first_name} ${a.last_name}`,
-          }),
-        )}
-      />
+      {/* Filtres à gauche ; menu « ⋯ » (Liste / Kanban, export) tout à droite */}
+      <div className="flex flex-wrap items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <BarreFiltres
+            categories={donnees.categories.map(
+              (c: { label: string }) => c.label,
+            )}
+            agents={donnees.agents.map(
+              (a: {
+                id_user: string;
+                first_name: string;
+                last_name: string;
+              }) => ({
+                id: a.id_user,
+                nom: `${a.first_name} ${a.last_name}`,
+              }),
+            )}
+          />
+        </div>
+        <OptionsAffichage mode={mode} />
+      </div>
 
       {mode === "kanban" && (
         <KanbanBoard

@@ -150,6 +150,8 @@ CREATE TABLE IF NOT EXISTS user_preferences
     notify_digest    BOOLEAN     NOT NULL DEFAULT FALSE,
     updated_at       TIMESTAMP   NOT NULL DEFAULT now()
 );
+-- Thème d'affichage : sombre (TechLine Care, par défaut) | clair
+ALTER TABLE user_preferences ADD COLUMN IF NOT EXISTS theme VARCHAR(10) NOT NULL DEFAULT 'sombre';
 
 -- ---------- Sessions (révocation) ----------
 CREATE TABLE IF NOT EXISTS user_sessions
@@ -273,3 +275,4 @@ SET first_response_at = (
       AND c.id_author IS DISTINCT FROM d.created_by
       AND UPPER(r.label) IN ('ADMIN', 'ADMINISTRATEUR', 'ADMINISTRATOR', 'AGENT'))
 WHERE d.first_response_at IS NULL;
+
